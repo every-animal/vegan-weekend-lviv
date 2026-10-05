@@ -1,0 +1,13 @@
+#!/bin/sh
+# Пушимо лише в репозиторій організації Кожної Тварини на GitHub.
+# Захищає від помилкового remote (інша організація, особистий форк тощо).
+ORG=every-animal
+url="$2"
+case "$url" in
+  *github.com[:/]"$ORG"/*) ;;
+  *) echo "pre-push: відмовлено — $url не в github.com/$ORG/" >&2; exit 1 ;;
+esac
+# На машинах із ea-whoami (див. docs/SETUP.md) — ще й перевірка акаунтів.
+if command -v ea-whoami >/dev/null 2>&1; then
+  ea-whoami >/dev/null || { echo "pre-push: ea-whoami знайшов невідповідність акаунтів — запустіть ea-whoami" >&2; exit 1; }
+fi

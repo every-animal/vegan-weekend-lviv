@@ -1,0 +1,7 @@
+node_modules/
+.vercel/
+.env*
+!.env.example
+.DS_Store
+test-results/
+.claude/settings.local.json

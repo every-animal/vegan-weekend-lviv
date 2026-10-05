@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm check:*)",
+      "Bash(pnpm dev)",
+      "Bash(node handoff/checks/behaviour.js:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ],
+    "deny": [
+      "Read(./.env*)",
+      "Edit(handoff/reference/**)",
+      "Edit(handoff/source/**)",
+      "Edit(handoff/screens/**)",
+      "Write(handoff/reference/**)",
+      "Write(handoff/source/**)",
+      "Write(handoff/screens/**)"
+    ]
+  }
+}
