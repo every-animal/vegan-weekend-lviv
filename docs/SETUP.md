@@ -32,8 +32,8 @@ Alex працює з цієї машини на кілька організац�
 | Що | Як ізольовано |
 |---|---|
 | **git-автор** | `~/.gitconfig` → `includeIf "gitdir:~/everyanimal/"` → `~/.gitconfig-everyanimal`: email `hello@everyanimal.org` у всіх репозиторіях під `~/everyanimal/` |
-| **git push** | там же: HTTPS-доступ до GitHub бере токен з **ізольованого** gh (`~/everyanimal/.config/gh`), а SSH-адреси GitHub переписуються на HTTPS — особистий SSH-ключ і особистий gh тут не діють |
-| **gh** | `ea-gh` = `gh` з `GH_CONFIG_DIR=~/everyanimal/.config/gh`. Звичайний `gh` лишається особистим і цього логіну не бачить |
+| **git push** | там же: усі credential-helpers скинуті й замінені на `ea-git-credential` — він віддає токен **лише** з `~/everyanimal/.config/gh/hosts.yml`, а без логіну не віддає нічого. SSH-адреси GitHub переписуються на HTTPS. Особистий SSH-ключ, особистий gh і macOS keychain тут не діють (перевірено: без логіну пуш падає, а не йде під особистим акаунтом) |
+| **gh** | `ea-gh` = `gh` з `GH_CONFIG_DIR=~/everyanimal/.config/gh`; `auth login` завжди з `--insecure-storage` — токен у файлі (`chmod 700`), а не в macOS keychain, бо keychain у gh спільний і логін перезаписав би особистий. Звичайний `gh` лишається особистим |
 | **vercel** | `ea-vercel` = Vercel CLI з `--global-config ~/everyanimal/.config/vercel`. Глобального `vercel` на машині навмисно немає |
 | **перевірка** | `ea-whoami` — показує git-email, remote, логіни ea-gh / ea-vercel і привʼязку проєкту; код 1 при невідповідності. Викликається з `pre-push` |
 | **remote** | `.githooks/pre-push` (в репозиторії, для всіх): пуш лише в `github.com/every-animal/` |
