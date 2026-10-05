@@ -12,6 +12,8 @@
 // 48 checks: desktop (1280x720), phone (390x844) and prefers-reduced-motion. Exit code 1 if any fails.
 // The checks find elements by the class names of the reference page; if a port renames them, update the selectors, not the expectations.
 const { chromium } = require('playwright');
+// The cookie card is shown to visitors from the EEA / UK / CH only (owner's decision 06.10.2026): every context below
+// asks the deployed site as a visitor from Poland (header read by middleware.js). On a plain local server it changes nothing.
 const U=process.argv[2];
 if(!U){console.error('usage: node checks/behaviour.js <url of the page>');process.exit(2);}
 const ORIGIN=new URL(U).origin+'/';
@@ -20,7 +22,7 @@ const LISTEN=()=>{window._ck=[];document.addEventListener('vw-cookies',e=>window
 const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info||'']);};
 (async()=>{const b=await chromium.launch({args:['--no-proxy-server']});
   // ---------- desktop
-  let ctx=await b.newContext({viewport:{width:1280,height:720},permissions:['clipboard-read','clipboard-write']});let p=await ctx.newPage();const er=[],reqs=[],bad=[];
+  let ctx=await b.newContext({extraHTTPHeaders:{'x-vw-test-geo':'PL'},viewport:{width:1280,height:720},permissions:['clipboard-read','clipboard-write']});let p=await ctx.newPage();const er=[],reqs=[],bad=[];
   p.on('pageerror',e=>er.push(e.message));p.on('console',m=>{if(m.type()==='error')er.push(m.text())});p.on('response',r=>{reqs.push(r.url());if(r.status()>=400)bad.push(r.status()+' '+r.url())});p.on('requestfailed',r=>bad.push('failed '+r.url()));
   await p.goto(U);await p.waitForTimeout(3000);
   const go=async y=>{await p.evaluate(v=>window.scrollTo({top:v,behavior:'instant'}),y);};
@@ -85,7 +87,7 @@ const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info|
   ok('desktop: both marquees run, swipe mode is off',await p.evaluate(()=>['.strip','.revs'].every(s=>getComputedStyle(document.querySelector(s+' .mq-t')).animationName==='vw-mq'&&getComputedStyle(document.querySelector(s)).overflowX==='hidden')));
   ok('desktop: still no console errors after all of the above',er.length===0,er.join(' | '));await ctx.close();
   // ---------- phone
-  ctx=await b.newContext({viewport:{width:390,height:844},hasTouch:true});p=await ctx.newPage();const er2=[];p.on('pageerror',e=>er2.push(e.message));p.on('console',m=>{if(m.type()==='error')er2.push(m.text())});
+  ctx=await b.newContext({extraHTTPHeaders:{'x-vw-test-geo':'PL'},viewport:{width:390,height:844},hasTouch:true});p=await ctx.newPage();const er2=[];p.on('pageerror',e=>er2.push(e.message));p.on('console',m=>{if(m.type()==='error')er2.push(m.text())});
   await p.goto(U);await p.waitForTimeout(2500);const go2=async y=>{await p.evaluate(v=>window.scrollTo({top:v,behavior:'instant'}),y);};const Y2=sel=>p.evaluate(s=>{const r=document.querySelector(s).getBoundingClientRect();return r.top+scrollY},sel);
   const ytk=await p.evaluate(()=>{const r=document.querySelector('[data-tilt]').getBoundingClientRect();return r.top+scrollY+r.height/2});await go2(ytk-281);await p.waitForTimeout(400);
   ok('ticket stays flat until a mouse moves over it',await p.evaluate(()=>document.querySelector('[data-tilt]').style.transform)==='',await p.evaluate(()=>document.querySelector('[data-tilt]').style.transform));await go2(0);await p.waitForTimeout(800);   // the card rides in after the first scroll — let it finish (owner's decision 05.10.2026)
@@ -108,7 +110,7 @@ const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info|
   ok('phone: the pin sits on the end of the route line',Math.abs(pin[0])<=1&&Math.abs(pin[1])<=1,JSON.stringify(pin));
   ok('phone: no console errors',er2.length===0,er2.join(' | '));await ctx.close();
   // ---------- reduced motion
-  for(const [w,h] of [[1280,720],[390,844]]){ctx=await b.newContext({viewport:{width:w,height:h},reducedMotion:'reduce'});p=await ctx.newPage();await p.goto(U);await p.waitForTimeout(2000);
+  for(const [w,h] of [[1280,720],[390,844]]){ctx=await b.newContext({extraHTTPHeaders:{'x-vw-test-geo':'PL'},viewport:{width:w,height:h},reducedMotion:'reduce'});p=await ctx.newPage();await p.goto(U);await p.waitForTimeout(2000);
     await p.evaluate(()=>window.scrollBy(0,1));await p.waitForTimeout(100);   // the card waits for the first scroll (owner's decision 05.10.2026)
     const ckr=await p.evaluate(()=>{const c=document.querySelector('.cbn'),r=c.getBoundingClientRect();return [Math.round(r.top)>=0&&Math.round(r.bottom)<=innerHeight,getComputedStyle(c).animationName]});await p.click('.cbn-no');await p.waitForTimeout(150);
     ok(`reduced motion ${w}px: the cookie card is simply there, and simply gone after the answer`,ckr[0]&&ckr[1]==='none'&&await p.evaluate(CARD),JSON.stringify(ckr));
