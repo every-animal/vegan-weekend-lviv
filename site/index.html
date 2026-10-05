@@ -1085,6 +1085,7 @@ html{scroll-behavior:auto}
   };
   if (tpop) {
     tpop.addEventListener('click', function (e) { if (e.target === tpop || e.target.closest('.tpop-x')) setMore(false); });
+    tpop.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target === tpop) { e.preventDefault(); setMore(false); } });
     tpop.addEventListener('close', function () { if (root.classList.contains('tmore')) setMore(false); });
   }
   var syncTm = function () {
