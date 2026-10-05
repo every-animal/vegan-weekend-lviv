@@ -123,19 +123,19 @@ a{color:inherit}a:hover{color:inherit}
 @keyframes vw-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
 .hero-row{position:absolute;left:calc(2.82*var(--u));right:calc(3.9*var(--u));bottom:calc(2.075*var(--u));display:flex;justify-content:space-between;align-items:flex-start}
 /* hero intro (owner's change 05.10.2026): the same motion as the manifesto words (6.1), but once, on load —
-   every piece grows from nothing, tilted and shifted, then straightens; the pieces overlap like the words do.
+   every piece grows from nothing, tilted and shifted, then straightens; the pieces overlap like the words do; the whole intro takes 1.5 s.
    Tilts are the manifesto's own; each segment (grow → straighten) is eased "out" */
 @keyframes vw-grow{0%{transform:translate(var(--gx,0),var(--gy,.5em)) rotate(var(--gr,-8deg)) scale(0)}45%{transform:translate(calc(var(--gx,0)*.55),calc(var(--gy,.5em)*.55)) rotate(calc(var(--gr,-8deg)*.55)) scale(1)}100%{transform:none}}
-.L,.hero-date,.hero-logos .lg,.hero-city,.hero-cta>*,.hero-sub,.cdw>*{animation:vw-grow .9s var(--gd,0s) cubic-bezier(.2,.8,.2,1) backwards}
+.L,.hero-date,.hero-logos .lg,.hero-city,.hero-cta>*,.hero-sub,.cdw>*{animation:vw-grow .6s var(--gd,0s) cubic-bezier(.2,.8,.2,1) backwards}
 .L{--gy:.25em}
-.ln1 .L:nth-child(1){--gr:-9.2deg;--gx:-.04em;--gd:0s}.ln1 .L:nth-child(2){--gr:9.6deg;--gx:.06em;--gd:.08s}.ln1 .L:nth-child(3){--gr:-9.4deg;--gx:.16em;--gd:.16s}.ln1 .L:nth-child(4){--gr:-5.4deg;--gx:-.14em;--gd:.24s}.ln1 .L:nth-child(5){--gr:-9.2deg;--gx:.14em;--gd:.32s}
-.hero-date{--gr:8.1deg;--gx:16px;--gd:.4s}
-.ln2 .L:nth-child(1){--gr:-9.5deg;--gx:0em;--gd:.36s}.ln2 .L:nth-child(2){--gr:-8.2deg;--gx:-.1em;--gd:.44s}.ln2 .L:nth-child(3){--gr:-10deg;--gx:-.08em;--gd:.52s}.ln2 .L:nth-child(4){--gr:-8.6deg;--gx:-.22em;--gd:.6s}.ln2 .L:nth-child(5){--gr:-7.8deg;--gx:.16em;--gd:.68s}.ln2 .L:nth-child(6){--gr:5.5deg;--gx:-.24em;--gd:.76s}
-.hero-logos .lg-jf{--gr:-9.2deg;--gx:-4px;--gd:.84s}.hero-logos .lg-kt{--gr:9.6deg;--gx:6px;--gd:.92s}
-.hero-city{--gr:-9.4deg;--gx:16px;--gd:.95s}
-.hero-cta>:nth-child(1){--gr:-5.4deg;--gx:-14px;--gd:1.05s}.hero-cta>:nth-child(2){--gr:8.1deg;--gx:16px;--gd:1.13s}
-.hero-sub{--gr:-8.2deg;--gx:-10px;--gy:20px;--gd:1.2s}
-.cdw>:nth-child(1){--gr:-10deg;--gx:-8px;--gd:1.28s}.cdw>:nth-child(2){--gr:9.6deg;--gx:6px;--gd:1.34s}.cdw>:nth-child(3){--gr:-8.6deg;--gx:-8px;--gd:1.4s}.cdw>:nth-child(4){--gr:-7.8deg;--gx:8px;--gd:1.46s}.cdw>:nth-child(5){--gr:5.5deg;--gx:-12px;--gd:1.52s}
+.ln1 .L:nth-child(1){--gr:-9.2deg;--gx:-.04em;--gd:0s}.ln1 .L:nth-child(2){--gr:9.6deg;--gx:.06em;--gd:0.048s}.ln1 .L:nth-child(3){--gr:-9.4deg;--gx:.16em;--gd:0.096s}.ln1 .L:nth-child(4){--gr:-5.4deg;--gx:-.14em;--gd:0.144s}.ln1 .L:nth-child(5){--gr:-9.2deg;--gx:.14em;--gd:0.192s}
+.hero-date{--gr:8.1deg;--gx:16px;--gd:0.24s}
+.ln2 .L:nth-child(1){--gr:-9.5deg;--gx:0em;--gd:0.216s}.ln2 .L:nth-child(2){--gr:-8.2deg;--gx:-.1em;--gd:0.264s}.ln2 .L:nth-child(3){--gr:-10deg;--gx:-.08em;--gd:0.312s}.ln2 .L:nth-child(4){--gr:-8.6deg;--gx:-.22em;--gd:0.36s}.ln2 .L:nth-child(5){--gr:-7.8deg;--gx:.16em;--gd:0.408s}.ln2 .L:nth-child(6){--gr:5.5deg;--gx:-.24em;--gd:0.456s}
+.hero-logos .lg-jf{--gr:-9.2deg;--gx:-4px;--gd:0.504s}.hero-logos .lg-kt{--gr:9.6deg;--gx:6px;--gd:0.552s}
+.hero-city{--gr:-9.4deg;--gx:16px;--gd:0.57s}
+.hero-cta>:nth-child(1){--gr:-5.4deg;--gx:-14px;--gd:0.63s}.hero-cta>:nth-child(2){--gr:8.1deg;--gx:16px;--gd:0.678s}
+.hero-sub{--gr:-8.2deg;--gx:-10px;--gy:20px;--gd:0.72s}
+.cdw>:nth-child(1){--gr:-10deg;--gx:-8px;--gd:0.768s}.cdw>:nth-child(2){--gr:9.6deg;--gx:6px;--gd:0.804s}.cdw>:nth-child(3){--gr:-8.6deg;--gx:-8px;--gd:0.84s}.cdw>:nth-child(4){--gr:-7.8deg;--gx:8px;--gd:0.876s}.cdw>:nth-child(5){--gr:5.5deg;--gx:-12px;--gd:0.912s}
 .hero-sub,.cdw-l{--st:max(11px,calc(1.17*var(--u)));font-size:var(--st);line-height:1.3;letter-spacing:.012em;font-variation-settings:"wght" 700,"wdth" 520;color:var(--fg);padding-top:calc(3.36*var(--u) - 2.43*var(--st))}
 .hero-sub{max-width:30em;text-align:left}
 .cdw{display:flex;gap:calc(2.3*var(--u));align-items:flex-start;color:var(--fg)}
@@ -587,7 +587,7 @@ a{color:inherit}a:hover{color:inherit}
 }
 /* cookie consent. The eyes of «Точка зору» look over the edge of the card and follow the pointer (they are [data-sock], like the eyes of the heading);
    they open wide over «Дивіться» and shut over «Не підглядайте». The card is pink on the grey page and turns with the point of view */
-.cbn{--cbr:-2deg;position:fixed;left:24px;bottom:24px;z-index:55;width:440px;padding:22px 24px 24px;background:var(--bg);color:var(--fg);border:4px solid var(--fg);rotate:var(--cbr);transform-origin:0 100%;animation:cbn-in .7s cubic-bezier(.3,1.5,.5,1) 1.6s backwards}
+.cbn{--cbr:-2deg;position:fixed;left:24px;bottom:24px;z-index:55;width:440px;padding:22px 24px 24px;background:var(--bg);color:var(--fg);border:4px solid var(--fg);rotate:var(--cbr);transform-origin:0 100%;animation:cbn-in .7s cubic-bezier(.3,1.5,.5,1) backwards}
 .cbn[hidden]{display:none}
 @keyframes cbn-in{from{translate:0 135%;rotate:7deg}to{translate:0 0;rotate:var(--cbr)}}
 .cbn.yes{animation:cbn-yes .6s cubic-bezier(.45,0,.75,.35) forwards}
@@ -950,7 +950,7 @@ html{scroll-behavior:auto}
 </div>
 </footer>
 
-<div class="cbn p" role="dialog" aria-label="Cookies">
+<div class="cbn p" role="dialog" aria-label="Cookies" hidden>
 <span class="cbn-eyes" aria-hidden="true"><span class="cbn-eye" data-sock="1"><span class="pupil"></span></span><span class="cbn-eye e2" data-sock="1"><span class="pupil"></span></span></span>
 <p class="cbn-h">Можна ми <i>підглянемо?</i></p>
 <p class="cbn-t">Cookies<span class="dsk"> показують нам, як ти дивишся сайт</span>: <span class="dsk">це </span>аналітика й реклама. Нам це дуже допомагає&nbsp;— <br class="dbr">більше людей<span class="dsk"> на фестивалі</span>, більший збір.</p>
@@ -1230,6 +1230,16 @@ html{scroll-behavior:auto}
   self._raf = requestAnimationFrame(frame);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+<script>
+/* cookie card waits (owner's decision 05.10.2026): it stays [hidden] — off screen and out of the Tab order — until the first scroll,
+   or 8 s if there is none, so the hero intro plays on a clean screen. Then it rides in with cbn-in, as before. */
+(function () {
+  var c = document.querySelector('.cbn'); if (!c) return;
+  var t, show = function () { window.removeEventListener('scroll', show); clearTimeout(t); c.hidden = false; };
+  window.addEventListener('scroll', show, { passive: true });
+  t = setTimeout(show, 8000);
 })();
 </script>
 <script>
