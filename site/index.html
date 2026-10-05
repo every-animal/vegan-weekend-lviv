@@ -123,6 +123,7 @@ a{color:inherit}a:hover{color:inherit}
 .tpop{--cbr:-1.5deg;position:fixed;inset:auto 12px max(12px,env(safe-area-inset-bottom,0px)) 12px;width:auto;max-width:none;max-height:calc(100vh - 92px);max-height:calc(100dvh - 92px);margin:0;padding:16px 16px 18px;overflow:auto;border:4px solid var(--fg);box-sizing:border-box;background:var(--bg);color:var(--fg);rotate:var(--cbr);transform-origin:0 100%}
 .tpop[open]{animation:cbn-in .55s cubic-bezier(.3,1.5,.5,1) backwards}
 .tpop::backdrop{background:none}
+.tpop:focus,.vdo:focus{outline:none}
 .tpop p{margin:0;font-size:clamp(14px,3.9vw,17px);line-height:1.38;letter-spacing:.012em;font-variation-settings:"wght" 620,"wdth" 500;text-wrap:pretty}
 .tpop br{display:none}
 /* «Закрити» here and in the video window is the same text button as «Не підглядайте» (.cbn-no); these rules only place it */
@@ -966,8 +967,8 @@ html{scroll-behavior:auto}
 <div class="cbn-b"><button class="btn" type="button" data-ck="yes"><span>Дивіться</span></button><button class="cbn-no" type="button" data-ck="no">Не підглядайте</button></div>
 </div>
 
-<dialog class="tpop p" aria-label="Тема: «Точка зору»"><p></p><button class="cbn-no tpop-x" type="button">Закрити</button></dialog>
-<dialog class="vdo g" aria-label="Відео: як це було"><button class="cbn-no vdo-x" type="button">Закрити</button><video src="assets/video/how-it-was.mp4" controls playsinline preload="none"></video></dialog>
+<dialog class="tpop p" aria-label="Тема: «Точка зору»" tabindex="-1"><p></p><button class="cbn-no tpop-x" type="button">Закрити</button></dialog>
+<dialog class="vdo g" aria-label="Відео: як це було" tabindex="-1"><button class="cbn-no vdo-x" type="button">Закрити</button><video src="assets/video/how-it-was.mp4" controls playsinline preload="none"></video></dialog>
 
 </div>
 <script>
@@ -1079,11 +1080,12 @@ html{scroll-behavior:auto}
     root.classList.toggle('tmore', on);
     var tm = root.querySelector('.tm'); if (tm && tm.hasAttribute('role')) tm.setAttribute('aria-expanded', on ? 'true' : 'false');
     if (!tpop || typeof tpop.showModal !== 'function') return;
-    if (on && !tpop.open) { if (tpx && !tpop.firstChild.textContent) tpop.firstChild.innerHTML = tpx.innerHTML; tpop.showModal(); }
+    if (on && !tpop.open) { if (tpx && !tpop.firstChild.textContent) tpop.firstChild.innerHTML = tpx.innerHTML; tpop.showModal(); tpop.focus(); }
     else if (!on && tpop.open) tpop.close();
   };
   if (tpop) {
     tpop.addEventListener('click', function (e) { if (e.target === tpop || e.target.closest('.tpop-x')) setMore(false); });
+    tpop.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target === tpop) { e.preventDefault(); setMore(false); } });
     tpop.addEventListener('close', function () { if (root.classList.contains('tmore')) setMore(false); });
   }
   var syncTm = function () {
@@ -1256,9 +1258,34 @@ html{scroll-behavior:auto}
    or 8 s if there is none, so the hero intro plays on a clean screen. Then it rides in with cbn-in, as before. */
 (function () {
   var c = document.querySelector('.cbn'); if (!c) return;
+  /* the answer is remembered: whoever has answered does not see the card again (handoff/README.md, 6.8а).
+     The tags (6.4) will read the same key: 'yes' → load at once, 'no' → never; and <html data-consent="yes"> (below) → load at once. */
+  var K = 'vw-cookies', saved = null;
+  try { saved = localStorage.getItem(K); } catch (e) {}
+  document.documentElement.addEventListener('vw-cookies', function (e) { try { localStorage.setItem(K, e.detail && e.detail.accepted ? 'yes' : 'no'); } catch (er) {} });
+  if (saved === 'yes' || saved === 'no') return;
+  /* the card is only for visitors from the EEA, the UK and Switzerland (owner's decision 06.10.2026): the country comes from Vercel
+     (middleware.js → cookie vw-geo). Anyone else is taken as having agreed — <html data-consent="yes">, nothing is stored, so the
+     card still comes if the same person later opens the site from the EU. No country known (local server, header missing) → the card. */
+  var geo = (document.cookie.match(/(?:^|; )vw-geo=([A-Z]{2})/) || [])[1];
+  var ASK = 'AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE IS LI NO GB CH';
+  if (geo && ASK.indexOf(geo) < 0) { document.documentElement.setAttribute('data-consent', 'yes'); return; }
   var t, show = function () { window.removeEventListener('scroll', show); clearTimeout(t); c.hidden = false; };
   window.addEventListener('scroll', show, { passive: true });
   t = setTimeout(show, 8000);
+})();
+</script>
+<script>
+/* the two windows (video, «тему») take the focus themselves, not their first button, and when one opened by touch or mouse closes,
+   the focus that comes back to «тему» / the round button is dropped — otherwise Safari draws the focus frame after a tap.
+   From the keyboard everything stays as it is: Tab, the frame, the focus coming back. */
+(function () {
+  var kb = false;
+  document.addEventListener('keydown', function () { kb = true; }, true);
+  document.addEventListener('pointerdown', function () { kb = false; }, true);
+  document.querySelectorAll('.tpop,.vdo').forEach(function (d) {
+    d.addEventListener('close', function () { if (!kb) setTimeout(function () { var a = document.activeElement; if (a && a.blur && a !== document.body) a.blur(); }, 0); });
+  });
 })();
 </script>
 <script>
@@ -1271,7 +1298,7 @@ html{scroll-behavior:auto}
     var t = e.target && e.target.closest ? e.target : null; if (!t) return;
     if (t.closest('a.play')) {
       e.preventDefault();
-      d.showModal(); document.documentElement.style.overflow = 'hidden';
+      d.showModal(); d.focus(); document.documentElement.style.overflow = 'hidden';
       v.currentTime = 0; var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
     } else if (d.open && (t.closest('.vdo-x') || t === d)) d.close();
   });
