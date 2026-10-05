@@ -122,20 +122,26 @@ a{color:inherit}a:hover{color:inherit}
 @keyframes vw-spin{to{transform:rotate(360deg)}}
 @keyframes vw-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
 .hero-row{position:absolute;left:calc(2.82*var(--u));right:calc(3.9*var(--u));bottom:calc(2.075*var(--u));display:flex;justify-content:space-between;align-items:flex-start}
-/* hero intro (owner's change 05.10.2026): the same motion as the manifesto words (6.1), but once, on load —
-   every piece grows from nothing, tilted and shifted, then straightens; the pieces overlap like the words do; the whole intro takes 1.5 s.
-   Tilts are the manifesto's own; each segment (grow → straighten) is eased "out" */
-@keyframes vw-grow{0%{transform:translate(var(--gx,0),var(--gy,.5em)) rotate(var(--gr,-8deg)) scale(0)}45%{transform:translate(calc(var(--gx,0)*.55),calc(var(--gy,.5em)*.55)) rotate(calc(var(--gr,-8deg)*.55)) scale(1)}100%{transform:none}}
-.L,.hero-date,.hero-logos .lg,.hero-city,.hero-cta>*,.hero-sub,.cdw>*{animation:vw-grow .6s var(--gd,0s) cubic-bezier(.2,.8,.2,1) backwards}
-.L{--gy:.25em}
-.ln1 .L:nth-child(1){--gr:-9.2deg;--gx:-.04em;--gd:0s}.ln1 .L:nth-child(2){--gr:9.6deg;--gx:.06em;--gd:0.048s}.ln1 .L:nth-child(3){--gr:-9.4deg;--gx:.16em;--gd:0.096s}.ln1 .L:nth-child(4){--gr:-5.4deg;--gx:-.14em;--gd:0.144s}.ln1 .L:nth-child(5){--gr:-9.2deg;--gx:.14em;--gd:0.192s}
-.hero-date{--gr:8.1deg;--gx:16px;--gd:0.24s}
-.ln2 .L:nth-child(1){--gr:-9.5deg;--gx:0em;--gd:0.216s}.ln2 .L:nth-child(2){--gr:-8.2deg;--gx:-.1em;--gd:0.264s}.ln2 .L:nth-child(3){--gr:-10deg;--gx:-.08em;--gd:0.312s}.ln2 .L:nth-child(4){--gr:-8.6deg;--gx:-.22em;--gd:0.36s}.ln2 .L:nth-child(5){--gr:-7.8deg;--gx:.16em;--gd:0.408s}.ln2 .L:nth-child(6){--gr:5.5deg;--gx:-.24em;--gd:0.456s}
-.hero-logos .lg-jf{--gr:-9.2deg;--gx:-4px;--gd:0.504s}.hero-logos .lg-kt{--gr:9.6deg;--gx:6px;--gd:0.552s}
-.hero-city{--gr:-9.4deg;--gx:16px;--gd:0.57s}
-.hero-cta>:nth-child(1){--gr:-5.4deg;--gx:-14px;--gd:0.63s}.hero-cta>:nth-child(2){--gr:8.1deg;--gx:16px;--gd:0.678s}
-.hero-sub{--gr:-8.2deg;--gx:-10px;--gy:20px;--gd:0.72s}
-.cdw>:nth-child(1){--gr:-10deg;--gx:-8px;--gd:0.768s}.cdw>:nth-child(2){--gr:9.6deg;--gx:6px;--gd:0.804s}.cdw>:nth-child(3){--gr:-8.6deg;--gx:-8px;--gd:0.84s}.cdw>:nth-child(4){--gr:-7.8deg;--gx:8px;--gd:0.876s}.cdw>:nth-child(5){--gr:5.5deg;--gx:-12px;--gd:0.912s}
+/* hero intro (owner's change 05.10.2026): the spring of the numbers 3 / 11 / 5.7 (vw-wd, 9.2), once, on load, ~1.5 s in all.
+   Text springs in width: narrow → far too wide → back below its width → once more → settles. Its own weight and final width come from
+   --fw / --fd, the three swing widths from --f1 / --f2 / --f3. What has no width to spring (logos, the round button, the small text that
+   would rewrap) springs in scale on the same beat. */
+@keyframes vw-spw{0%{font-variation-settings:"wght" var(--fw),"wdth" 100;animation-timing-function:cubic-bezier(.3,0,.2,1)}36.7%{font-variation-settings:"wght" var(--fw),"wdth" var(--f1)}60%{font-variation-settings:"wght" var(--fw),"wdth" var(--f2)}80%{font-variation-settings:"wght" var(--fw),"wdth" var(--f3)}100%{font-variation-settings:"wght" var(--fw),"wdth" var(--fd)}}
+@keyframes vw-sps{0%{scale:0;animation-timing-function:cubic-bezier(.3,0,.2,1)}36.7%{scale:1.16}60%{scale:.93}80%{scale:1.04}100%{scale:1}}
+.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b{animation:vw-spw .9s var(--gd,0s) linear backwards}
+.hero-logos .lg,.hero-cta .play,.hero-sub,.cdw-l{animation:vw-sps .9s var(--gd,0s) linear backwards}
+.L,.hero-date{--fw:400;--fd:835;--f1:1000;--f2:740;--f3:890}
+.hero-city{--fw:520;--fd:600;--f1:900;--f2:470;--f3:680}
+.hero-cta .btn-xl{--fw:700;--fd:670;--f1:950;--f2:560;--f3:740}
+.wg b{--fw:900;--fd:var(--w,600);--f1:calc(var(--w,600) + 240);--f2:calc(var(--w,600) - 110);--f3:calc(var(--w,600) + 60)}
+.ln1 .L:nth-child(2){--gd:.04s}.ln1 .L:nth-child(3){--gd:.08s}.ln1 .L:nth-child(4){--gd:.12s}.ln1 .L:nth-child(5){--gd:.16s}
+.ln2 .L:nth-child(1){--gd:.18s}.ln2 .L:nth-child(2){--gd:.22s}.ln2 .L:nth-child(3){--gd:.26s}.ln2 .L:nth-child(4){--gd:.3s}.ln2 .L:nth-child(5){--gd:.34s}.ln2 .L:nth-child(6){--gd:.38s}
+.hero-date{--gd:.2s}
+.hero-logos .lg-jf{--gd:.4s}.hero-logos .lg-kt{--gd:.44s}
+.hero-city{--gd:.46s}
+.hero-cta .play{--gd:.5s}.hero-cta .btn-xl{--gd:.54s}
+.hero-sub{--gd:.56s;transform-origin:0 50%}.cdw-l{--gd:.58s;transform-origin:100% 50%}
+.wg-d b{--gd:.6s}.wg-h b{--gd:.62s}.wg-m b{--gd:.64s}.wg-s b{--gd:.66s}
 .hero-sub,.cdw-l{--st:max(11px,calc(1.17*var(--u)));font-size:var(--st);line-height:1.3;letter-spacing:.012em;font-variation-settings:"wght" 700,"wdth" 520;color:var(--fg);padding-top:calc(3.36*var(--u) - 2.43*var(--st))}
 .hero-sub{max-width:30em;text-align:left}
 .cdw{display:flex;gap:calc(2.3*var(--u));align-items:flex-start;color:var(--fg)}

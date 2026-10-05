@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "site", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "http.server", "8080", "--directory", "site"], "port": 8080 },
+    { "name": "reference", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "http.server", "8081", "--directory", "handoff/reference"], "port": 8081 }
+  ]
+}
