@@ -118,6 +118,11 @@ a{color:inherit}a:hover{color:inherit}
 .play .ring{position:absolute;inset:0;width:100%;height:100%;animation:vw-spin 14s linear infinite}
 .play text{font-size:21px;font-variation-settings:"wght" 820,"wdth" 560;fill:currentColor}
 .play .tri{position:relative;width:calc(var(--s)*.25);height:calc(var(--s)*.25);fill:currentColor;translate:7% 0}
+/* video window (owner's decision 05.10.2026): the round button opens the video over the whole page, in the colours of the section; «Закрити» sits where the nav is */
+.vdo{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:56px var(--pad) var(--pad);border:0;box-sizing:border-box;background:var(--bg);color:var(--fg)}
+.vdo[open]{display:flex;align-items:center;justify-content:center}
+.vdo video{display:block;width:min(100%,(100vh - 56px - var(--pad))*16/9);width:min(100%,(100dvh - 56px - var(--pad))*16/9);height:auto;aspect-ratio:16/9}
+.vdo-x{position:absolute;top:0;right:var(--pad);height:56px;padding:0;border:0;background:none;color:inherit;font:inherit;text-transform:uppercase;cursor:pointer}
 @keyframes vw-spin{to{transform:rotate(360deg)}}
 @keyframes vw-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
 .hero-row{position:absolute;left:calc(2.82*var(--u));right:calc(3.9*var(--u));bottom:calc(2.075*var(--u));display:flex;justify-content:space-between;align-items:flex-start;animation:vw-in .9s 1.3s cubic-bezier(.2,1.25,.3,1) backwards}
@@ -696,7 +701,7 @@ html{scroll-behavior:auto}
 <div class="hero-bot">
 <div class="hero-city halo" aria-hidden="true"><i>Л</i>ьв<i>ів</i></div>
 <div class="hero-cta">
-<a class="play" href="#was" aria-label="Дивитись відео: як це було"><svg class="ring" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="vw-ring" d="M100 100 m-73 0 a73 73 0 1 1 146 0 a73 73 0 1 1 -146 0"></path></defs><text><textPath href="#vw-ring" startOffset="0" textLength="452" lengthAdjust="spacing">Дивись відео • Як це було • </textPath></text></svg><svg class="tri" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.2 L20.5 12 L6.5 20.8 Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"></path></svg></a>
+<a class="play" href="assets/video/how-it-was.mp4" aria-haspopup="dialog" aria-label="Дивитись відео: як це було"><svg class="ring" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="vw-ring" d="M100 100 m-73 0 a73 73 0 1 1 146 0 a73 73 0 1 1 -146 0"></path></defs><text><textPath href="#vw-ring" startOffset="0" textLength="452" lengthAdjust="spacing">Дивись відео • Як це було • </textPath></text></svg><svg class="tri" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.2 L20.5 12 L6.5 20.8 Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"></path></svg></a>
 <a class="btn btn-xl" href="https://secure.wayforpay.com/payment/vegan_weekend_lviv" target="_blank" rel="noopener">Купити квиток <span class="arr" aria-hidden="true">↗</span></a>
 </div>
 </div>
@@ -941,6 +946,8 @@ html{scroll-behavior:auto}
 <p class="cbn-t">Cookies<span class="dsk"> показують нам, як ти дивишся сайт</span>: <span class="dsk">це </span>аналітика й реклама. Нам це дуже допомагає&nbsp;— <br class="dbr">більше людей<span class="dsk"> на фестивалі</span>, більший збір.</p>
 <div class="cbn-b"><button class="btn" type="button" data-ck="yes"><span>Дивіться</span></button><button class="cbn-no" type="button" data-ck="no">Не підглядайте</button></div>
 </div>
+
+<dialog class="vdo g" aria-label="Відео: як це було"><button class="vdo-x" type="button">Закрити</button><video src="assets/video/how-it-was.mp4" controls playsinline preload="none"></video></dialog>
 
 </div>
 <script>
@@ -1213,6 +1220,23 @@ html{scroll-behavior:auto}
   self._raf = requestAnimationFrame(frame);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+<script>
+/* video window: the round button in the hero opens the video over the page, with sound (owner's decision 05.10.2026).
+   Native <dialog>: focus stays inside, Esc closes it. Without JS (or without <dialog>) the link opens the file itself. */
+(function () {
+  var d = document.querySelector('.vdo'), v = d && d.querySelector('video');
+  if (!d || !v || typeof d.showModal !== 'function') return;
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest ? e.target : null; if (!t) return;
+    if (t.closest('a.play')) {
+      e.preventDefault();
+      d.showModal(); document.documentElement.style.overflow = 'hidden';
+      v.currentTime = 0; var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
+    } else if (d.open && (t.closest('.vdo-x') || t === d)) d.close();
+  });
+  d.addEventListener('close', function () { v.pause(); document.documentElement.style.overflow = ''; });
 })();
 </script>
 </body>
