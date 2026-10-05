@@ -1259,11 +1259,17 @@ html{scroll-behavior:auto}
 (function () {
   var c = document.querySelector('.cbn'); if (!c) return;
   /* the answer is remembered: whoever has answered does not see the card again (handoff/README.md, 6.8а).
-     The tags (6.4) will read the same key: 'yes' → load at once, 'no' → never. */
+     The tags (6.4) will read the same key: 'yes' → load at once, 'no' → never; and <html data-consent="yes"> (below) → load at once. */
   var K = 'vw-cookies', saved = null;
   try { saved = localStorage.getItem(K); } catch (e) {}
   document.documentElement.addEventListener('vw-cookies', function (e) { try { localStorage.setItem(K, e.detail && e.detail.accepted ? 'yes' : 'no'); } catch (er) {} });
   if (saved === 'yes' || saved === 'no') return;
+  /* the card is only for visitors from the EEA, the UK and Switzerland (owner's decision 06.10.2026): the country comes from Vercel
+     (middleware.js → cookie vw-geo). Anyone else is taken as having agreed — <html data-consent="yes">, nothing is stored, so the
+     card still comes if the same person later opens the site from the EU. No country known (local server, header missing) → the card. */
+  var geo = (document.cookie.match(/(?:^|; )vw-geo=([A-Z]{2})/) || [])[1];
+  var ASK = 'AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE IS LI NO GB CH';
+  if (geo && ASK.indexOf(geo) < 0) { document.documentElement.setAttribute('data-consent', 'yes'); return; }
   var t, show = function () { window.removeEventListener('scroll', show); clearTimeout(t); c.hidden = false; };
   window.addEventListener('scroll', show, { passive: true });
   t = setTimeout(show, 8000);
