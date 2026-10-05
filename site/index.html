@@ -118,14 +118,15 @@ a{color:inherit}a:hover{color:inherit}
 .vdo{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:56px var(--pad) var(--pad);border:0;box-sizing:border-box;background:var(--bg);color:var(--fg)}
 .vdo[open]{display:flex;align-items:center;justify-content:center}
 .vdo video{display:block;width:min(100%,(100vh - 56px - var(--pad))*16/9);width:min(100%,(100dvh - 56px - var(--pad))*16/9);height:auto;aspect-ratio:16/9}
-.vdo-x{position:absolute;top:0;right:var(--pad);height:56px;padding:0;border:0;background:none;color:inherit;font:inherit;text-transform:uppercase;cursor:pointer}
+.vdo .vdo-x{position:absolute;top:0;right:var(--pad);height:56px}
 /* «тему» card (phone): the cookie card's look and ride-in; the text wraps by itself — the hand breaks were set for the flow, not for the card */
 .tpop{--cbr:-1.5deg;position:fixed;inset:auto 12px max(12px,env(safe-area-inset-bottom,0px)) 12px;width:auto;max-width:none;max-height:calc(100vh - 92px);max-height:calc(100dvh - 92px);margin:0;padding:16px 16px 18px;overflow:auto;border:4px solid var(--fg);box-sizing:border-box;background:var(--bg);color:var(--fg);rotate:var(--cbr);transform-origin:0 100%}
 .tpop[open]{animation:cbn-in .55s cubic-bezier(.3,1.5,.5,1) backwards}
 .tpop::backdrop{background:none}
 .tpop p{margin:0;font-size:clamp(14px,3.9vw,17px);line-height:1.38;letter-spacing:.012em;font-variation-settings:"wght" 620,"wdth" 500;text-wrap:pretty}
 .tpop br{display:none}
-.tpop-x{display:block;margin:14px 0 0 auto;padding:0;border:0;background:none;color:inherit;font:inherit;font-size:12px;line-height:1.2;text-transform:uppercase;font-variation-settings:"wght" 820,"wdth" 700;text-decoration:underline;text-decoration-thickness:.12em;text-underline-offset:.2em;cursor:pointer}
+/* «Закрити» here and in the video window is the same text button as «Не підглядайте» (.cbn-no); these rules only place it */
+.tpop .tpop-x{display:block;margin:14px 0 0 auto}
 @keyframes vw-spin{to{transform:rotate(360deg)}}
 @keyframes vw-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
 .hero-row{position:absolute;left:calc(2.82*var(--u));right:calc(3.9*var(--u));bottom:calc(2.075*var(--u));display:flex;justify-content:space-between;align-items:flex-start}
@@ -965,8 +966,8 @@ html{scroll-behavior:auto}
 <div class="cbn-b"><button class="btn" type="button" data-ck="yes"><span>Дивіться</span></button><button class="cbn-no" type="button" data-ck="no">Не підглядайте</button></div>
 </div>
 
-<dialog class="tpop p" aria-label="Тема: «Точка зору»"><p></p><button class="tpop-x" type="button">Закрити</button></dialog>
-<dialog class="vdo g" aria-label="Відео: як це було"><button class="vdo-x" type="button">Закрити</button><video src="assets/video/how-it-was.mp4" controls playsinline preload="none"></video></dialog>
+<dialog class="tpop p" aria-label="Тема: «Точка зору»"><p></p><button class="cbn-no tpop-x" type="button">Закрити</button></dialog>
+<dialog class="vdo g" aria-label="Відео: як це було"><button class="cbn-no vdo-x" type="button">Закрити</button><video src="assets/video/how-it-was.mp4" controls playsinline preload="none"></video></dialog>
 
 </div>
 <script>
