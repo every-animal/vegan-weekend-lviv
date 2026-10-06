@@ -85,96 +85,89 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 
 function page(data) {
   return `<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
-<title>Продажі — Веган Вікенд Львів</title>
+<title>Воронка — Веган Вікенд Львів</title>
 <style>
 :root{color-scheme:light;--surface-1:#fcfcfb;--surface-2:#f2f1ee;--text-primary:#0b0b0b;--text-secondary:#52514e;--text-muted:#7a7974;--grid:#e4e3df;--series-1:#2a78d6;--critical:#c4312f}
 @media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--surface-1:#1a1a19;--surface-2:#242423;--text-primary:#fff;--text-secondary:#c3c2b7;--text-muted:#8f8e86;--grid:#33332f;--series-1:#3987e5;--critical:#e66767}}
 *{box-sizing:border-box}body{margin:0;background:var(--surface-1);color:var(--text-primary);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:1080px;margin:0 auto;padding:24px 16px 48px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:32px 0 12px}
+main{max-width:960px;margin:0 auto;padding:24px 16px 48px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:32px 0 12px}
 .sub{color:var(--text-secondary);margin:0 0 20px;font-size:13px}
 .hero{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.hero b{font-size:56px;font-weight:600;line-height:1}.hero span{color:var(--text-secondary)}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:16px}
 .tile{background:var(--surface-2);border-radius:10px;padding:14px 16px}.tile .l{color:var(--text-secondary);font-size:13px}.tile .v{font-size:26px;font-weight:600;margin-top:2px}.tile .n{color:var(--text-muted);font-size:12px;margin-top:2px}
 .off{background:var(--surface-2);border-radius:10px;padding:14px 16px;color:var(--text-secondary);font-size:14px}.err{color:var(--critical)}
-.chart{position:relative;margin-top:8px}svg{display:block;width:100%;height:auto;overflow:visible}
-.tip{position:absolute;pointer-events:none;background:var(--surface-1);border:1px solid var(--grid);border-radius:8px;padding:6px 10px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.12);display:none;white-space:nowrap}.tip b{font-size:15px}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:8px;padding:3px;gap:2px}.seg button{font:inherit;font-size:13px;border:0;background:none;color:var(--text-secondary);padding:6px 12px;border-radius:6px;cursor:pointer}.seg button[aria-pressed=true]{background:var(--surface-1);color:var(--text-primary);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.funnel{margin-top:8px}.step{display:grid;grid-template-columns:minmax(150px,1.2fr) 3fr minmax(150px,1fr);gap:12px;align-items:center;padding:6px 0}.sh{display:flex;flex-direction:column}.sl{font-weight:500}.ss,.muted{color:var(--text-muted);font-size:12px}.sv b{font-size:22px;font-weight:600}
+.track{height:28px;background:var(--surface-2);border-radius:4px;overflow:hidden}.fill{height:100%;background:var(--series-1);border-radius:0 4px 4px 0}.conv{color:var(--text-secondary);font-size:13px;padding:2px 0 2px calc(min(25%,240px) + 12px)}
+@media (max-width:640px){.step{grid-template-columns:1fr auto;grid-template-areas:'h v' 'b b'}.sh{grid-area:h}.track{grid-area:b}.sv{grid-area:v;text-align:right}.conv{padding-left:0}}
 table{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px;font-variant-numeric:tabular-nums}th,td{text-align:right;padding:5px 8px;border-bottom:1px solid var(--grid)}th:first-child,td:first-child{text-align:left}th{color:var(--text-secondary);font-weight:500}
 details{margin-top:12px}summary{cursor:pointer;color:var(--text-secondary);font-size:13px}
 </style></head><body><main>
-<h1>Веган Вікенд Львів — продажі</h1>
-<p class="sub">Оновлено ${esc(data.updated)} (Київ). Квитки — з WayForPay, кнопка «vegan_weekend_lviv»; кількість квитків порахована з суми (500 грн до 06.10, 600 грн з 07.10).</p>
+<h1>Веган Вікенд Львів — воронка продажів</h1>
+<p class="sub">Оновлено ${esc(data.updated)} (Київ) · <a href="?fresh" style="color:inherit">оновити</a></p>
+<div class="seg" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7">7 днів</button><button data-p="30" aria-pressed="true">30 днів</button></div>
 <div id="app"></div>
 </main>
 <script>
 const D=${JSON.stringify(data).replace(/</g, '\\u003c')};
-const fmt=n=>Math.round(n).toLocaleString('uk-UA'), uah=n=>fmt(n)+' грн';
+const fmt=n=>Math.round(n).toLocaleString('uk-UA'), uah=n=>fmt(n)+' грн', pct=(a,b)=>b?(a/b*100).toFixed(a/b<.1?1:0)+'%':'—';
 const el=(t,c,txt)=>{const e=document.createElement(t);if(c)e.className=c;if(txt!=null)e.textContent=txt;return e};
 const app=document.getElementById('app');
-const sum=(o,k)=>Object.values(o||{}).reduce((a,x)=>a+(k?x[k]:x),0);
-const today=D.today, last7=D.days.slice(-7);
-const S=D.wfp&&D.wfp.sales||{};
+const S=(D.wfp&&!D.wfp.error&&D.wfp.sales)||{}, G=D.ga&&!D.ga.error?D.ga:null, M=D.meta&&!D.meta.error?D.meta:null;
+const tot=(days,f)=>days.reduce((a,d)=>a+(f(d)||0),0);
 const tile=(l,v,n)=>{const t=el('div','tile');t.append(el('div','l',l),el('div','v',v));if(n)t.append(el('div','n',n));return t};
-const off=(txt,cls)=>el('div','off'+(cls?' '+cls:''),txt);
+const note=(txt,cls)=>el('div','off'+(cls?' '+cls:''),txt);
 
-/* 1. продажі */
-if(D.wfp&&!D.wfp.error){
-  const h=el('div','hero');h.append(el('b',null,fmt(sum(S,'tickets'))),el('span',null,'квитків продано · '+uah(sum(S,'amount'))+' · '+fmt(sum(S,'orders'))+' замовлень'));app.append(h);
-  const T=el('div','tiles');
-  T.append(tile('Сьогодні',fmt((S[today]||{}).tickets||0)+' квитк.',uah((S[today]||{}).amount||0)));
-  T.append(tile('Останні 7 днів',fmt(last7.reduce((a,d)=>a+((S[d]||{}).tickets||0),0))+' квитк.',uah(last7.reduce((a,d)=>a+((S[d]||{}).amount||0),0))));
-  T.append(tile('Середній чек',uah(sum(S,'orders')?sum(S,'amount')/sum(S,'orders'):0)));
-  app.append(T);
-  app.append(el('h2',null,'Квитки по днях'));
-  bars(D.days,d=>(S[d]||{}).tickets||0,d=>[fmt((S[d]||{}).tickets||0)+' квитк.',uah((S[d]||{}).amount||0)+' · '+fmt((S[d]||{}).orders||0)+' замовл.']);
-}else app.append(off(D.wfp?'Продажі: '+D.wfp.error:'Продажі не підключено','err'));
+function render(period){
+  app.replaceChildren();
+  const days=D.days.slice(-period);
+  const visitors=G?tot(days,d=>G.visitors[d]):null, clicks=G?tot(days,d=>G.clicks[d]):null;
+  const orders=tot(days,d=>(S[d]||{}).orders), tickets=tot(days,d=>(S[d]||{}).tickets);
+  const spend=M?tot(days,d=>M.spend[d]):null, adBuys=M?tot(days,d=>M.purchases[d]):null;
 
-/* 2. сайт → «Купити» */
-app.append(el('h2',null,'Сайт: відвідувачі → кліки «Купити квиток»'));
-if(D.ga&&!D.ga.error){
-  const v=sum(D.ga.visitors),c=sum(D.ga.clicks),o=sum(S,'orders');
-  const T=el('div','tiles');
-  T.append(tile('Відвідувачів (30 днів)',fmt(v)),tile('Кліків «Купити»',fmt(c),v?(c/v*100).toFixed(1)+'% відвідувачів':''),tile('Оплат',fmt(o),c?(o/c*100).toFixed(0)+'% від кліків':''));
-  app.append(T);
-  app.append(el('div','sub','Відвідувачі по днях'));
-  bars(D.days,d=>D.ga.visitors[d]||0,d=>[fmt(D.ga.visitors[d]||0)+' відвідувачів',fmt(D.ga.clicks[d]||0)+' кліків «Купити»']);
-  app.append(el('p','sub','Google рахує лише тих, хто дав згоду на cookies (поза ЄС — усіх; у ЄС — після «Дивіться»).'));
-}else app.append(off(D.ga?'Google Analytics: '+D.ga.error:'Google Analytics ще не підключено — потрібні GA4_PROPERTY_ID і GA4_SA_JSON (docs/DASHBOARD.md).',D.ga?'err':''));
+  /* 1. воронка */
+  app.append(el('h2',null,'Воронка'));
+  const steps=[
+    ['Прийшли на сайт',visitors,'людей','Google Analytics'],
+    ['Натиснули «Купити квиток»',clicks,'людей','Google Analytics'],
+    ['Оплатили',orders,'замовлень · ≈ '+fmt(tickets)+' квитк.','WayForPay']
+  ];
+  const f=el('div','funnel'), top=Math.max(1,...steps.map(s=>s[1]||0));
+  steps.forEach(([label,val,unit,src],i)=>{
+    const row=el('div','step');
+    const head=el('div','sh');head.append(el('span','sl',label),el('span','ss',src));
+    const bar=el('div','track');const fill=el('div','fill');fill.style.width=val==null?'0':Math.max(.6,val/top*100)+'%';bar.append(fill);
+    const num=el('div','sv');
+    if(val==null){num.append(el('span','muted','не підключено'))}else{num.append(el('b',null,fmt(val)),el('span','muted',' '+unit))}
+    row.append(head,bar,num);
+    if(i>0){const prev=steps[i-1][1];const conv=el('div','conv',val!=null&&prev?'↓ '+pct(val,prev)+' з попереднього кроку':'');f.append(conv)}
+    f.append(row);
+  });
+  app.append(f);
+  if(G&&visitors)app.append(el('p','sub','Від відвідувача до оплати: '+pct(orders,visitors)+'. Google рахує лише тих, хто дав згоду на cookies (поза ЄС — усіх, у ЄС — після «Дивіться»), тож реальних відвідувачів трохи більше.'));
+  if(!G)app.append(note(D.ga?'Google Analytics: '+D.ga.error:'Перші два кроки — з Google Analytics, його ще не підключено (docs/DASHBOARD.md).',D.ga?'err':''));
+  if(D.wfp&&D.wfp.error)app.append(note('WayForPay: '+D.wfp.error,'err'));
 
-/* 3. реклама Meta */
-app.append(el('h2',null,'Реклама Meta: скільки коштує квиток'));
-if(D.meta&&!D.meta.error){
-  const sp=sum(D.meta.spend),mp=sum(D.meta.purchases),t=sum(S,'tickets');
-  const T=el('div','tiles');
-  T.append(tile('Витрачено (30 днів)',uah(sp)),tile('Покупок з реклами',fmt(mp),'за даними Meta'),tile('Ціна покупки з реклами',mp?uah(sp/mp):'—'),tile('Витрати на 1 проданий квиток',t?uah(sp/t):'—','усі квитки, не лише з реклами'));
-  app.append(T);
-  app.append(el('div','sub','Витрати на рекламу по днях, грн'));
-  bars(D.days,d=>D.meta.spend[d]||0,d=>[uah(D.meta.spend[d]||0)+' витрачено',fmt(D.meta.purchases[d]||0)+' покупок з реклами']);
-}else app.append(off(D.meta?'Meta: '+D.meta.error:'Рекламу Meta ще не підключено — потрібні META_AD_ACCOUNT_ID і META_ADS_TOKEN (docs/DASHBOARD.md).',D.meta?'err':''));
+  /* 2. реклама */
+  app.append(el('h2',null,'Скільки коштує проданий квиток з реклами Meta'));
+  if(M){
+    const T=el('div','tiles');
+    T.append(tile('Витрачено на рекламу',uah(spend)));
+    T.append(tile('Ціна квитка з реклами',adBuys?uah(spend/adBuys):'—',fmt(adBuys)+' покупок, які Meta приписує рекламі'));
+    T.append(tile('Витрати на будь-який проданий квиток',tickets?uah(spend/tickets):'—','усі '+fmt(tickets)+' квитк. за період'));
+    app.append(T);
+  }else app.append(note(D.meta?'Meta: '+D.meta.error:'Рекламу Meta ще не підключено — потрібні META_AD_ACCOUNT_ID і META_ADS_TOKEN (docs/DASHBOARD.md).',D.meta?'err':''));
 
-/* таблиця — ті самі дані без графіків */
-const det=el('details');det.append(el('summary',null,'Таблиця по днях'));const tb=el('table');const hr=el('tr');
-['Дата','Квитки','Сума','Відвідувачі','Кліки «Купити»','Витрати Meta'].forEach(h=>hr.append(el('th',null,h)));tb.append(hr);
-[...D.days].reverse().forEach(d=>{const r=el('tr');[d.split('-').reverse().slice(0,2).join('.'),fmt((S[d]||{}).tickets||0),uah((S[d]||{}).amount||0),D.ga&&!D.ga.error?fmt(D.ga.visitors[d]||0):'—',D.ga&&!D.ga.error?fmt(D.ga.clicks[d]||0):'—',D.meta&&!D.meta.error?uah(D.meta.spend[d]||0):'—'].forEach(x=>r.append(el('td',null,x)));tb.append(r)});
-det.append(tb);app.append(det);
-if(D.wfp&&D.wfp.buttons){const p=el('p','sub','Кнопки WayForPay за період (успішні оплати): '+Object.entries(D.wfp.buttons).map(([k,v])=>k+(k===D.button?' (Львів)':'')+': '+v).join(', '));app.append(p)}
-
-/* стовпчики: одна серія, 4px округлення, 2px проміжок, підказка на наведенні й фокусі */
-function bars(days,val,tip){
-  const W=Math.max(300,app.clientWidth),H=W<600?160:200,P=28,n=days.length,max=Math.max(1,...days.map(val)),bw=(W-P)/n;
-  const ns='http://www.w3.org/2000/svg',box=el('div','chart'),svg=document.createElementNS(ns,'svg'),tt=el('div','tip');
-  svg.setAttribute('viewBox','0 0 '+W+' '+(H+22));svg.setAttribute('role','img');svg.setAttribute('aria-label','Графік по днях; ті самі дані — у таблиці нижче');
-  const ticks=[0,max/2,max].map(Math.round);
-  ticks.forEach(t=>{const y=H-t/max*H;const l=document.createElementNS(ns,'line');l.setAttribute('x1',P);l.setAttribute('x2',W);l.setAttribute('y1',y);l.setAttribute('y2',y);l.setAttribute('stroke','var(--grid)');svg.append(l);const tx=document.createElementNS(ns,'text');tx.setAttribute('x',P-6);tx.setAttribute('y',y+4);tx.setAttribute('text-anchor','end');tx.setAttribute('font-size','11');tx.setAttribute('fill','var(--text-muted)');tx.textContent=fmt(t);svg.append(tx)});
-  days.forEach((d,i)=>{const v=val(d),h=v/max*H,x=P+i*bw;
-    const g=document.createElementNS(ns,'g');g.setAttribute('tabindex','0');
-    const hit=document.createElementNS(ns,'rect');hit.setAttribute('x',x);hit.setAttribute('y',0);hit.setAttribute('width',bw);hit.setAttribute('height',H);hit.setAttribute('fill','transparent');g.append(hit);
-    if(v>0){const r=document.createElementNS(ns,'path'),w=Math.max(1,bw-2),rr=Math.min(4,w/2,h);r.setAttribute('d','M'+(x+1)+','+H+'v'+(-(h-rr))+'q0,'+(-rr)+' '+rr+','+(-rr)+'h'+(w-2*rr)+'q'+rr+',0 '+rr+','+rr+'v'+(h-rr)+'z');r.setAttribute('fill','var(--series-1)');g.append(r)}
-    if(i%Math.ceil(n/(W<600?4:8))===0||i===n-1){const tx=document.createElementNS(ns,'text');tx.setAttribute('x',x+bw/2);tx.setAttribute('y',H+16);tx.setAttribute('text-anchor','middle');tx.setAttribute('font-size','11');tx.setAttribute('fill','var(--text-muted)');tx.textContent=d.slice(8)+'.'+d.slice(5,7);svg.append(tx)}
-    const show=()=>{tt.replaceChildren();const[a,b]=tip(d);tt.append(el('b',null,a),el('div',null,b),el('div','n',d.split('-').reverse().join('.')));tt.style.display='block';const bx=box.getBoundingClientRect(),gx=g.getBoundingClientRect();tt.style.left=Math.min(bx.width-tt.offsetWidth,Math.max(0,gx.left-bx.left+gx.width/2-tt.offsetWidth/2))+'px';tt.style.top='-8px';g.style.opacity='.8'};
-    const hide=()=>{tt.style.display='none';g.style.opacity=''};
-    g.addEventListener('pointerenter',show);g.addEventListener('focus',show);g.addEventListener('pointerleave',hide);g.addEventListener('blur',hide);svg.append(g)});
-  box.append(svg,tt);app.append(box);
+  /* 3. по днях */
+  const det=el('details');det.open=period<=7;det.append(el('summary',null,'По днях'));const tb=el('table');const hr=el('tr');
+  ['Дата','Прийшли','«Купити»','Оплатили','Конверсія','Витрати Meta','Ціна квитка з реклами'].forEach(h=>hr.append(el('th',null,h)));tb.append(hr);
+  [...days].reverse().forEach(d=>{const r=el('tr');const v=G?G.visitors[d]||0:null,c=G?G.clicks[d]||0:null,o=(S[d]||{}).orders||0,sp=M?M.spend[d]||0:null,ab=M?M.purchases[d]||0:null;
+    [d.split('-').reverse().slice(0,2).join('.'),v==null?'—':fmt(v),c==null?'—':fmt(c),fmt(o),v?pct(o,v):'—',sp==null?'—':uah(sp),ab?uah(sp/ab):'—'].forEach(x=>r.append(el('td',null,x)));tb.append(r)});
+  det.append(tb);app.append(det);
 }
+const btns=[...document.querySelectorAll('.seg button')];
+btns.forEach(b=>b.addEventListener('click',()=>{btns.forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));render(+b.dataset.p)}));
+render(30);
 </script></body></html>`;
 }
 
