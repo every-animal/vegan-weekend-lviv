@@ -332,13 +332,13 @@ a{color:inherit}a:hover{color:inherit}
 .tix-h i{font-variation-settings:"wght" 860,"wdth" 300;font-size:1.22em;line-height:.6;letter-spacing:.01em;padding-right:.08em}
 .ticket-w{perspective:1400px;margin:clamp(30px,3.6vw,60px) auto 0;max-width:1120px}
 .ticket{position:relative;display:grid;grid-template-columns:minmax(0,1fr) clamp(250px,29vw,372px);text-decoration:none;rotate:-2deg;transition:transform .18s ease-out,rotate .4s cubic-bezier(.3,1.6,.5,1);transform-style:preserve-3d;will-change:transform}
-.ticket:hover{rotate:0deg}
+@media (hover:hover){.ticket:hover{rotate:0deg}}
 .t-main{--n1:100% 0;--n2:100% 100%;-webkit-mask:radial-gradient(circle 20px at var(--n1),transparent 97%,#000),radial-gradient(circle 20px at var(--n2),transparent 97%,#000);-webkit-mask-composite:source-in;mask:radial-gradient(circle 20px at var(--n1),transparent 97%,#000),radial-gradient(circle 20px at var(--n2),transparent 97%,#000);mask-composite:intersect;border-radius:30px 0 0 30px;position:relative;overflow:hidden;padding:clamp(20px,2.8vw,44px);display:flex;flex-direction:column;gap:clamp(16px,2vw,30px);justify-content:space-between}
 .t-art{width:100%;aspect-ratio:3840/1395;background:var(--fg);-webkit-mask:url(assets/ticket/lockup.png) center/100% 100% no-repeat;mask:url(assets/ticket/lockup.png) center/100% 100% no-repeat}
 .t-meta{display:flex;flex-wrap:wrap;gap:8px 22px;color:var(--tx)}
 .t-meta span{display:inline-flex;align-items:center;gap:.6em}
 .t-stub{container-type:inline-size;--n1:0 0;--n2:0 100%;-webkit-mask:radial-gradient(circle 20px at var(--n1),transparent 97%,#000),radial-gradient(circle 20px at var(--n2),transparent 97%,#000);-webkit-mask-composite:source-in;mask:radial-gradient(circle 20px at var(--n1),transparent 97%,#000),radial-gradient(circle 20px at var(--n2),transparent 97%,#000);mask-composite:intersect;border-radius:0 30px 30px 0;transform-origin:0 100%;transition:translate .38s cubic-bezier(.3,1.7,.5,1),rotate .38s cubic-bezier(.3,1.7,.5,1);position:relative;border-left:5px dashed var(--fg);padding:clamp(20px,2.4vw,36px);display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:20px;color:var(--fg)}
-.ticket:hover .t-stub{translate:16px 0;rotate:4.5deg}
+@media (hover:hover){.ticket:hover .t-stub{translate:16px 0;rotate:4.5deg}}
 .t-tier{display:inline-block;background:var(--fg);color:var(--bg);padding:.5em .8em;border-radius:6px;rotate:-3deg}
 .t-price{display:flex;align-items:flex-start;gap:.05em;font-size:63cqi;font-variation-settings:"wght" 900,"wdth" 300;line-height:.742;white-space:nowrap}
 .t-price small{font-size:.17em;line-height:.742;font-variation-settings:"wght" 880,"wdth" 700}
@@ -452,9 +452,10 @@ a{color:inherit}a:hover{color:inherit}
 .t-main{border-radius:30px 30px 0 0;--n1:0 100%;--n2:100% 100%}
 .t-stub{border-left:0;border-top:5px dashed var(--fg);flex-direction:row;flex-wrap:wrap;align-items:center;border-radius:0 0 30px 30px;--n1:0 0;--n2:100% 0;transform-origin:0 0}
 @media (hover:hover){.ticket:hover .t-stub{translate:0 12px;rotate:2.5deg}}
-/* phone: the ticket is not a link — a tap tears the stub off, another tap puts it back (owner's decision 06.10.2026); the button below buys */
-@media (hover:none){.ticket:hover{rotate:-1.5deg}}
-.ticket.torn{rotate:0deg}.ticket.torn .t-stub{translate:0 12px;rotate:2.5deg}
+/* phone: the ticket is not a link — a tap tears the stub off, another tap puts it back (owner's decision 06.10.2026); the button below buys.
+   The hover tilt and tear above are for a real mouse only (hover:hover): iOS keeps :hover stuck after a tap, and the sideways desktop tear
+   fought the tap's downward one — the stub jerked and would not go back */
+.ticket.torn .t-stub{translate:0 12px;rotate:2.5deg}
 .tix-cta{margin-top:64px}
 .foot-end{justify-self:start;text-align:left;align-items:flex-start;translate:none}
 .foot-links,.foot p{translate:none}
