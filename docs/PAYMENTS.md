@@ -36,6 +36,19 @@
 3. У WayForPay поміняти `serviceUrl` з адреси Make на `https://www.veganweekend.org/api/wayforpay` (саме з `www`: голий домен перенаправляє, а перенаправлення POST ненадійне).
 4. Зробити тестову оплату → Events Manager → Test events: має прийти `Purchase`. Прибрати `META_TEST_EVENT_CODE`.
 5. Вимкнути сценарій у Make.
-6. **Перевипустити токен Meta**: старий лежить відкритим текстом у сценарії Make — після переходу відкликати його (Business Settings → System users / Events Manager).
+6. ~~Перевипустити токен Meta~~ — **вирішено не відкликати** (06.10.2026, власник): «Revoke tokens» у Meta вимикає всі токени системного користувача, а від них залежать інші інтеграції. Ризик: старий токен лежить відкритим текстом у вимкненому сценарії Make — **видалити сценарій «Integration Webhooks» або його HTTP-модуль**, щоб токена ніде не було.
+
+**Стан на 06.10.2026:** WayForPay шле на `https://www.veganweekend.org/api/wayforpay`, Make вимкнено, перша жива оплата пройшла (`purchase sent`).
 
 Перевірка коду: `pnpm test` (9 тестів у `tests/wayforpay.test.mjs`, запускаються й у CI).
+
+## Що трекаємо
+
+| Де | Подія | Звідки |
+|---|---|---|
+| GA4 | `page_view`, `begin_checkout` (клік «Купити квиток») | браузер, за згодою |
+| GA4 | `purchase` | сервер (цей обробник) |
+| Meta | `PageView`, `InitiateCheckout` | піксель у браузері, за згодою |
+| Meta | `Purchase` | сервер, Conversions API |
+
+Перевірка: Meta Events Manager → Test events (браузерні) і Overview (Purchase, джерело «Server»); GA → Realtime, покупки — Monetization (із затримкою до 48 год).
