@@ -10,13 +10,13 @@
 | 1 | Ціна квитка 600 грн з 07.10 (усі місця — `handoff/CONTENT.md`) | ❓ | тексти дає власник; з «500» після 06.10 у прод не публікувати |
 | 2 | Відео для круглої кнопки в hero | ✅ | вікно поверх сторінки, зі звуком; `site/assets/video/how-it-was.mp4` (1080p, 30 с, 10 МБ) |
 | 3 | Фавікон «ВВ» з нинішнього veganweekend.org | ✅ | `site/assets/favicon/`: світла/темна тема 32 px + apple-touch 256 px, як на старому сайті |
-| 4 | Теги Google і Meta — лише після згоди | ❓ | ідентифікатори — від власника в цьому репо, не з інших проєктів |
+| 4 | Теги Google і Meta — лише після згоди | 🟡 | Google Analytics 4 `G-4PKFB5CKBV` (той самий, що на старому сайті) — ✅, лише на домені veganweekend.org, + подія `begin_checkout` на кліки «Купити квиток». Meta Pixel — чекаємо ID (вписати в `META` у скрипті аналітики) |
 | 5 | Менші фото (AVIF/WebP, srcset) — вирішити | ⬜ | `handoff/ASSETS.md` |
 | 6 | Векторні логотипи замість PNG-масок | ❓ | вектор дає власник |
 | 7 | `og:image` відкривається за адресою з `<head>` | ⬜ | |
-| 8 | Логіка банера cookies (памʼятати відповідь, подія `vw-cookies`) | 🟡 | відповідь — `localStorage['vw-cookies']` = `yes`/`no`; банер лише для ЄЕЗ / UK / CH (`middleware.js` → cookie `vw-geo`), решті — `<html data-consent="yes">`. Теги (п. 4): вмикати, якщо `yes` у будь-якому з двох місць |
+| 8 | Логіка банера cookies (памʼятати відповідь, подія `vw-cookies`) | ✅ | відповідь — `localStorage['vw-cookies']`; банер лише для ЄЕЗ / UK / CH (`middleware.js` → `vw-geo`), решті — `<html data-consent="yes">`; теги читають обидва |
 | 9 | Перевірка в Safari macOS / iOS | ⬜ | |
-| 10 | Публікація на Vercel, перемикання домену | 🟡 | проєкт підключено, `main` → https://vegan-weekend-lviv.vercel.app; домен — чекліст у [DEPLOY.md](DEPLOY.md) |
+| 10 | Публікація на Vercel, перемикання домену | 🟡 | домени `www.veganweekend.org` (основний) і `veganweekend.org` (308 → www) додано в Vercel 06.10; чекаємо DNS у name.com — [DEPLOY.md](DEPLOY.md) |
 
 ## Відкриті питання до власника
 

@@ -22,10 +22,18 @@ CLI (`ea-vercel deploy`) — лише якщо Git-інтеграція недо
 До перемикання (`handoff/README.md`, розділ 6, пункти 1, 3, 10):
 
 - [x] фавікон «ВВ» забрано з нинішнього сайту й підключено в `site/`
-- [ ] зʼясовано з власником, чи є на нинішньому сайті інші адреси, які мають лишитись робочими → редиректи в `vercel.json`
+- [x] інших адрес на старому сайті немає (одна сторінка, без sitemap) — редиректи не потрібні
 - [ ] ціна квитка актуальна (з 07.10 — 600 грн), тексти погоджені власником
-- [ ] теги Google/Meta вантажаться лише після згоди в банері
+- [x] Google Analytics — лише на домені й лише за згодою (Meta Pixel — коли буде ID) в банері
 - [ ] перевірено в Safari (macOS, iOS) і Chrome; `pnpm check` зелений на Production-адресі
 - [ ] `og:image` відкривається за адресою з `<head>`
 
-Перемикання: Vercel → Project → Settings → Domains → додати `www.veganweekend.org` і `veganweekend.org` (редирект на `www`) → внести DNS-записи, які покаже Vercel, у DNS домену (Cloudflare). Після — перевірити сертифікат, `og:image`, картку в Telegram/Facebook debugger.
+Перемикання (06.10.2026). Домени в Vercel додано: `www.veganweekend.org` — основний, `veganweekend.org` — 308 на `www`. DNS — у **name.com** (реєстратор; Cloudflare лише перед Webflow):
+
+| Тип | Host | Значення |
+|---|---|---|
+| CNAME | `www` | `5ae272424450a34e.vercel-dns-017.com` |
+| A | `@` | `216.198.79.1` |
+| A | `@` | `64.29.17.1` |
+
+Старі записи Webflow (`cdn.webflow.com`, `198.202.211.1`, AAAA `2620:cb:2000::1`) прибрати; MX / TXT не чіпати. Після — перевірити сертифікат, редирект з голого домену, `og:image`, `pnpm check https://www.veganweekend.org/`, картку в Telegram / Facebook Sharing Debugger.

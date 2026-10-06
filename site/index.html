@@ -1376,6 +1376,41 @@ html{scroll-behavior:auto}
 })();
 </script>
 <script>
+/* analytics (owner's decision 06.10.2026; handoff/README.md, 6.4 and 6.8). Google Analytics 4 — the id the old veganweekend.org used.
+   Loads only on the real domain (previews and local runs stay out of the numbers) and only with consent:
+   <html data-consent="yes"> (visitor outside the EEA, set by the cookie script) or localStorage 'vw-cookies' = 'yes', or the moment
+   the card says yes (event vw-cookies). After «Не підглядайте» nothing is loaded. Meta Pixel: put its id into META below. */
+(function () {
+  var GA = 'G-4PKFB5CKBV', META = '';
+  if (!/(^|\.)veganweekend\.org$/.test(location.hostname)) return;
+  var on = false, load = function () {
+    if (on) return; on = true;
+    if (GA) {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date()); window.gtag('config', GA);
+      var g = document.createElement('script'); g.async = true; g.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA; document.head.appendChild(g);
+    }
+    if (META) {
+      var f = window.fbq = function () { f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments); };
+      if (!window._fbq) window._fbq = f; f.push = f; f.loaded = true; f.version = '2.0'; f.queue = [];
+      var m = document.createElement('script'); m.async = true; m.src = 'https://connect.facebook.net/en_US/fbevents.js'; document.head.appendChild(m);
+      window.fbq('init', META); window.fbq('track', 'PageView');
+    }
+  };
+  var saved = null; try { saved = localStorage.getItem('vw-cookies'); } catch (e) {}
+  if (saved === 'yes' || (saved !== 'no' && document.documentElement.getAttribute('data-consent') === 'yes')) load();
+  document.documentElement.addEventListener('vw-cookies', function (e) { if (e.detail && e.detail.accepted) load(); });
+  /* a click on any ticket link (WayForPay) is the step we can see — the purchase itself happens on WayForPay */
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href*="wayforpay.com"]') : null;
+    if (!a || !on) return;
+    if (window.gtag) window.gtag('event', 'begin_checkout', { currency: 'UAH', transport_type: 'beacon' });
+    if (window.fbq) window.fbq('track', 'InitiateCheckout');
+  }, true);
+})();
+</script>
+<script>
 /* video window: the round button in the hero opens the video over the page, with sound (owner's decision 05.10.2026).
    Native <dialog>: focus stays inside, Esc closes it. Without JS (or without <dialog>) the link opens the file itself. */
 (function () {
