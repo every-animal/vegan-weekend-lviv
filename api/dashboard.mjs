@@ -28,7 +28,11 @@ async function wayforpay(secret, now) {
       transactionType: 'TRANSACTION_LIST', merchantAccount: MERCHANT, apiVersion: 1, dateBegin: b, dateEnd: e,
       merchantSignature: createHmac('md5', secret).update(`${MERCHANT};${b};${e}`).digest('hex') }) });
     const j = await r.json();
-    if (Number(j.reasonCode) !== 1100) throw new Error(`WayForPay: ${j.reason || r.status}`);
+    if (Number(j.reasonCode) !== 1100) {
+      /* діагностика: що відповів WayForPay і що ми підписали (без ключа) */
+      const cs = await (await fetch('https://api.wayforpay.com/api', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ transactionType: 'CHECK_STATUS', merchantAccount: MERCHANT, orderReference: 'WFP-SOC-12700913-6ac4b29136b28', apiVersion: 1, merchantSignature: createHmac('md5', secret).update(`${MERCHANT};WFP-SOC-12700913-6ac4b29136b28`).digest('hex') }) })).json().catch(e => ({ e: String(e) }));
+      throw new Error(`WayForPay: ${JSON.stringify(j)} | signed «${MERCHANT};${b};${e}» | key len ${secret.length} | CHECK_STATUS: ${cs.reason || cs.reasonCode} ${cs.transactionStatus || ''}`);
+    }
     list.push(...(j.transactionList || []));
   }
   const buttons = {};
