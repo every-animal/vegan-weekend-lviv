@@ -5,13 +5,15 @@ import { handle } from '../api/dashboard.mjs';
 const now = Math.floor(Date.now() / 1000);
 const auth = p => ({ authorization: 'Basic ' + Buffer.from('x:' + p).toString('base64') });
 
-test('without the right password there is nothing to see', async () => {
+test('with a password set, the wrong one sees nothing; without one the page is open and unnamed', async () => {
   for (const h of [{}, auth('wrong')]) {
     const r = await handle(new Request('https://x/api/dashboard', { headers: h }), { DASHBOARD_PASSWORD: 'secret' });
     assert.equal(r.status, 401);
   }
-  const r = await handle(new Request('https://x/api/dashboard', { headers: auth('') }), {});
-  assert.equal(r.status, 401, 'no password configured = closed');
+  globalThis.fetch = async () => ({ status: 200, json: async () => ({ reasonCode: 1100, transactionList: [] }) });
+  const r = await handle(new Request('https://x/api/dashboard?fresh'), { WAYFORPAY_SECRET_KEY: 'k' });
+  assert.equal(r.status, 200, 'no password configured = open (owner\'s decision)');
+  assert.ok(!(await r.text()).includes('Веган'), 'no project name on the page');
 });
 
 test('only approved payments of the Lviv button are counted; tickets come from the amount', async () => {
