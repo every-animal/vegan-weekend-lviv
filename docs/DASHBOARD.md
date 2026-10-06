@@ -1,6 +1,6 @@
 # Дашборд продажів
 
-**Адреса:** https://www.veganweekend.org/api/dashboard — за паролем (логін будь-який, пароль — `DASHBOARD_PASSWORD`). Пошуковики не індексують.
+**Адреса:** https://www.veganweekend.org/api/dashboard — **відкрита, без пароля** (рішення власника 06.10.2026): на сторінці немає назви проєкту, пошуковики не індексують. Але репозиторій публічний — хто читає код, знає адресу; там лише загальні цифри, без даних покупців. Щоб закрити — задати `DASHBOARD_PASSWORD`.
 
 Воронка за період (сьогодні / 7 / 30 днів):
 
@@ -25,7 +25,7 @@
 
 Усі значення — у Vercel → Settings → Environment Variables → Production (або через `ea-vercel env add НАЗВА production --sensitive`), потім redeploy.
 
-**Пароль:** `DASHBOARD_PASSWORD`.
+**Пароль (необовʼязково):** `DASHBOARD_PASSWORD` — якщо задати, сторінка питатиме його.
 
 **Google Analytics** (`GA4_PROPERTY_ID`, `GA4_SA_JSON`):
 1. console.cloud.google.com (під акаунтом, що має доступ до GA) → створити проєкт, напр. `veganweekend-dashboard`.

@@ -1,9 +1,9 @@
-/* Дашборд продажів (рішення власника 06.10.2026): https://www.veganweekend.org/api/dashboard — за паролем.
+/* Дашборд-воронка (рішення власника 06.10.2026): https://www.veganweekend.org/api/dashboard — відкритий, без назви проєкту.
    Три питання, щодня: скільки квитків продано і на яку суму; скільки людей прийшло і скільки натиснули «Купити»;
    скільки коштує проданий квиток з реклами Meta. Дані тягнуться на сервері, ключі в браузер не потрапляють.
 
    Змінні середовища (Vercel, Production):
-   DASHBOARD_PASSWORD                 — пароль (логін будь-який)
+   DASHBOARD_PASSWORD                 — необовʼязково: якщо задати, сторінка питатиме пароль (логін будь-який)
    WAYFORPAY_SECRET_KEY               — уже є (оплати)
    GA4_PROPERTY_ID, GA4_SA_JSON       — Google Analytics Data API: числовий ID ресурсу і JSON ключа службового акаунта (Viewer у GA)
    META_AD_ACCOUNT_ID, META_ADS_TOKEN — рекламний кабінет (act_…) і токен з правом ads_read
@@ -85,7 +85,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 
 function page(data) {
   return `<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
-<title>Воронка — Веган Вікенд Львів</title>
+<title>Воронка</title>
 <style>
 :root{color-scheme:light;--surface-1:#fcfcfb;--surface-2:#f2f1ee;--text-primary:#0b0b0b;--text-secondary:#52514e;--text-muted:#7a7974;--grid:#e4e3df;--series-1:#2a78d6;--critical:#c4312f}
 @media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--surface-1:#1a1a19;--surface-2:#242423;--text-primary:#fff;--text-secondary:#c3c2b7;--text-muted:#8f8e86;--grid:#33332f;--series-1:#3987e5;--critical:#e66767}}
@@ -103,7 +103,7 @@ main{max-width:960px;margin:0 auto;padding:24px 16px 48px}h1{font-size:20px;marg
 table{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px;font-variant-numeric:tabular-nums}th,td{text-align:right;padding:5px 8px;border-bottom:1px solid var(--grid)}th:first-child,td:first-child{text-align:left}th{color:var(--text-secondary);font-weight:500}
 details{margin-top:12px}summary{cursor:pointer;color:var(--text-secondary);font-size:13px}
 </style></head><body><main>
-<h1>Веган Вікенд Львів — воронка продажів</h1>
+<h1>Воронка продажів</h1>
 <p class="sub">Оновлено ${esc(data.updated)} (Київ) · <a href="?fresh" style="color:inherit">оновити</a></p>
 <div class="seg" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7">7 днів</button><button data-p="30" aria-pressed="true">30 днів</button></div>
 <div id="app"></div>
@@ -175,11 +175,14 @@ render(30);
 let cache = { at: 0, html: '' };
 
 export async function handle(request, env = process.env) {
+  /* відкрито без пароля (рішення власника 06.10.2026); на сторінці немає назви проєкту, пошуковики її не індексують.
+     Якщо задано DASHBOARD_PASSWORD — знову питає пароль */
   const pass = env.DASHBOARD_PASSWORD || '';
-  const h = request.headers.get('authorization') || '';
-  const given = h.startsWith('Basic ') ? Buffer.from(h.slice(6), 'base64').toString().split(':').slice(1).join(':') : '';
-  const ok = pass && given.length === pass.length && timingSafeEqual(Buffer.from(given), Buffer.from(pass));
-  if (!ok) return new Response('Потрібен пароль', { status: 401, headers: { 'www-authenticate': 'Basic realm="Veganweekend dashboard", charset="UTF-8"', 'x-robots-tag': 'noindex' } });
+  if (pass) {
+    const h = request.headers.get('authorization') || '';
+    const given = h.startsWith('Basic ') ? Buffer.from(h.slice(6), 'base64').toString().split(':').slice(1).join(':') : '';
+    if (!(given.length === pass.length && timingSafeEqual(Buffer.from(given), Buffer.from(pass)))) return new Response('Потрібен пароль', { status: 401, headers: { 'www-authenticate': 'Basic realm="dashboard", charset="UTF-8"', 'x-robots-tag': 'noindex' } });
+  }
 
   const fresh = new URL(request.url).searchParams.has('fresh');
   if (!fresh && cache.html && Date.now() - cache.at < 5 * 60 * 1000) return html(cache.html);
