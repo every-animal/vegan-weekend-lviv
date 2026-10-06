@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preload" href="assets/fonts/HeadingNowVar.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high">
+<link rel="preload" href="assets/fonts/HeadingNowVarItalic.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high">
+<script>document.documentElement.classList.add('iw')</script>
 <title>Веган Вікенд Львів — 22.11</title>
 <meta name="description" content="Веган Вікенд Львів — благодійний фестиваль 22 листопада в Jam Factory Art Center: сцена, лекторій, виставка, маркет і фудзона. 100% прибутку — на підтримку Сил оборони.">
 <meta name="theme-color" content="#6D6D6D">
@@ -149,6 +152,9 @@ a{color:inherit}a:hover{color:inherit}
 .hero-logos .lg-jf{--gd:.4s}.hero-logos .lg-kt{--gd:.44s}
 .hero-city{--gd:.46s}
 .hero-cta .play{--gd:.5s}.hero-cta .btn-xl{--gd:.54s}
+/* the intro waits (html.iw) until both fonts are in and the page is past its first heavy paint — at most 3 s. Started during the load
+   it ran on a busy phone with frames of 150–250 ms: the letters jumped from narrow to wide (owner's report 06.10.2026) */
+html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.hero-cta .play,.hero-sub,.cdw-l){animation-play-state:paused}
 .hero-sub{--gd:.56s;transform-origin:0 50%}.cdw-l{--gd:.58s;transform-origin:100% 50%}
 .wg-d b{--gd:.6s}.wg-h b{--gd:.62s}.wg-m b{--gd:.64s}.wg-s b{--gd:.66s}
 .hero-sub,.cdw-l{--st:max(11px,calc(1.17*var(--u)));font-size:var(--st);line-height:1.3;letter-spacing:.012em;font-variation-settings:"wght" 700,"wdth" 520;color:var(--fg);padding-top:calc(3.36*var(--u) - 2.43*var(--st))}
@@ -1287,6 +1293,16 @@ html{scroll-behavior:auto}
   self._raf = requestAnimationFrame(frame);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+<script>
+/* start the hero intro (see html.iw): both fonts loaded, then two frames so the first paint is done; 3 s at most (on a slow line the spring should play in the real font, not jump into it) */
+(function () {
+  var d = document.documentElement;
+  var go = function () { if (d.classList.contains('iw')) requestAnimationFrame(function () { requestAnimationFrame(function () { d.classList.remove('iw'); }); }); };
+  setTimeout(go, 3000);
+  if (document.fonts && document.fonts.load) Promise.all([document.fonts.load('400 1em "Heading Now"'), document.fonts.load('italic 400 1em "Heading Now"')]).then(go, go);
+  else go();
 })();
 </script>
 <script>
