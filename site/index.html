@@ -131,19 +131,26 @@ a{color:inherit}a:hover{color:inherit}
 @keyframes vw-spin{to{transform:rotate(360deg)}}
 @keyframes vw-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
 .hero-row{position:absolute;left:calc(2.82*var(--u));right:calc(3.9*var(--u));bottom:calc(2.075*var(--u));display:flex;justify-content:space-between;align-items:flex-start}
-/* hero intro (owner's change 06.10.2026): the motion of the three theme paragraphs (7.4, the manifesto's mechanism with a block as
-   the unit) — each block grows from nothing, tilted a few degrees and shifted, reaches full size at 45% and then straightens;
-   the blocks follow one another. Played once on load, ~1.5 s, since the hero is on screen from the start. Tilts are the theme's own. */
-@keyframes vw-blk{0%{transform:translate(var(--gx,0),.5em) rotate(var(--gr,-4deg)) scale(0)}45%{transform:translate(calc(var(--gx,0)*.55),.275em) rotate(calc(var(--gr,-4deg)*.55)) scale(1)}100%{transform:none}}
-.ln1,.hero-date,.ln2,.hero-logos .lg,.hero-city,.hero-cta,.hero-sub,.cdw{animation:vw-blk .8s var(--gd,0s) cubic-bezier(.2,.8,.2,1) backwards}
-.ln1{--gr:-4deg;--gx:-8px;--gd:0s}
-.hero-date{--gr:3.4deg;--gx:10px;--gd:.1s}
-.ln2{--gr:-3deg;--gx:8px;--gd:.18s}
-.hero-logos .lg-jf{--gr:3.4deg;--gx:6px;--gd:.3s}.hero-logos .lg-kt{--gr:-3deg;--gx:-6px;--gd:.36s}
-.hero-city{--gr:-4deg;--gx:-8px;--gd:.42s}
-.hero-cta{--gr:3.4deg;--gx:10px;--gd:.5s}
-.hero-sub{--gr:-3deg;--gx:-8px;--gd:.6s}
-.cdw{--gr:3.4deg;--gx:8px;--gd:.7s}
+/* hero intro (owner's change 05.10.2026): the spring of the numbers 3 / 11 / 5.7 (vw-wd, 9.2), once, on load, ~1.5 s in all.
+   Text springs in width: narrow → far too wide → back below its width → once more → settles. Its own weight and final width come from
+   --fw / --fd, the three swing widths from --f1 / --f2 / --f3. What has no width to spring (logos, the round button, the small text that
+   would rewrap) springs in scale on the same beat. */
+@keyframes vw-spw{0%{font-variation-settings:"wght" var(--fw),"wdth" 100;animation-timing-function:cubic-bezier(.3,0,.2,1)}36.7%{font-variation-settings:"wght" var(--fw),"wdth" var(--f1)}60%{font-variation-settings:"wght" var(--fw),"wdth" var(--f2)}80%{font-variation-settings:"wght" var(--fw),"wdth" var(--f3)}100%{font-variation-settings:"wght" var(--fw),"wdth" var(--fd)}}
+@keyframes vw-sps{0%{scale:0;animation-timing-function:cubic-bezier(.3,0,.2,1)}36.7%{scale:1.16}60%{scale:.93}80%{scale:1.04}100%{scale:1}}
+.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b{animation:vw-spw .9s var(--gd,0s) linear backwards}
+.hero-logos .lg,.hero-cta .play,.hero-sub,.cdw-l{animation:vw-sps .9s var(--gd,0s) linear backwards}
+.L,.hero-date{--fw:400;--fd:835;--f1:1000;--f2:740;--f3:890}
+.hero-city{--fw:520;--fd:600;--f1:900;--f2:470;--f3:680}
+.hero-cta .btn-xl{--fw:700;--fd:670;--f1:950;--f2:560;--f3:740}
+.wg b{--fw:900;--fd:var(--w,600);--f1:calc(var(--w,600) + 240);--f2:calc(var(--w,600) - 110);--f3:calc(var(--w,600) + 60)}
+.ln1 .L:nth-child(2){--gd:.04s}.ln1 .L:nth-child(3){--gd:.08s}.ln1 .L:nth-child(4){--gd:.12s}.ln1 .L:nth-child(5){--gd:.16s}
+.ln2 .L:nth-child(1){--gd:.18s}.ln2 .L:nth-child(2){--gd:.22s}.ln2 .L:nth-child(3){--gd:.26s}.ln2 .L:nth-child(4){--gd:.3s}.ln2 .L:nth-child(5){--gd:.34s}.ln2 .L:nth-child(6){--gd:.38s}
+.hero-date{--gd:.2s}
+.hero-logos .lg-jf{--gd:.4s}.hero-logos .lg-kt{--gd:.44s}
+.hero-city{--gd:.46s}
+.hero-cta .play{--gd:.5s}.hero-cta .btn-xl{--gd:.54s}
+.hero-sub{--gd:.56s;transform-origin:0 50%}.cdw-l{--gd:.58s;transform-origin:100% 50%}
+.wg-d b{--gd:.6s}.wg-h b{--gd:.62s}.wg-m b{--gd:.64s}.wg-s b{--gd:.66s}
 .hero-sub,.cdw-l{--st:max(11px,calc(1.17*var(--u)));font-size:var(--st);line-height:1.3;letter-spacing:.012em;font-variation-settings:"wght" 700,"wdth" 520;color:var(--fg);padding-top:calc(3.36*var(--u) - 2.43*var(--st))}
 .hero-sub{max-width:30em;text-align:left}
 .cdw{display:flex;gap:calc(2.3*var(--u));align-items:flex-start;color:var(--fg)}
