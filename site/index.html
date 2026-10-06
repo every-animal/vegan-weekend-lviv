@@ -427,10 +427,24 @@ a{color:inherit}a:hover{color:inherit}
 .z-ph{display:none}
 .z-t{font-size:12.7vw}
 .z-d{grid-column:2;text-align:left;margin-top:-4px}
-/* phone: the zone's photo peeks in from behind the right edge while its row passes the middle of the screen — the same moment its name
-   widens (8.1) — grows and straightens, and slips back as the row moves on; one photo at a time, never more than a quarter of the screen.
-   --zp (0…1) comes from the scroll code. Owner's decision 06.10.2026 */
-.zones .z .z-ph{display:block;left:auto;right:-8vw;top:50%;width:30vw;opacity:min(1,calc(var(--zp,0)*5));scale:calc(.35 + .65*var(--zp,0));rotate:calc(var(--r,5deg)*(1 + 2*(1 - var(--zp,0))));translate:calc((1 - var(--zp,0))*24vw) -50%;transition:none}
+/* phone: a tap on a zone does what the mouse does on desktop (8.2) — the row turns over, its name goes italic and its photo flies out,
+   bigger here and whole on screen, on the right of the row. A tap anywhere else, a second tap or a scroll puts it away
+   (class .on from the zone script; owner's decision 06.10.2026) */
+.zones .z{cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* the photo lands in the free space: under the row when the row is in the upper half of the screen, over it when in the lower (.up) — the open zone stays readable */
+.zones .z .z-ph{display:block;left:auto;right:var(--pad);top:calc(100% - 4px);bottom:auto;width:46vw;translate:0 -30%}
+.zones .z.up .z-ph{top:auto;bottom:calc(100% - 4px);translate:0 30%}
+.zones .z.on{background:var(--fg);color:var(--bg);z-index:6}
+.zones .z.on .z-t{font-style:italic}
+.zones .z.on .z-d{color:var(--bg)}
+.zones .z.on .z-ph{opacity:1;scale:1;rotate:var(--r,5deg);translate:0 0;transition:opacity .1s ease,scale .5s cubic-bezier(.3,1.7,.45,1),rotate .65s cubic-bezier(.3,1.7,.45,1),translate .5s cubic-bezier(.2,1.25,.4,1)}
+@media (hover:none){
+/* a touch leaves :hover stuck on what was tapped — on a phone only .on turns a row over */
+.zones .z:not(.on):hover{background:none;color:var(--fg);z-index:auto}
+.zones .z:not(.on):hover .z-t{font-style:normal}
+.zones .z:not(.on):hover .z-d{color:inherit}
+.zones .z:not(.on):hover .z-ph{opacity:0;scale:.3;rotate:calc(var(--r,5deg)*-3)}
+}
 .z:hover .z-d{translate:0 0}
 .fund-big{font-size:58vw;--fx:180}
 .ticket{grid-template-columns:minmax(0,1fr);rotate:-1.5deg}
@@ -1214,7 +1228,6 @@ html{scroll-behavior:auto}
       var c = 1 - clamp(Math.abs(r.top + r.height / 2 - vh * 0.5) / (vh * 0.48), 0, 1);
       var mx = parseFloat(el.getAttribute('data-max') || '700');
       el.style.setProperty('--wd', Math.round(110 + (mx - 110) * c * c * (3 - 2 * c)));
-      if (vw <= 820) { var zq = clamp((c - 0.82) / 0.18, 0, 1); el.parentNode.style.setProperty('--zp', (zq * zq * (3 - 2 * zq)).toFixed(3)); }
     }
     el = els.route;
     if (el) {
@@ -1287,6 +1300,26 @@ html{scroll-behavior:auto}
   var t, show = function () { window.removeEventListener('scroll', show); clearTimeout(t); c.hidden = false; };
   window.addEventListener('scroll', show, { passive: true });
   t = setTimeout(show, 8000);
+})();
+</script>
+<script>
+/* phone: zones open by a tap (owner's decision 06.10.2026). One row at a time; a tap elsewhere, a second tap on it,
+   or a scroll of more than 40 px closes it. Wider than 820 px the mouse does this, as before. */
+(function () {
+  var mq = window.matchMedia('(max-width: 820px)'), on = null, y0 = 0;
+  var set = function (z) {
+    if (on) on.classList.remove('on'); on = z;
+    if (on) { var r = on.getBoundingClientRect(); on.classList.toggle('up', r.top + r.height / 2 > window.innerHeight / 2); on.classList.add('on'); y0 = window.scrollY; }
+  };
+  document.addEventListener('click', function (e) {
+    if (!mq.matches) return;
+    var z = e.target && e.target.closest ? e.target.closest('.zones .z') : null;
+    if (z || on) set(z && z !== on ? z : null);
+  });
+  /* iOS sends no click for a tap on plain text or empty space — a touch anywhere outside the open row closes it */
+  document.addEventListener('pointerdown', function (e) { if (on && mq.matches && !(e.target && e.target.closest && e.target.closest('.zones .z') === on)) { if (!(e.target.closest && e.target.closest('.zones .z'))) set(null); } });
+  window.addEventListener('scroll', function () { if (on && Math.abs(window.scrollY - y0) > 40) set(null); }, { passive: true });
+  if (mq.addEventListener) mq.addEventListener('change', function () { set(null); });
 })();
 </script>
 <script>
