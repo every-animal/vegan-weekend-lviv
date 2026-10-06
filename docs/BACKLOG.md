@@ -16,7 +16,7 @@
 | 7 | `og:image` відкривається за адресою з `<head>` | ⬜ | |
 | 8 | Логіка банера cookies (памʼятати відповідь, подія `vw-cookies`) | ✅ | відповідь — `localStorage['vw-cookies']`; банер лише для ЄЕЗ / UK / CH (`middleware.js` → `vw-geo`), решті — `<html data-consent="yes">`; теги читають обидва |
 | 9 | Перевірка в Safari macOS / iOS | ⬜ | |
-| 10 | Публікація на Vercel, перемикання домену | 🟡 | домени `www.veganweekend.org` (основний) і `veganweekend.org` (308 → www) додано в Vercel 06.10; чекаємо DNS у name.com — [DEPLOY.md](DEPLOY.md) |
+| 10 | Публікація на Vercel, перемикання домену | ✅ | 06.10.2026: DNS у name.com → Vercel; `https://www.veganweekend.org` (Let's Encrypt), голий домен і http → 308 на www; 48/48 на бойовому домені |
 
 ## Відкриті питання до власника
 

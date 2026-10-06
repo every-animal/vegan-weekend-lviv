@@ -33,7 +33,7 @@
 
 1. Додати змінні середовища (таблиця вище), з `META_TEST_EVENT_CODE`.
 2. Задеплоїти (merge у `main`).
-3. У WayForPay поміняти `serviceUrl` з адреси Make на `https://www.veganweekend.org/api/wayforpay` (до перемикання домену — `https://vegan-weekend-lviv.vercel.app/api/wayforpay`).
+3. У WayForPay поміняти `serviceUrl` з адреси Make на `https://www.veganweekend.org/api/wayforpay` (саме з `www`: голий домен перенаправляє, а перенаправлення POST ненадійне).
 4. Зробити тестову оплату → Events Manager → Test events: має прийти `Purchase`. Прибрати `META_TEST_EVENT_CODE`.
 5. Вимкнути сценарій у Make.
 6. **Перевипустити токен Meta**: старий лежить відкритим текстом у сценарії Make — після переходу відкликати його (Business Settings → System users / Events Manager).
