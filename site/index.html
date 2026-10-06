@@ -1395,9 +1395,10 @@ html{scroll-behavior:auto}
 /* analytics (owner's decision 06.10.2026; handoff/README.md, 6.4 and 6.8). Google Analytics 4 — the id the old veganweekend.org used.
    Loads only on the real domain (previews and local runs stay out of the numbers) and only with consent:
    <html data-consent="yes"> (visitor outside the EEA, set by the cookie script) or localStorage 'vw-cookies' = 'yes', or the moment
-   the card says yes (event vw-cookies). After «Не підглядайте» nothing is loaded. Meta Pixel: put its id into META below. */
+   the card says yes (event vw-cookies). After «Не підглядайте» nothing is loaded. Meta Pixel — same rules (PageView, InitiateCheckout);
+   the purchase itself reaches Meta from WayForPay's webhook via Make (Conversions API), not from this page. */
 (function () {
-  var GA = 'G-4PKFB5CKBV', META = '';
+  var GA = 'G-4PKFB5CKBV', META = '1647718446547735';
   if (!/(^|\.)veganweekend\.org$/.test(location.hostname)) return;
   var on = false, load = function () {
     if (on) return; on = true;
