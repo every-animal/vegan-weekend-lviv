@@ -1052,7 +1052,9 @@ html{scroll-behavior:auto}
   }
 
   /* pointer + clicks */
-  self._onMove = function (e) { m.x = e.clientX; m.y = e.clientY; m.t = performance.now(); m.mouse = e.pointerType === 'mouse'; };
+  /* a mouse "move" with no movement is the browser's own (Chromium sends one after a scroll to refresh :hover, at wherever it thinks
+     the cursor is — on Linux that is 0,0): it must not count as a mouse, or the ticket tilts with no mouse at all */
+  self._onMove = function (e) { if (e.pointerType === 'mouse' && !e.movementX && !e.movementY) return; m.x = e.clientX; m.y = e.clientY; m.t = performance.now(); m.mouse = e.pointerType === 'mouse'; };
   /* the swiped rows (gallery, reviews on phones): a finger scrolls them natively; a mouse drags them and they settle on the neighbouring card */
   var drag = null;
   self._onDragDown = function (e) {
