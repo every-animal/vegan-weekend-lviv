@@ -7,7 +7,8 @@
     "dev": "python3 -m http.server 8080 --directory site",
     "reference": "python3 -m http.server 8081 --directory handoff/reference",
     "check": "node handoff/checks/behaviour.js",
-    "browsers": "playwright install chromium"
+    "browsers": "playwright install chromium",
+    "test": "node --test tests/*.test.mjs"
   },
   "devDependencies": {
     "playwright": "^1.50.0"
