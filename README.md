@@ -23,7 +23,7 @@ pnpm check http://localhost:8080/   # 48 перевірок поведінки, 
 
 ```
 site/          сайт — лише це публікується на Vercel
-api/           серверні функції Vercel: wayforpay.mjs (оплати → Meta / GA4)
+api/           серверні функції Vercel: wayforpay.mjs (оплати → Meta / GA4), dashboard.mjs (дашборд продажів)
 tests/         тести функцій (pnpm test)
 handoff/       пакет від дизайну: еталон, SPEC, ANIMATIONS, CONTENT, ASSETS, знімки, перевірки
 docs/          SETUP · DEPLOY · DECISIONS · BACKLOG
@@ -42,5 +42,6 @@ vercel.json    налаштування публікації
 | внести зміну | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | задеплоїти / перемкнути домен | [docs/DEPLOY.md](docs/DEPLOY.md) |
 | зрозуміти, як покупки потрапляють у Meta / Google | [docs/PAYMENTS.md](docs/PAYMENTS.md) |
+| подивитись продажі / налаштувати дашборд | [docs/DASHBOARD.md](docs/DASHBOARD.md) |
 | дізнатись, чому так вирішили | [docs/DECISIONS.md](docs/DECISIONS.md) |
 | що лишилось зробити | [docs/BACKLOG.md](docs/BACKLOG.md) |
