@@ -312,6 +312,9 @@ a{color:inherit}a:hover{color:inherit}
 .place-pin:hover .pin-b{rotate:-8deg;scale:1.08}
 .place-bot{display:flex;align-items:center;justify-content:space-between;gap:24px 40px;flex-wrap:wrap;margin-top:clamp(14px,1.6cqi,26px)}
 .place-lead{max-width:30em;color:var(--tx)}
+/* where the lines are set by hand (.mbr, 360–480 px), the browser must not re-break them: Safari's text-wrap:pretty moved «майданчиком»
+   to a line of its own in «Локація», Chromium's did not (owner's fix 06.10.2026) */
+@media (min-width:360px) and (max-width:480px){:is(p,h2,h3,div,span):has(> br.mbr){text-wrap:wrap}}
 .btn.cp{align-items:center;background:var(--bg);color:var(--fg);text-shadow:none}
 .btn.cp:hover{color:var(--fg)}
 .btn.cp{position:relative}
@@ -424,13 +427,21 @@ a{color:inherit}a:hover{color:inherit}
 .z-ph{display:none}
 .z-t{font-size:12.7vw}
 .z-d{grid-column:2;text-align:left;margin-top:-4px}
+/* phone: the zone's photo peeks in from behind the right edge while its row passes the middle of the screen — the same moment its name
+   widens (8.1) — grows and straightens, and slips back as the row moves on; one photo at a time, never more than a quarter of the screen.
+   --zp (0…1) comes from the scroll code. Owner's decision 06.10.2026 */
+.zones .z .z-ph{display:block;left:auto;right:-8vw;top:50%;width:30vw;opacity:min(1,calc(var(--zp,0)*5));scale:calc(.35 + .65*var(--zp,0));rotate:calc(var(--r,5deg)*(1 + 2*(1 - var(--zp,0))));translate:calc((1 - var(--zp,0))*24vw) -50%;transition:none}
 .z:hover .z-d{translate:0 0}
 .fund-big{font-size:58vw;--fx:180}
 .ticket{grid-template-columns:minmax(0,1fr);rotate:-1.5deg}
 .coon{--lt:.19s}
 .t-main{border-radius:30px 30px 0 0;--n1:0 100%;--n2:100% 100%}
 .t-stub{border-left:0;border-top:5px dashed var(--fg);flex-direction:row;flex-wrap:wrap;align-items:center;border-radius:0 0 30px 30px;--n1:0 0;--n2:100% 0;transform-origin:0 0}
-.ticket:hover .t-stub{translate:0 12px;rotate:2.5deg}
+@media (hover:hover){.ticket:hover .t-stub{translate:0 12px;rotate:2.5deg}}
+/* phone: the ticket is not a link — a tap tears the stub off, another tap puts it back (owner's decision 06.10.2026); the button below buys */
+@media (hover:none){.ticket:hover{rotate:-1.5deg}}
+.ticket.torn{rotate:0deg}.ticket.torn .t-stub{translate:0 12px;rotate:2.5deg}
+.tix-cta{margin-top:64px}
 .foot-end{justify-self:start;text-align:left;align-items:flex-start;translate:none}
 .foot-links,.foot p{translate:none}
 }
@@ -1041,7 +1052,9 @@ html{scroll-behavior:auto}
   }
 
   /* pointer + clicks */
-  self._onMove = function (e) { m.x = e.clientX; m.y = e.clientY; m.t = performance.now(); m.mouse = e.pointerType === 'mouse'; };
+  /* a mouse "move" with no movement is the browser's own (Chromium sends one after a scroll to refresh :hover, at wherever it thinks
+     the cursor is — on Linux that is 0,0): it must not count as a mouse, or the ticket tilts with no mouse at all */
+  self._onMove = function (e) { if (e.pointerType === 'mouse' && !e.movementX && !e.movementY) return; m.x = e.clientX; m.y = e.clientY; m.t = performance.now(); m.mouse = e.pointerType === 'mouse'; };
   /* the swiped rows (gallery, reviews on phones): a finger scrolls them natively; a mouse drags them and they settle on the neighbouring card */
   var drag = null;
   self._onDragDown = function (e) {
@@ -1201,6 +1214,7 @@ html{scroll-behavior:auto}
       var c = 1 - clamp(Math.abs(r.top + r.height / 2 - vh * 0.5) / (vh * 0.48), 0, 1);
       var mx = parseFloat(el.getAttribute('data-max') || '700');
       el.style.setProperty('--wd', Math.round(110 + (mx - 110) * c * c * (3 - 2 * c)));
+      if (vw <= 820) { var zq = clamp((c - 0.82) / 0.18, 0, 1); el.parentNode.style.setProperty('--zp', (zq * zq * (3 - 2 * zq)).toFixed(3)); }
     }
     el = els.route;
     if (el) {
@@ -1273,6 +1287,22 @@ html{scroll-behavior:auto}
   var t, show = function () { window.removeEventListener('scroll', show); clearTimeout(t); c.hidden = false; };
   window.addEventListener('scroll', show, { passive: true });
   t = setTimeout(show, 8000);
+})();
+</script>
+<script>
+/* phone: the ticket is not a link but a toy — a tap tears its stub off, another tap puts it back (owner's decision 06.10.2026).
+   It was too easy to hit by accident while scrolling; «Купити квиток» right under it buys. Wider than 820 px it is the link it was. */
+(function () {
+  var t = document.querySelector('.ticket'); if (!t) return;
+  var href = t.getAttribute('href'), label = t.getAttribute('aria-label'), mq = window.matchMedia('(max-width: 820px)');
+  var flip = function () { t.classList.toggle('torn'); t.setAttribute('aria-pressed', t.classList.contains('torn') ? 'true' : 'false'); };
+  var sync = function () {
+    if (mq.matches) { t.removeAttribute('href'); t.removeAttribute('target'); t.setAttribute('role', 'button'); t.setAttribute('tabindex', '0'); t.setAttribute('aria-pressed', 'false'); t.setAttribute('aria-label', 'Квиток на Веган Вікенд у Львові'); }
+    else { t.setAttribute('href', href); t.setAttribute('target', '_blank'); t.removeAttribute('role'); t.removeAttribute('tabindex'); t.removeAttribute('aria-pressed'); t.setAttribute('aria-label', label); t.classList.remove('torn'); }
+  };
+  sync(); if (mq.addEventListener) mq.addEventListener('change', sync);
+  t.addEventListener('click', function (e) { if (!mq.matches) return; e.preventDefault(); flip(); if (e.detail) t.blur(); });
+  t.addEventListener('keydown', function (e) { if (mq.matches && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); flip(); } });
 })();
 </script>
 <script>
