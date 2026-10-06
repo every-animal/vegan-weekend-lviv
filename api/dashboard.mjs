@@ -1,4 +1,5 @@
-/* Дашборд-воронка (рішення власника 06.10.2026): https://www.veganweekend.org/api/dashboard — відкритий, без назви проєкту, noindex.
+/* Дашборд-воронка (рішення власника 06.10.2026): https://vegan-weekend-lviv.vercel.app/api/dashboard — лише на домені Vercel
+   (на veganweekend.org — 404), відкритий, без назви проєкту, noindex.
    Відповідає на три питання: скільки людей прийшло на сайт і скільки з них натиснули «Купити»; скільки реально купило;
    скільки коштує проданий квиток з реклами Meta.
 
@@ -151,6 +152,10 @@ let cache = { at: 0, html: '' };
 const html = s => new Response(s, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex' } });
 
 export async function handle(request, env = process.env) {
+  /* лише на *.vercel.app (і локально) — на основному домені сторінки немає (рішення власника 06.10.2026) */
+  const host = new URL(request.url).hostname;
+  if (!(host.endsWith('.vercel.app') || host === 'localhost' || host === '127.0.0.1')) return new Response('Not found', { status: 404, headers: { 'x-robots-tag': 'noindex' } });
+
   /* відкрито без пароля (рішення власника 06.10.2026); якщо задано DASHBOARD_PASSWORD — питає пароль */
   const pass = env.DASHBOARD_PASSWORD || '';
   if (pass) {
