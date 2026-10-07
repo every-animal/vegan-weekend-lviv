@@ -116,7 +116,7 @@ main{max-width:760px;margin:0 auto;padding:18px 16px 56px}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(254,117,190,.6)}70%{box-shadow:0 0 0 8px rgba(254,117,190,0)}100%{box-shadow:0 0 0 0 rgba(254,117,190,0)}}
 .count{font-size:13px;color:var(--ink-2)}.count b{font-family:"HN";font-size:22px;font-variation-settings:"wght" 800,"wdth" 400;color:var(--pink);vertical-align:-2px}
 /* period */
-.per{display:flex;gap:6px;margin:18px 0 14px;background:var(--card-2);padding:4px;border-radius:999px;width:max-content}
+.per{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;background:var(--card-2);padding:4px;border-radius:999px;width:max-content}
 .per button{all:unset;cursor:pointer;padding:8px 14px;border-radius:999px;font-size:13px;color:var(--ink-2)}
 .per button[aria-pressed=true]{background:var(--pink);color:var(--on-pink);font-weight:600}
 .per button:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
@@ -178,14 +178,14 @@ summary::-webkit-details-marker{display:none}summary:after{content:" +";color:va
 @media (max-width:520px){.stage .n{font-size:38px}.trio .v{font-size:24px}.trio .cap{font-size:10px}.trio{grid-template-columns:1fr 1fr}.trio div:last-child{grid-column:span 2}h2{font-size:26px}}
 </style></head><body><main>
 <div class="top"><span class="live"><i></i>live</span><span class="count">до фестивалю <b id="cd"></b> днів</span></div>
-<div class="per" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7" aria-pressed="true">7 днів</button><button data-p="30">30 днів</button></div>
+<div class="per" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7" aria-pressed="true">7 днів</button><button data-p="30">30 днів</button><button data-p="all">Весь час</button></div>
 <div id="app"></div>
 <details><summary>Як рахується</summary><dl class="how">
 <dt>Прийшли на сайт</dt><dd>Унікальні відвідувачі сайту за період (Google Analytics, лише потік цього сайту). Рахуються лише ті, хто дав згоду на cookies: поза ЄС — усі, у ЄС — після «Дивіться» в банері. Люди з блокувальниками реклами сюди не потрапляють — реальних відвідувачів трохи більше.</dd>
 <dt>Натиснули «Купити квиток»</dt><dd>Кліки на будь-яку кнопку купівлі на сайті (подія <code>begin_checkout</code>). Дві спроби однієї людини — два кліки. Ті самі правила згоди, що й для відвідувачів.</dd>
 <dt>Оплатили</dt><dd>Унікальні успішні замовлення на WayForPay. Після кожної оплати WayForPay повідомляє наш сервер, а той передає покупку в Google — тому оплати рахуються всі, навіть без згоди на cookies, і повторні повідомлення не задвоюються. Одне замовлення може містити кілька квитків. Дані — з 06.10.2026.</dd>
 <dt>% між кроками</dt><dd>Скільки дійшло до кроку від попереднього. Оплати рахуються за всіма покупцями, а кліки — лише за тими, хто дав згоду, тож «оплатили з кліків» буває завищеним, а іноді й понад 100%. Ширина блоків воронки — наочна, не в масштабі; точні числа — на блоках.</dd>
-<dt>Порівняння з попереднім періодом</dt><dd>«Сьогодні» — з учора; «7 днів» — з попередніми 7 днями; «30 днів» — з попередніми 30.</dd>
+<dt>Порівняння з попереднім періодом</dt><dd>«Сьогодні» — з учора; «7 днів» — з попередніми 7 днями; «30 днів» — з попередніми 30. «Весь час» — від 6 жовтня 2026, коли почалося відстеження оплат; порівняння немає.</dd>
 <dt>Реклама Meta</dt><dd><b>Квиток з реклами</b> — витрачено / покупки, які Meta зарахувала рекламі (людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою — стандартне налаштування кабінету). <b>На будь-який квиток</b> — витрачено / усі оплати: скільки реклама коштує в перерахунку на кожен проданий квиток, звідки б покупець не прийшов.</dd>
 <dt>Дні й оновлення</dt><dd>Дні — за київським часом. Сторінка оновлюється сама кожні 5 хв. Google домальовує дані до 24–48 год, тож цифри за сьогодні й учора можуть ще трохи зрости.</dd>
 </dl></details>
@@ -203,18 +203,22 @@ document.getElementById('cd').textContent=Math.max(0,Math.ceil((Date.parse('2026
 /* numbers count up once */
 function count(node,to,suffix){suffix=suffix||'';if(reduce||!to){node.textContent=fmt(to)+suffix;return}const t0=performance.now(),dur=700;const f=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);node.textContent=fmt(to*e)+suffix;if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
 let first=true;
+const TRACK='2026-10-06';  /* з цього дня оплати відстежуються (обробник WayForPay → GA) */
 function render(p){
   app.replaceChildren();app.classList.toggle('anim',first&&!reduce);
-  const ds=D.days.slice(-p), prev=D.days.slice(-2*p,-p);
+  const all=p==='all';
+  const ds=all?D.days.filter(d=>d>=TRACK):D.days.slice(-p), prev=all?[]:D.days.slice(-2*p,-p);
   const v=G?sum(ds,G.visitors):0,c=G?sum(ds,G.clicks):0,b=G?sum(ds,G.purchases):0,bp=G?sum(prev,G.purchases):0;
-  const label=p===1?'сьогодні':'за '+p+' днів', prevLabel=p===1?'учора':'за попередні '+p+' днів';
+  const label=all?'з 6 жовтня':p===1?'сьогодні':'за '+p+' днів', prevLabel=p===1?'учора':'за попередні '+p+' днів';
 
   /* hero */
   const h=el('section','hero');h.append(el('div','cap','Оплатили '+label));
   const big=el('div','hn big');h.append(big);
   const row=el('div','row');
-  if(G){const d=b-bp;const ch=el('span','chip'+(d>0?' up':''),d>0?'↑ на '+d+' більше, ніж '+prevLabel:d<0?'↓ на '+Math.abs(d)+' менше, ніж '+prevLabel:'стільки ж, як '+prevLabel);row.append(ch);
+  if(G&&all)row.append(el('span','chip','від початку відстеження'));
+  if(G&&!all){const d=b-bp;const ch=el('span','chip'+(d>0?' up':''),d>0?'↑ на '+d+' більше, ніж '+prevLabel:d<0?'↓ на '+Math.abs(d)+' менше, ніж '+prevLabel:'стільки ж, як '+prevLabel);row.append(ch);
     row.append(el('span',null,v?pct(b,v)+' відвідувачів дійшли до оплати':'відвідувачів ще немає'))}
+  if(G&&all)row.append(el('span',null,v?pct(b,v)+' відвідувачів дійшли до оплати':'відвідувачів ще немає'));
   else row.append(el('span',null,D.ga?'Google: '+D.ga.error:'Google Analytics ще не підключено'));
   h.append(row);app.append(h);count(big,b);
 
@@ -241,7 +245,7 @@ function render(p){
 
   /* days */
   if(G){
-    const n=p===1?14:p, days=D.days.slice(-n);
+    const days=all?ds:D.days.slice(-(p===1?14:p));
     const dh=el('h2');dh.append(document.createTextNode('По '),el('i',null,'днях'));app.append(dh);
     const ch=el('section','chart');const bars=el('div','bars');const max=Math.max(1,...days.map(d=>G.purchases[d]||0));
     const best=days.reduce((a,d)=>(G.purchases[d]||0)>(G.purchases[a]||0)?d:a,days[0]);
@@ -259,7 +263,7 @@ function render(p){
   first=false;
 }
 const btns=[...document.querySelectorAll('.per button')];
-btns.forEach(x=>x.addEventListener('click',()=>{btns.forEach(y=>y.setAttribute('aria-pressed',y===x?'true':'false'));render(+x.dataset.p)}));
+btns.forEach(x=>x.addEventListener('click',()=>{btns.forEach(y=>y.setAttribute('aria-pressed',y===x?'true':'false'));render(x.dataset.p==='all'?'all':+x.dataset.p)}));
 render(7);
 </script></body></html>`;
 }
