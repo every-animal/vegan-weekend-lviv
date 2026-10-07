@@ -16,6 +16,7 @@
    пул і провайдер — `vercel` / `vercel` (GCP_WIF_POOL, GCP_WIF_PROVIDER, якщо інші)
    або, як запасний шлях, GA4_SA_JSON — JSON ключа службового акаунта
    META_AD_ACCOUNT_ID, META_ADS_TOKEN — рекламний кабінет (act_…) і токен з правом ads_read
+   DASHBOARD_EXCLUDE_ORDERS           — номери замовлень WayForPay через кому, які не рахувати (тестові, повернені до 07.10.2026)
    META_CAMPAIGN_MATCH                — слова в назвах кампаній Веган Вікенду (через кому); без нього — усі кампанії кабінету
    DASHBOARD_PASSWORD                 — необовʼязково: якщо задати, сторінка питатиме пароль (логін будь-який) */
 import { createSign, timingSafeEqual } from 'node:crypto';
@@ -52,7 +53,7 @@ async function googleToken(env, oidc) {
 /* ---------- Google Analytics Data API ----------
    У ресурсі «Кожна тварина» два потоки (veganexpress.org і Vegan Weekend) — рахуємо лише потік Vegan Weekend */
 const GA4_STREAM = '14373728016';
-async function ga4(propertyId, accessToken, from, stream = GA4_STREAM) {
+async function ga4(propertyId, accessToken, from, stream = GA4_STREAM, exclude = []) {
   const tok = { access_token: accessToken };
   const byStream = { filter: { fieldName: 'streamId', stringFilter: { value: stream } } };
   const withStream = f => ({ andGroup: { expressions: [byStream, ...(f ? [f] : [])] } });
@@ -62,8 +63,30 @@ async function ga4(propertyId, accessToken, from, stream = GA4_STREAM) {
     const out = {}; for (const row of r.rows || []) { const d = row.dimensionValues[0].value; out[`${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`] = Number(row.metricValues[0].value); } return out;
   };
   const event = name => ({ metrics: [{ name: 'eventCount' }], dimensionFilter: withStream({ filter: { fieldName: 'eventName', stringFilter: { value: name } } }) });
-  const [visitors, clicks, purchases] = await Promise.all([run({ metrics: [{ name: 'totalUsers' }], dimensionFilter: withStream() }), run(event('begin_checkout')), run({ metrics: [{ name: 'transactions' }], dimensionFilter: withStream() })  /* унікальні номери замовлень: повтори WayForPay не рахуються двічі */]);
-  return { visitors, clicks, purchases };
+  /* оплати — по кожному замовленню: квитки (кількість у замовленні) і чи було повернення.
+     Повернене замовлення (подія refund) і замовлення зі списку exclude не рахуються — ні як оплата, ні їхні квитки. */
+  const rows = async body => {
+    const r = await (await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, { method: 'POST', headers: { authorization: `Bearer ${tok.access_token}`, 'content-type': 'application/json' }, body: JSON.stringify({ dateRanges: [{ startDate: from, endDate: 'today' }], limit: 10000, ...body }) })).json();
+    if (r.error) throw new Error(`Google: ${r.error.message}`);
+    return (r.rows || []).map(x => [...x.dimensionValues.map(v => v.value), ...x.metricValues.map(v => Number(v.value))]);
+  };
+  const [visitors, clicks, bought, refundRows] = await Promise.all([
+    run({ metrics: [{ name: 'totalUsers' }], dimensionFilter: withStream() }),
+    run(event('begin_checkout')),
+    rows({ dimensions: [{ name: 'date' }, { name: 'transactionId' }], metrics: [{ name: 'itemsPurchased' }], dimensionFilter: withStream({ filter: { fieldName: 'eventName', stringFilter: { value: 'purchase' } } }) }),
+    rows({ dimensions: [{ name: 'date' }, { name: 'transactionId' }], metrics: [{ name: 'eventCount' }], dimensionFilter: withStream({ filter: { fieldName: 'eventName', stringFilter: { value: 'refund' } } }) })
+  ]);
+  const iso = d => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`;
+  const refunded = new Set(refundRows.map(r => r[1]).concat(exclude || []));
+  const purchases = {}, tickets = {}, refunds = {}, seen = new Set();
+  for (const [d, id, items] of bought) {
+    if (!id || id === '(not set)' || seen.has(id) || refunded.has(id)) continue;
+    seen.add(id); const k = iso(d);
+    purchases[k] = (purchases[k] || 0) + 1; tickets[k] = (tickets[k] || 0) + Math.max(1, items);
+  }
+  const rseen = new Set();
+  for (const [d, id] of refundRows) { if (!id || rseen.has(id)) continue; rseen.add(id); const k = iso(d); refunds[k] = (refunds[k] || 0) + 1; }
+  return { visitors, clicks, purchases, tickets, refunds, excluded: (exclude || []).length };
 }
 
 /* ---------- Meta Marketing API: витрати й покупки, які Meta приписує рекламі ---------- */
@@ -185,6 +208,7 @@ summary::-webkit-details-marker{display:none}summary:after{content:" +";color:va
 <dt>Прийшли на сайт</dt><dd>Унікальні відвідувачі сайту за період (Google Analytics, лише потік цього сайту). Рахуються лише ті, хто дав згоду на cookies: поза ЄС — усі, у ЄС — після «Дивіться» в банері. Люди з блокувальниками реклами сюди не потрапляють — реальних відвідувачів трохи більше.</dd>
 <dt>Натиснули «Купити квиток»</dt><dd>Кліки на будь-яку кнопку купівлі на сайті (подія <code>begin_checkout</code>). Дві спроби однієї людини — два кліки. Ті самі правила згоди, що й для відвідувачів.</dd>
 <dt>Оплатили</dt><dd>Унікальні успішні замовлення на WayForPay. Після кожної оплати WayForPay повідомляє наш сервер, а той передає покупку в Google — тому оплати рахуються всі, навіть без згоди на cookies, і повторні повідомлення не задвоюються. Одне замовлення може містити кілька квитків. Дані — з 06.10.2026.</dd>
+<dt>Квитки, замовлення й повернення</dt><dd>Головне число — <b>квитки</b>: одне замовлення може містити кілька (кількість приходить від WayForPay). У воронці «Оплатили» — <b>замовлення</b>, тобто люди, які оплатили. Якщо кошти за замовлення повернули, WayForPay повідомляє наш сервер — і таке замовлення разом з його квитками більше не рахується, а в рожевому блоці зʼявляється «повернено N». Повернення до 07.10.2026 і тестові покупки виключено вручну.</dd>
 <dt>Чому оплат більше, ніж кліків «Купити»?</dt><dd>Бо їх рахують різні джерела. Кліки — лише на сайті і лише в тих, хто дав згоду на cookies і не має блокувальника реклами. Оплати — усі: їх повідомляє WayForPay. До того ж частина покупців узагалі не натискає «Купити» на сайті: відкриває оплату з біо Instagram, з реклами, що веде одразу на WayForPay, з пересланого в чаті посилання чи закладки. Тому «оплатили з кліків» може бути понад 100% — це не помилка, а знак, що люди купують і повз сайт. Справжню конверсію краще дивитися як «від відвідувача до оплати».</dd>
 <dt>% між кроками</dt><dd>Скільки дійшло до кроку від попереднього. Оплати рахуються за всіма покупцями, а кліки — лише за тими, хто дав згоду, тож «оплатили з кліків» буває завищеним, а іноді й понад 100%. Ширина блоків воронки — наочна, не в масштабі; точні числа — на блоках.</dd>
 <dt>Порівняння з попереднім періодом</dt><dd>«Сьогодні» — з учора; «7 днів» — з попередніми 7 днями; «30 днів» — з попередніми 30. «Весь час» — від 6 жовтня 2026, коли почалося відстеження оплат; порівняння немає.</dd>
@@ -210,24 +234,24 @@ function render(p){
   app.replaceChildren();app.classList.toggle('anim',first&&!reduce);
   const all=p==='all';
   const ds=all?D.days.filter(d=>d>=TRACK):D.days.slice(-p), prev=all?[]:D.days.slice(-2*p,-p);
-  const v=G?sum(ds,G.visitors):0,c=G?sum(ds,G.clicks):0,b=G?sum(ds,G.purchases):0,bp=G?sum(prev,G.purchases):0;
+  const v=G?sum(ds,G.visitors):0,c=G?sum(ds,G.clicks):0,b=G?sum(ds,G.purchases):0,tk=G?sum(ds,G.tickets):0,tkp=G?sum(prev,G.tickets):0,rf=G?sum(ds,G.refunds):0;
   const label=all?'з 6 жовтня':p===1?'сьогодні':'за '+p+' днів', prevLabel=p===1?'учора':'за попередні '+p+' днів';
 
   /* hero */
-  const h=el('section','hero');h.append(el('div','cap','Оплатили '+label));
+  const h=el('section','hero');h.append(el('div','cap','Квитків продано '+label));
   const big=el('div','hn big');h.append(big);
   const row=el('div','row');
   if(G&&all)row.append(el('span','chip','від початку відстеження'));
-  if(G&&!all){const d=b-bp;const ch=el('span','chip'+(d>0?' up':''),d>0?'↑ на '+d+' більше, ніж '+prevLabel:d<0?'↓ на '+Math.abs(d)+' менше, ніж '+prevLabel:'стільки ж, як '+prevLabel);row.append(ch);
-    row.append(el('span',null,v?pct(b,v)+' відвідувачів дійшли до оплати':'відвідувачів ще немає'))}
-  if(G&&all)row.append(el('span',null,v?pct(b,v)+' відвідувачів дійшли до оплати':'відвідувачів ще немає'));
+  if(G&&!all){const d=tk-tkp;const ch=el('span','chip'+(d>0?' up':''),d>0?'↑ на '+d+' більше, ніж '+prevLabel:d<0?'↓ на '+Math.abs(d)+' менше, ніж '+prevLabel:'стільки ж, як '+prevLabel);row.append(ch);
+    }
+  if(G){row.append(el('span',null,'з '+fmt(b)+' '+plural(b,'замовлення','замовлень','замовлень')+(rf?' · повернено '+fmt(rf):'')+(v?' · купили '+pct(b,v)+' відвідувачів':'')))}
   else row.append(el('span',null,D.ga?'Google: '+D.ga.error:'Google Analytics ще не підключено'));
-  h.append(row);app.append(h);count(big,b);
+  h.append(row);app.append(h);count(big,tk);
 
   /* funnel */
   const t=el('h2');t.append(document.createTextNode('Шлях до '),el('i',null,'квитка'));app.append(t);
   const f=el('div','fun');const top=Math.max(1,v);
-  const st=[['s1','Прийшли на сайт',v],['s2','Натиснули «Купити квиток»',c],['s3','Оплатили',b]];
+  const st=[['s1','Прийшли на сайт',v],['s2','Натиснули «Купити квиток»',c],['s3','Оплатили (замовлень)',b]];
   let w=100;
   st.forEach(([cls,l,n],i)=>{
     if(i){const s=el('div','step');s.append(el('b',null,pct(n,st[i-1][2])),document.createTextNode(i===1?' натиснули «Купити»':' оплатили'));
@@ -252,15 +276,16 @@ function render(p){
   if(G){
     const days=all?ds:D.days.slice(-(p===1?14:p));
     const dh=el('h2');dh.append(document.createTextNode('По '),el('i',null,'днях'));app.append(dh);
-    const ch=el('section','chart');const bars=el('div','bars');const max=Math.max(1,...days.map(d=>G.purchases[d]||0));
-    const best=days.reduce((a,d)=>(G.purchases[d]||0)>(G.purchases[a]||0)?d:a,days[0]);
+    const ch=el('section','chart');const bars=el('div','bars');const max=Math.max(1,...days.map(d=>G.tickets[d]||0));
+    const best=days.reduce((a,d)=>(G.tickets[d]||0)>(G.tickets[a]||0)?d:a,days[0]);
     const read=el('div','read');
     const show=d=>{read.replaceChildren();const dd=el('span','d');dd.append(el('b',null,d.slice(8)+'.'+d.slice(5,7)));read.append(dd);
-      [['оплат',G.purchases[d]],['кліків «Купити»',G.clicks[d]],['відвідувачів',G.visitors[d]]].concat(M?[['грн на рекламу',M.spend[d]]]:[]).forEach(([l,x])=>{const s=el('span');s.append(el('b',null,fmt(x||0)),document.createTextNode(' '+l));read.append(s)});
+      const W=(n,a,b,c)=>plural(n||0,a,b,c);
+      [[G.tickets[d],W(G.tickets[d],'квиток','квитки','квитків')],[G.purchases[d],W(G.purchases[d],'замовлення','замовлення','замовлень')],[G.clicks[d],W(G.clicks[d],'клік','кліки','кліків')+' «Купити»'],[G.visitors[d],W(G.visitors[d],'відвідувач','відвідувачі','відвідувачів')]].concat(M?[[M.spend[d],'грн на рекламу']]:[]).forEach(([x,l])=>{const s=el('span');s.append(el('b',null,fmt(x||0)),document.createTextNode(' '+l));read.append(s)});
       bars.querySelectorAll('button').forEach(x=>x.setAttribute('aria-current',x.dataset.d===d?'true':'false'))};
-    days.forEach((d,i)=>{const x=G.purchases[d]||0;const btn=el('button');btn.dataset.d=d;btn.setAttribute('aria-label',d+': '+x+' оплат');
+    days.forEach((d,i)=>{const x=G.tickets[d]||0;const btn=el('button');btn.dataset.d=d;btn.setAttribute('aria-label',d+': '+x+' квитків');
       const bar=el('div','b'+(x?'':' zero'));bar.style.height=(x/max*100)+'%';bar.style.setProperty('--i',i);btn.append(bar);
-      if(d===best&&(G.purchases[d]||0)>0){const tag=el('span','best','рекорд');tag.style.setProperty('--h',(x/max*100)+'%');btn.append(tag)}
+      if(d===best&&(G.tickets[d]||0)>0){const tag=el('span','best','рекорд');tag.style.setProperty('--h',(x/max*100)+'%');btn.append(tag)}
       btn.addEventListener('pointerenter',()=>show(d));btn.addEventListener('focus',()=>show(d));btn.addEventListener('click',()=>show(d));bars.append(btn)});
     ch.append(bars);const ax=el('div','axis');ax.append(el('span',null,days[0].slice(8)+'.'+days[0].slice(5,7)),el('span',null,'сьогодні'));ch.append(ax,read);app.append(ch);show(days[days.length-1]);
   }
@@ -300,7 +325,7 @@ export async function handle(request, env = process.env) {
     today, days: days(from, today)
   };
   await Promise.all([
-    env.GA4_PROPERTY_ID && (env.GA4_SA_JSON || (env.GCP_PROJECT_NUMBER && env.GCP_SERVICE_ACCOUNT_EMAIL)) ? googleToken(env, request.headers.get('x-vercel-oidc-token') || env.VERCEL_OIDC_TOKEN).then(t => ga4(env.GA4_PROPERTY_ID, t, from, env.GA4_STREAM_ID || GA4_STREAM)).then(x => { data.ga = x; }, e => { data.ga = { error: e.message }; }) : null,
+    env.GA4_PROPERTY_ID && (env.GA4_SA_JSON || (env.GCP_PROJECT_NUMBER && env.GCP_SERVICE_ACCOUNT_EMAIL)) ? googleToken(env, request.headers.get('x-vercel-oidc-token') || env.VERCEL_OIDC_TOKEN).then(t => ga4(env.GA4_PROPERTY_ID, t, from, env.GA4_STREAM_ID || GA4_STREAM, String(env.DASHBOARD_EXCLUDE_ORDERS || '').split(',').map(x => x.trim()).filter(Boolean))).then(x => { data.ga = x; }, e => { data.ga = { error: e.message }; }) : null,
     env.META_AD_ACCOUNT_ID && env.META_ADS_TOKEN ? meta(env.META_AD_ACCOUNT_ID, env.META_ADS_TOKEN, from, today, env.META_CAMPAIGN_MATCH).then(x => { data.meta = x; }, e => { data.meta = { error: e.message }; }) : null
   ]);
   cache = { at: Date.now(), html: page(data) };

@@ -42,6 +42,8 @@ export function acceptResponse(orderReference, secret, now = Math.floor(Date.now
 }
 
 export const isTicketPurchase = p => p.transactionStatus === 'Approved' && String(p.orderReference || '').includes('WFP-SOC-');
+/* повернення коштів (у кабінеті WayForPay) — WayForPay шле те саме повідомлення зі статусом Refunded */
+export const isTicketRefund = p => p.transactionStatus === 'Refunded' && String(p.orderReference || '').includes('WFP-SOC-');
 
 /* Подія Purchase для Meta. Особисті дані — лише хешем SHA-256, як вимагає Meta. */
 export function metaEvent(p) {
@@ -84,6 +86,13 @@ export function gaPurchase(p) {
   };
 }
 
+/* refund у GA4: той самий transaction_id і client_id, що в покупці, — GA віднімає суму; дашборд виключає замовлення */
+export function gaRefund(p) {
+  const g = gaPurchase(p);
+  g.events = [{ name: 'refund', params: { ...g.events[0].params } }];
+  return g;
+}
+
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8' } });
 
 export async function handle(request, env = process.env, fetchImpl = fetch) {
@@ -110,6 +119,14 @@ export async function handle(request, env = process.env, fetchImpl = fetch) {
       }).catch(e => console.error('wayforpay: ga4 failed', p.orderReference, String(e)));
     }
     console.log('wayforpay: purchase sent', p.orderReference, p.amount, p.currency);
+  } else if (isTicketRefund(p)) {
+    /* у Meta немає події «повернення» — лише GA */
+    if (env.GA4_API_SECRET) {
+      await fetchImpl(`https://www.google-analytics.com/mp/collect?measurement_id=${GA4_ID}&api_secret=${encodeURIComponent(env.GA4_API_SECRET)}`, {
+        method: 'POST', body: JSON.stringify(gaRefund(p))
+      }).catch(e => console.error('wayforpay: ga4 refund failed', p.orderReference, String(e)));
+    }
+    console.log('wayforpay: refund sent', p.orderReference, p.amount, p.currency);
   } else {
     console.log('wayforpay: skipped', p.orderReference, p.transactionStatus);
   }
