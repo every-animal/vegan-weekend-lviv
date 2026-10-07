@@ -9,7 +9,12 @@
    перевіряються вебхуки, — тому оплати тут не з WayForPay.)
 
    Змінні середовища (Vercel, Production):
-   GA4_PROPERTY_ID, GA4_SA_JSON       — числовий ID ресурсу GA і JSON ключа службового акаунта (роль Viewer у GA)
+   GA4_PROPERTY_ID                    — числовий ID ресурсу GA
+   доступ до GA — без ключа (Workload Identity Federation: Google довіряє OIDC-посвідченню Vercel; ключі в організації
+   kozhnatvaryna.org заборонені політикою):
+   GCP_PROJECT_NUMBER, GCP_SERVICE_ACCOUNT_EMAIL — номер проєкту Google Cloud і службовий акаунт (роль Viewer у GA);
+   пул і провайдер — `vercel` / `vercel` (GCP_WIF_POOL, GCP_WIF_PROVIDER, якщо інші)
+   або, як запасний шлях, GA4_SA_JSON — JSON ключа службового акаунта
    META_AD_ACCOUNT_ID, META_ADS_TOKEN — рекламний кабінет (act_…) і токен з правом ads_read
    DASHBOARD_PASSWORD                 — необовʼязково: якщо задати, сторінка питатиме пароль (логін будь-який) */
 import { createSign, timingSafeEqual } from 'node:crypto';
@@ -19,13 +24,33 @@ const kyivDate = ts => new Date(Number(ts) * 1000).toLocaleDateString('sv-SE', {
 const days = (from, to) => { const out = []; for (let t = Date.parse(from); t <= Date.parse(to); t += DAY * 1000) out.push(new Date(t).toISOString().slice(0, 10)); return out; };
 
 /* ---------- Google Analytics Data API (службовий акаунт, JWT без бібліотек) ---------- */
-async function ga4(propertyId, saJson, from) {
-  const sa = JSON.parse(saJson), now = Math.floor(Date.now() / 1000);
-  const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64url');
-  const unsigned = `${b64({ alg: 'RS256', typ: 'JWT' })}.${b64({ iss: sa.client_email, scope: 'https://www.googleapis.com/auth/analytics.readonly', aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600 })}`;
-  const jwt = `${unsigned}.${createSign('RSA-SHA256').update(unsigned).sign(sa.private_key, 'base64url')}`;
-  const tok = await (await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: jwt }) })).json();
-  if (!tok.access_token) throw new Error(`Google: ${tok.error_description || tok.error || 'немає доступу'}`);
+/* доступ до Google: без ключа — OIDC-посвідчення Vercel → STS → токен службового акаунта; або ключ JSON (запасний шлях) */
+async function googleToken(env, oidc) {
+  const scope = 'https://www.googleapis.com/auth/analytics.readonly';
+  if (env.GA4_SA_JSON) {
+    const sa = JSON.parse(env.GA4_SA_JSON), now = Math.floor(Date.now() / 1000);
+    const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64url');
+    const unsigned = `${b64({ alg: 'RS256', typ: 'JWT' })}.${b64({ iss: sa.client_email, scope, aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600 })}`;
+    const jwt = `${unsigned}.${createSign('RSA-SHA256').update(unsigned).sign(sa.private_key, 'base64url')}`;
+    const tok = await (await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: jwt }) })).json();
+    if (!tok.access_token) throw new Error(`Google: ${tok.error_description || tok.error || 'немає доступу'}`);
+    return tok.access_token;
+  }
+  if (!oidc) throw new Error('Google: немає OIDC-посвідчення Vercel (працює лише на розгорнутому сайті)');
+  const audience = `//iam.googleapis.com/projects/${env.GCP_PROJECT_NUMBER}/locations/global/workloadIdentityPools/${env.GCP_WIF_POOL || 'vercel'}/providers/${env.GCP_WIF_PROVIDER || 'vercel'}`;
+  const sts = await (await fetch('https://sts.googleapis.com/v1/token', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
+    grantType: 'urn:ietf:params:oauth:grant-type:token-exchange', audience, scope: 'https://www.googleapis.com/auth/cloud-platform',
+    requestedTokenType: 'urn:ietf:params:oauth:token-type:access_token', subjectTokenType: 'urn:ietf:params:oauth:token-type:jwt', subjectToken: oidc }) })).json();
+  if (!sts.access_token) throw new Error(`Google STS: ${sts.error_description || sts.error || JSON.stringify(sts).slice(0, 200)}`);
+  const sa = await (await fetch(`https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${encodeURIComponent(env.GCP_SERVICE_ACCOUNT_EMAIL)}:generateAccessToken`, { method: 'POST',
+    headers: { authorization: `Bearer ${sts.access_token}`, 'content-type': 'application/json' }, body: JSON.stringify({ scope: [scope] }) })).json();
+  if (!sa.accessToken) throw new Error(`Google: ${(sa.error && sa.error.message) || 'не вдалося діяти від імені службового акаунта'}`);
+  return sa.accessToken;
+}
+
+/* ---------- Google Analytics Data API ---------- */
+async function ga4(propertyId, accessToken, from) {
+  const tok = { access_token: accessToken };
   const run = async body => {
     const r = await (await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, { method: 'POST', headers: { authorization: `Bearer ${tok.access_token}`, 'content-type': 'application/json' }, body: JSON.stringify({ dateRanges: [{ startDate: from, endDate: 'today' }], dimensions: [{ name: 'date' }], limit: 400, ...body }) })).json();
     if (r.error) throw new Error(`Google: ${r.error.message}`);
@@ -174,7 +199,7 @@ export async function handle(request, env = process.env) {
     today, days: days(from, today)
   };
   await Promise.all([
-    env.GA4_PROPERTY_ID && env.GA4_SA_JSON ? ga4(env.GA4_PROPERTY_ID, env.GA4_SA_JSON, from).then(x => { data.ga = x; }, e => { data.ga = { error: e.message }; }) : null,
+    env.GA4_PROPERTY_ID && (env.GA4_SA_JSON || (env.GCP_PROJECT_NUMBER && env.GCP_SERVICE_ACCOUNT_EMAIL)) ? googleToken(env, request.headers.get('x-vercel-oidc-token') || env.VERCEL_OIDC_TOKEN).then(t => ga4(env.GA4_PROPERTY_ID, t, from)).then(x => { data.ga = x; }, e => { data.ga = { error: e.message }; }) : null,
     env.META_AD_ACCOUNT_ID && env.META_ADS_TOKEN ? meta(env.META_AD_ACCOUNT_ID, env.META_ADS_TOKEN, from, today).then(x => { data.meta = x; }, e => { data.meta = { error: e.message }; }) : null
   ]);
   cache = { at: Date.now(), html: page(data) };
