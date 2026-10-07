@@ -61,7 +61,7 @@ async function ga4(propertyId, accessToken, from, stream = GA4_STREAM) {
     const out = {}; for (const row of r.rows || []) { const d = row.dimensionValues[0].value; out[`${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`] = Number(row.metricValues[0].value); } return out;
   };
   const event = name => ({ metrics: [{ name: 'eventCount' }], dimensionFilter: withStream({ filter: { fieldName: 'eventName', stringFilter: { value: name } } }) });
-  const [visitors, clicks, purchases] = await Promise.all([run({ metrics: [{ name: 'totalUsers' }], dimensionFilter: withStream() }), run(event('begin_checkout')), run(event('purchase'))]);
+  const [visitors, clicks, purchases] = await Promise.all([run({ metrics: [{ name: 'totalUsers' }], dimensionFilter: withStream() }), run(event('begin_checkout')), run({ metrics: [{ name: 'transactions' }], dimensionFilter: withStream() })  /* унікальні номери замовлень: повтори WayForPay не рахуються двічі */]);
   return { visitors, clicks, purchases };
 }
 
