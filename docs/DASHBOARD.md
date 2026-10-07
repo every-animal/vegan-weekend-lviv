@@ -24,13 +24,14 @@
 
 **Пароль (необовʼязково):** `DASHBOARD_PASSWORD` — якщо задати, сторінка питатиме його.
 
-**Google Analytics** (`GA4_PROPERTY_ID`, `GA4_SA_JSON`):
-1. console.cloud.google.com (під акаунтом, що має доступ до GA) → створити проєкт, напр. `veganweekend-dashboard`.
-2. APIs & Services → Library → **Google Analytics Data API** → Enable.
-3. IAM & Admin → Service accounts → Create → імʼя `dashboard` → Done → відкрити → Keys → Add key → JSON → завантажиться файл.
-4. GA → Admin → Property access management → **+** → email службового акаунта (`dashboard@….iam.gserviceaccount.com`) → роль **Viewer**.
-5. GA → Admin → Property details → **Property ID** (число) → `GA4_PROPERTY_ID`.
-6. Увесь вміст JSON-файлу → `GA4_SA_JSON`. Файл потім видалити з компʼютера.
+**Google Analytics — без ключа** (Workload Identity Federation; JSON-ключі в організації kozhnatvaryna.org заборонені політикою `iam.managed.disableServiceAccountKeyCreation`):
+1. Google Cloud, проєкт `veganweekend-dashboard`: увімкнути API **Google Analytics Data**, **IAM Service Account Credentials**, **Security Token Service**.
+2. IAM & Admin → Workload Identity Federation → Create pool `vercel` → провайдер OIDC `vercel`: Issuer `https://oidc.vercel.com/every-animal`, Allowed audience `https://vercel.com/every-animal`, mapping `google.subject = assertion.sub`.
+3. Службовий акаунт `dashboard` → Principals with access → Grant access → `principal://iam.googleapis.com/projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/vercel/subject/owner:every-animal:project:vegan-weekend-lviv:environment:production` → роль **Workload Identity User**.
+4. GA → Admin → Property access management → email службового акаунта → **Viewer**.
+5. Vercel (Production): `GA4_PROPERTY_ID`, `GCP_PROJECT_NUMBER`, `GCP_SERVICE_ACCOUNT_EMAIL` — не секрети. У проєкті Vercel має бути увімкнено OIDC (Settings → Security → Secure backend access with OIDC federation, режим Team) — увімкнено.
+
+Як це працює: кожен запит функції отримує від Vercel коротке OIDC-посвідчення (`x-vercel-oidc-token`); Google STS міняє його на токен, а `iamcredentials.generateAccessToken` — на токен службового акаунта з правом лише читати GA. Діє лише для Production цього проєкту.
 
 **Meta** (`META_AD_ACCOUNT_ID`, `META_ADS_TOKEN`):
 1. Ads Manager → номер рекламного кабінету (`act_…` або просто число) → `META_AD_ACCOUNT_ID`.

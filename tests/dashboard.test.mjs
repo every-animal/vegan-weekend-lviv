@@ -35,3 +35,19 @@ test('on the main domain there is no dashboard', async () => {
   for (const h of ['https://www.veganweekend.org/api/dashboard', 'https://veganweekend.org/api/dashboard?fresh'])
     assert.equal((await handle(new Request(h), {})).status, 404);
 });
+
+test('GA4 without a key: Vercel OIDC token → Google STS → service account token → report', async () => {
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    url = String(url); calls.push(url);
+    if (url.includes('sts.googleapis.com')) { const b = JSON.parse(init.body); assert.equal(b.subjectToken, 'vercel-oidc'); assert.match(b.audience, /projects\/123\/locations\/global\/workloadIdentityPools\/vercel\/providers\/vercel$/); return { json: async () => ({ access_token: 'fed' }) }; }
+    if (url.includes('iamcredentials')) { assert.equal(init.headers.authorization, 'Bearer fed'); assert.match(url, /dashboard%40p\.iam\.gserviceaccount\.com:generateAccessToken$/); return { json: async () => ({ accessToken: 'sa' }) }; }
+    assert.equal(init.headers.authorization, 'Bearer sa');
+    return { json: async () => ({ rows: [] }) };
+  };
+  const r = await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?fresh', { headers: { 'x-vercel-oidc-token': 'vercel-oidc' } }),
+    { GA4_PROPERTY_ID: '9', GCP_PROJECT_NUMBER: '123', GCP_SERVICE_ACCOUNT_EMAIL: 'dashboard@p.iam.gserviceaccount.com' });
+  const d = JSON.parse((await r.text()).match(/const D=(\{.*?\});\n/s)[1]);
+  assert.ok(d.ga && !d.ga.error, JSON.stringify(d.ga));
+  assert.equal(calls.filter(u => u.includes('runReport')).length, 3);
+});
