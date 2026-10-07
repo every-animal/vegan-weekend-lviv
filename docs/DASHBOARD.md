@@ -38,6 +38,7 @@
 2. Business settings → Users → System users → користувач (можна той самий, що для Conversions API) → **Assign assets** → Ad accounts → кабінет → право **View performance**.
 3. Там само → **Generate new token** → застосунок → дозвіл **ads_read** → токен → `META_ADS_TOKEN`.
    (Новий токен — нові токени не вимикають старі.)
+4. Кабінет «Vegan express» спільний для всіх кампаній організації — задати `META_CAMPAIGN_MATCH`: слова з назв кампаній Веган Вікенду через кому (напр. `lviv,львів`). Без нього дашборд рахує всі кампанії і показує їхній список із попередженням.
 
 Код — `api/dashboard.mjs`, тести — `tests/dashboard.test.mjs`.
 

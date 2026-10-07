@@ -16,6 +16,7 @@
    пул і провайдер — `vercel` / `vercel` (GCP_WIF_POOL, GCP_WIF_PROVIDER, якщо інші)
    або, як запасний шлях, GA4_SA_JSON — JSON ключа службового акаунта
    META_AD_ACCOUNT_ID, META_ADS_TOKEN — рекламний кабінет (act_…) і токен з правом ads_read
+   META_CAMPAIGN_MATCH                — слова в назвах кампаній Веган Вікенду (через кому); без нього — усі кампанії кабінету
    DASHBOARD_PASSWORD                 — необовʼязково: якщо задати, сторінка питатиме пароль (логін будь-який) */
 import { createSign, timingSafeEqual } from 'node:crypto';
 
@@ -66,18 +67,29 @@ async function ga4(propertyId, accessToken, from, stream = GA4_STREAM) {
 }
 
 /* ---------- Meta Marketing API: витрати й покупки, які Meta приписує рекламі ---------- */
-async function meta(account, token, from, to) {
+/* У кабінеті крутяться кампанії всіх проєктів організації — рахуємо лише ті, чия назва містить одне з
+   META_CAMPAIGN_MATCH (через кому, без різниці великих літер). Без фільтра — усі, і сторінка показує список кампаній. */
+async function meta(account, token, from, to, match) {
   const id = String(account).startsWith('act_') ? account : `act_${account}`;
-  const u = `https://graph.facebook.com/v21.0/${id}/insights?fields=spend,actions&time_increment=1&limit=200&time_range=${encodeURIComponent(JSON.stringify({ since: from, until: to }))}&access_token=${encodeURIComponent(token)}`;
-  const j = await (await fetch(u)).json();
-  if (j.error) throw new Error(`Meta: ${j.error.message}`);
-  const spend = {}, purchases = {};
-  for (const row of j.data || []) {
-    spend[row.date_start] = Number(row.spend) || 0;
-    const a = (row.actions || []).find(x => x.action_type === 'purchase' || x.action_type === 'offsite_conversion.fb_pixel_purchase');
-    purchases[row.date_start] = a ? Number(a.value) : 0;
+  const words = String(match || '').split(',').map(w => w.trim().toLowerCase()).filter(Boolean);
+  let u = `https://graph.facebook.com/v21.0/${id}/insights?level=campaign&fields=campaign_name,spend,actions&time_increment=1&limit=500&time_range=${encodeURIComponent(JSON.stringify({ since: from, until: to }))}&access_token=${encodeURIComponent(token)}`;
+  const spend = {}, purchases = {}, campaigns = {};
+  for (let page = 0; u && page < 20; page++) {
+    const j = await (await fetch(u)).json();
+    if (j.error) throw new Error(`Meta: ${j.error.message}`);
+    for (const row of j.data || []) {
+      const name = row.campaign_name || '—', sp = Number(row.spend) || 0;
+      const a = (row.actions || []).find(x => x.action_type === 'purchase' || x.action_type === 'offsite_conversion.fb_pixel_purchase');
+      const used = !words.length || words.some(w => name.toLowerCase().includes(w));
+      const c = campaigns[name] || (campaigns[name] = { spend: 0, used });
+      c.spend += sp;
+      if (!used) continue;
+      spend[row.date_start] = (spend[row.date_start] || 0) + sp;
+      purchases[row.date_start] = (purchases[row.date_start] || 0) + (a ? Number(a.value) : 0);
+    }
+    u = j.paging && j.paging.next;
   }
-  return { spend, purchases };
+  return { spend, purchases, filtered: words.length > 0, match: words, campaigns: Object.entries(campaigns).map(([name, c]) => ({ name, spend: Math.round(c.spend), used: c.used })).sort((a, b) => b.spend - a.spend) };
 }
 
 /* ---------- сторінка: темна, тонкі лінії, великі цифри шрифтом Heading Now, рожевий — акцент ---------- */
@@ -132,6 +144,7 @@ h2 i{font-style:italic;color:var(--pink);font-variation-settings:"wght" 900,"wdt
 .ad .say{font-size:15px;color:var(--ink-2)}.ad .say b{display:block;font-family:"HN";font-size:clamp(60px,15vw,96px);font-variation-settings:"wght" 900,"wdth" 520;color:var(--pink);line-height:.9;margin:6px 0 4px;text-transform:uppercase}
 .trio{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
 .trio div{background:var(--bg);border-radius:14px;padding:12px}.trio .v{font-family:"HN";font-size:30px;font-variation-settings:"wght" 800,"wdth" 520;margin-top:4px}.trio small{display:block;color:var(--ink-3);font-size:11px;margin-top:4px;line-height:1.3}
+.camps{margin-top:14px;background:none;padding:0;border-radius:0}.camps summary{font-family:inherit;text-transform:none;font-size:13px;color:var(--ink-2);padding:8px 0}.camps summary:after{content:''}.camp{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--rule);font-size:13px}.camp b{font-weight:600;white-space:nowrap}.camp.off{color:var(--ink-3);text-decoration:line-through}
 .todo{background:var(--card-2);border-radius:20px;padding:18px 20px;color:var(--ink-2)}
 .todo b{color:var(--ink)}
 /* days */
@@ -220,7 +233,10 @@ function render(p){
   if(M){const sp=sum(ds,M.spend),mb=sum(ds,M.purchases);
     const box=el('section','ad');const say=el('div','say');say.append(document.createTextNode('Квиток з реклами коштує'),el('b',null,mb?fmt(sp/mb)+' грн':'—'),document.createTextNode(mb?'':' — реклама ще не принесла покупок за цей період'));box.append(say);
     const tr=el('div','trio');[['Витрачено',fmt(sp)+' грн',''],['Покупок з реклами',fmt(mb),'за даними Meta'],['На будь-який квиток',b?fmt(sp/b)+' грн':'—','витрачено / усі оплати']].forEach(([l,val,n])=>{const d=el('div');d.append(el('div','cap',l),el('div','v',val));if(n)d.append(el('small',null,n));tr.append(d)});
-    box.append(tr);app.append(box)}
+    box.append(tr);
+    const cl=el('details','camps');const cs=el('summary',null,M.filtered?'Кампанії: враховано ті, де в назві «'+M.match.join('», «')+'» ('+M.campaigns.filter(c=>c.used).length+' з '+M.campaigns.length+')':'⚠ Фільтр кампаній не задано — враховано всі кампанії кабінету');cl.append(cs);
+    M.campaigns.forEach(c=>{const r=el('div','camp'+(c.used?'':' off'));r.append(el('span',null,c.name),el('b',null,fmt(c.spend)+' грн'));cl.append(r)});
+    if(!M.filtered)cl.open=true;box.append(cl);app.append(box)}
   else{const td=el('div','todo');td.append(el('b',null,D.meta?'Meta: '+D.meta.error:'Ще не підключено.'),document.createTextNode(D.meta?'':' Тут зʼявиться, скільки коштує квиток з реклами.'));app.append(td)}
 
   /* days */
@@ -276,7 +292,7 @@ export async function handle(request, env = process.env) {
   };
   await Promise.all([
     env.GA4_PROPERTY_ID && (env.GA4_SA_JSON || (env.GCP_PROJECT_NUMBER && env.GCP_SERVICE_ACCOUNT_EMAIL)) ? googleToken(env, request.headers.get('x-vercel-oidc-token') || env.VERCEL_OIDC_TOKEN).then(t => ga4(env.GA4_PROPERTY_ID, t, from, env.GA4_STREAM_ID || GA4_STREAM)).then(x => { data.ga = x; }, e => { data.ga = { error: e.message }; }) : null,
-    env.META_AD_ACCOUNT_ID && env.META_ADS_TOKEN ? meta(env.META_AD_ACCOUNT_ID, env.META_ADS_TOKEN, from, today).then(x => { data.meta = x; }, e => { data.meta = { error: e.message }; }) : null
+    env.META_AD_ACCOUNT_ID && env.META_ADS_TOKEN ? meta(env.META_AD_ACCOUNT_ID, env.META_ADS_TOKEN, from, today, env.META_CAMPAIGN_MATCH).then(x => { data.meta = x; }, e => { data.meta = { error: e.message }; }) : null
   ]);
   cache = { at: Date.now(), html: page(data) };
   return html(cache.html);

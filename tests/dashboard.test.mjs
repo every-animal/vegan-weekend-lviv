@@ -53,3 +53,16 @@ test('GA4 without a key: Vercel OIDC token → Google STS → service account to
   assert.ok(d.ga && !d.ga.error, JSON.stringify(d.ga));
   assert.equal(calls.filter(u => u.includes('runReport')).length, 3);
 });
+
+test('Meta: only campaigns whose name matches count; the list shows all with spend', async () => {
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Kyiv' });
+  globalThis.fetch = async url => ({ json: async () => ({ data: [
+    { campaign_name: 'VW Lviv — tickets', date_start: today, spend: '100', actions: [{ action_type: 'purchase', value: '2' }] },
+    { campaign_name: 'Vegan Express — awareness', date_start: today, spend: '300', actions: [{ action_type: 'purchase', value: '5' }] },
+    { campaign_name: 'Львів ретаргет', date_start: today, spend: '50' }
+  ] }) });
+  const env = { META_AD_ACCOUNT_ID: '1', META_ADS_TOKEN: 't', META_CAMPAIGN_MATCH: 'lviv, Львів' };
+  const d = JSON.parse((await (await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?fresh'), env)).text()).match(/const D=(\{.*?\});\n/s)[1]);
+  assert.equal(d.meta.spend[today], 150); assert.equal(d.meta.purchases[today], 2);
+  assert.deepEqual(d.meta.campaigns.map(c => [c.name, c.used]), [['Vegan Express — awareness', false], ['VW Lviv — tickets', true], ['Львів ретаргет', true]]);
+});
