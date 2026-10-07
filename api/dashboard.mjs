@@ -48,16 +48,20 @@ async function googleToken(env, oidc) {
   return sa.accessToken;
 }
 
-/* ---------- Google Analytics Data API ---------- */
-async function ga4(propertyId, accessToken, from) {
+/* ---------- Google Analytics Data API ----------
+   У ресурсі «Кожна тварина» два потоки (veganexpress.org і Vegan Weekend) — рахуємо лише потік Vegan Weekend */
+const GA4_STREAM = '14373728016';
+async function ga4(propertyId, accessToken, from, stream = GA4_STREAM) {
   const tok = { access_token: accessToken };
+  const byStream = { filter: { fieldName: 'streamId', stringFilter: { value: stream } } };
+  const withStream = f => ({ andGroup: { expressions: [byStream, ...(f ? [f] : [])] } });
   const run = async body => {
     const r = await (await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, { method: 'POST', headers: { authorization: `Bearer ${tok.access_token}`, 'content-type': 'application/json' }, body: JSON.stringify({ dateRanges: [{ startDate: from, endDate: 'today' }], dimensions: [{ name: 'date' }], limit: 400, ...body }) })).json();
     if (r.error) throw new Error(`Google: ${r.error.message}`);
     const out = {}; for (const row of r.rows || []) { const d = row.dimensionValues[0].value; out[`${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`] = Number(row.metricValues[0].value); } return out;
   };
-  const event = name => ({ metrics: [{ name: 'eventCount' }], dimensionFilter: { filter: { fieldName: 'eventName', stringFilter: { value: name } } } });
-  const [visitors, clicks, purchases] = await Promise.all([run({ metrics: [{ name: 'totalUsers' }] }), run(event('begin_checkout')), run(event('purchase'))]);
+  const event = name => ({ metrics: [{ name: 'eventCount' }], dimensionFilter: withStream({ filter: { fieldName: 'eventName', stringFilter: { value: name } } }) });
+  const [visitors, clicks, purchases] = await Promise.all([run({ metrics: [{ name: 'totalUsers' }], dimensionFilter: withStream() }), run(event('begin_checkout')), run(event('purchase'))]);
   return { visitors, clicks, purchases };
 }
 
@@ -199,7 +203,7 @@ export async function handle(request, env = process.env) {
     today, days: days(from, today)
   };
   await Promise.all([
-    env.GA4_PROPERTY_ID && (env.GA4_SA_JSON || (env.GCP_PROJECT_NUMBER && env.GCP_SERVICE_ACCOUNT_EMAIL)) ? googleToken(env, request.headers.get('x-vercel-oidc-token') || env.VERCEL_OIDC_TOKEN).then(t => ga4(env.GA4_PROPERTY_ID, t, from)).then(x => { data.ga = x; }, e => { data.ga = { error: e.message }; }) : null,
+    env.GA4_PROPERTY_ID && (env.GA4_SA_JSON || (env.GCP_PROJECT_NUMBER && env.GCP_SERVICE_ACCOUNT_EMAIL)) ? googleToken(env, request.headers.get('x-vercel-oidc-token') || env.VERCEL_OIDC_TOKEN).then(t => ga4(env.GA4_PROPERTY_ID, t, from, env.GA4_STREAM_ID || GA4_STREAM)).then(x => { data.ga = x; }, e => { data.ga = { error: e.message }; }) : null,
     env.META_AD_ACCOUNT_ID && env.META_ADS_TOKEN ? meta(env.META_AD_ACCOUNT_ID, env.META_ADS_TOKEN, from, today).then(x => { data.meta = x; }, e => { data.meta = { error: e.message }; }) : null
   ]);
   cache = { at: Date.now(), html: page(data) };
