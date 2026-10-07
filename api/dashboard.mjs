@@ -85,105 +85,166 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 
 function page(data) {
   return `<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
-<meta http-equiv="refresh" content="300"><title>Воронка</title>
+<meta http-equiv="refresh" content="300"><meta name="theme-color" content="#1c1b1b"><title>Воронка</title>
 <link rel="preload" href="/assets/fonts/HeadingNowVar.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/HeadingNowVarItalic.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-@font-face{font-family:"Heading Now";src:url(/assets/fonts/HeadingNowVar.woff2) format("woff2");font-weight:100 1000}
-:root{color-scheme:dark;--bg:#161515;--ink:#f3eee8;--ink-2:#b3aca4;--ink-3:#7d7770;--rule:#2e2b29;--track:#2a2725;--accent:#fe75be;--warn:#e66767}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-main{max-width:820px;margin:0 auto;padding:36px 20px 64px}
-.cap{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
-.num{font-family:"Heading Now",system-ui,sans-serif;font-variation-settings:"wght" 480,"wdth" 560;letter-spacing:-.01em;line-height:.95}
-.top{display:flex;justify-content:space-between;align-items:center;gap:16px}
-.live{display:flex;align-items:center;gap:7px}.live i{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(254,117,190,.22)}
-.per{display:flex;gap:18px;margin-top:28px}.per button{all:unset;cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);padding-bottom:3px;border-bottom:1px solid transparent}.per button[aria-pressed=true]{color:var(--ink);border-color:var(--accent)}.per button:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
-.hero{margin-top:26px}.hero .num{font-size:clamp(84px,17vw,150px);font-variation-settings:"wght" 420,"wdth" 520}
-.hero p{margin:10px 0 0;color:var(--ink-2)}.hero p em{font-style:italic;color:var(--accent)}
-h2{margin:44px 0 0;padding-bottom:10px;border-bottom:1px solid var(--rule);font-weight:400}
-.f{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:16px 0;border-bottom:1px solid var(--rule)}
-.f .num{font-size:44px;text-align:right;grid-row:span 3;align-self:center}
-.f .line{height:2px;background:var(--track);margin-top:8px}.f .line i{display:block;height:100%;background:var(--accent)}
-.f .step{color:var(--ink-3);font-size:13px;min-height:1.2em}.f .step b{color:var(--accent);font-weight:500}
-.strip{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--rule)}
-.strip>div{padding:16px 16px 18px 0}.strip>div+div{padding-left:16px;border-left:1px solid var(--rule)}
-.strip .num{font-size:34px;margin-top:6px}.strip small{display:block;color:var(--ink-3);font-size:12px;margin-top:6px}
-.day{display:grid;grid-template-columns:64px 1fr repeat(3,minmax(64px,auto));gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
-.day .d{color:var(--ink-2)}.day .bar{height:2px;background:var(--accent);justify-self:start}
-.day .v{text-align:right}.day .v b{font-family:"Heading Now",system-ui,sans-serif;font-variation-settings:"wght" 480,"wdth" 560;font-size:22px;font-weight:400}
-.day.head{color:var(--ink-3);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:10px 0}
-.off{padding:16px 0;color:var(--ink-2);border-bottom:1px solid var(--rule)}.off.err{color:var(--warn)}
-.how{margin:0}.how dt{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);padding-top:16px}.how dd{margin:6px 0 0;padding-bottom:16px;border-bottom:1px solid var(--rule);color:var(--ink-2);font-size:14px;line-height:1.55}.how b{color:var(--ink);font-weight:500}.how code{font-size:12px;color:var(--accent)}
-.foot{margin-top:28px;color:var(--ink-3);font-size:12px;line-height:1.6}
-@media (max-width:620px){.strip{grid-template-columns:1fr 1fr}.strip>div:nth-child(3){padding-left:0;border-left:0}.strip>div:nth-child(n+3){border-top:1px solid var(--rule)}.f .num{font-size:36px}.strip .num{font-size:27px}.day{grid-template-columns:48px 1fr auto auto}.day .m{display:none}}
+@font-face{font-family:"HN";src:url(/assets/fonts/HeadingNowVar.woff2) format("woff2");font-weight:100 1000;font-style:normal}
+@font-face{font-family:"HN";src:url(/assets/fonts/HeadingNowVarItalic.woff2) format("woff2");font-weight:100 1000;font-style:italic}
+:root{--bg:#1c1b1b;--card:#6d6d6d;--card-2:#2a2828;--pink:#fe75be;--ink:#fff;--ink-2:#d9d6d3;--ink-3:#a19c97;--on-pink:#2b2b2b;--rule:rgba(255,255,255,.12)}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:760px;margin:0 auto;padding:18px 16px 56px}
+.hn{font-family:"HN",system-ui,sans-serif;text-transform:uppercase;line-height:.86}
+.cap{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+/* top */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.live{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--pink);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(254,117,190,.6)}70%{box-shadow:0 0 0 8px rgba(254,117,190,0)}100%{box-shadow:0 0 0 0 rgba(254,117,190,0)}}
+.count{font-size:13px;color:var(--ink-2)}.count b{font-family:"HN";font-size:22px;font-variation-settings:"wght" 800,"wdth" 400;color:var(--pink);vertical-align:-2px}
+/* period */
+.per{display:flex;gap:6px;margin:18px 0 14px;background:var(--card-2);padding:4px;border-radius:999px;width:max-content}
+.per button{all:unset;cursor:pointer;padding:8px 14px;border-radius:999px;font-size:13px;color:var(--ink-2)}
+.per button[aria-pressed=true]{background:var(--pink);color:var(--on-pink);font-weight:600}
+.per button:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
+/* hero */
+.hero{background:var(--pink);color:var(--on-pink);border-radius:22px;padding:20px 22px 22px;rotate:-1.2deg;margin:6px 4px 0}
+.hero .cap{color:rgba(43,43,43,.75)}
+.hero .big{font-size:clamp(110px,32vw,190px);font-variation-settings:"wght" 900,"wdth" 520;margin-top:6px}
+.hero .row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:10px;font-size:14px}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;background:rgba(43,43,43,.12)}
+.chip.up{background:#2b2b2b;color:var(--pink)}
+/* sections */
+h2{font-family:"HN";text-transform:uppercase;font-size:30px;font-variation-settings:"wght" 800,"wdth" 600;margin:40px 0 14px;line-height:.9}
+h2 i{font-style:italic;color:var(--pink);font-variation-settings:"wght" 900,"wdth" 300}
+/* funnel */
+.fun{display:flex;flex-direction:column;align-items:center;gap:0}
+.stage{width:var(--w);min-width:200px;max-width:100%;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;transform-origin:50% 0}
+.stage .l{font-size:13px;line-height:1.25}.stage .n{font-size:46px;font-variation-settings:"wght" 800,"wdth" 520}
+.s1{background:var(--card)}.s2{background:#a46a8b}.s3{background:var(--pink);color:var(--on-pink)}
+.step{display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--ink-2);font-size:13px}
+.step b{font-family:"HN";font-size:24px;font-variation-settings:"wght" 800,"wdth" 500;color:var(--pink)}
+.step:before{content:"";width:2px;height:22px;background:var(--rule)}
+.total{margin-top:14px;text-align:center;color:var(--ink-2);font-size:14px}.total b{color:var(--pink)}
+/* ads */
+.ad{background:var(--card-2);border-radius:20px;padding:20px 20px 18px}
+.ad .say{font-size:15px;color:var(--ink-2)}.ad .say b{display:block;font-family:"HN";font-size:clamp(60px,15vw,96px);font-variation-settings:"wght" 900,"wdth" 520;color:var(--pink);line-height:.9;margin:6px 0 4px;text-transform:uppercase}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.trio div{background:var(--bg);border-radius:14px;padding:12px}.trio .v{font-family:"HN";font-size:30px;font-variation-settings:"wght" 800,"wdth" 520;margin-top:4px}.trio small{display:block;color:var(--ink-3);font-size:11px;margin-top:4px;line-height:1.3}
+.todo{background:var(--card-2);border-radius:20px;padding:18px 20px;color:var(--ink-2)}
+.todo b{color:var(--ink)}
+/* days */
+.chart{position:relative;background:var(--card-2);border-radius:20px;padding:18px 14px 10px}
+.bars{display:flex;align-items:flex-end;gap:3px;height:150px}
+.bars button{all:unset;flex:1;height:100%;display:flex;align-items:flex-end;cursor:pointer;position:relative}
+.bars .b{width:100%;background:var(--pink);border-radius:4px 4px 0 0;min-height:2px;transform-origin:bottom}
+.bars .b.zero{background:var(--rule)}
+.bars button:hover .b,.bars button:focus-visible .b,.bars button[aria-current=true] .b{background:#fff}
+.bars .best{position:absolute;bottom:calc(var(--h) + 6px);left:50%;translate:-50% 0;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--pink);white-space:nowrap}
+.axis{display:flex;justify-content:space-between;color:var(--ink-3);font-size:11px;margin-top:8px}
+.read{margin-top:12px;min-height:44px;border-top:1px solid var(--rule);padding-top:10px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+.read b{font-family:"HN";font-size:22px;font-variation-settings:"wght" 800,"wdth" 520;color:var(--ink)}
+.read .d{color:var(--pink)}
+.err{color:#ff9b9b;font-size:13px;margin-top:8px}
+/* how */
+details{margin-top:36px;background:var(--card-2);border-radius:20px;padding:4px 18px}
+summary{cursor:pointer;padding:14px 0;font-family:"HN";text-transform:uppercase;font-size:20px;font-variation-settings:"wght" 800,"wdth" 600;list-style:none}
+summary::-webkit-details-marker{display:none}summary:after{content:" +";color:var(--pink)}details[open] summary:after{content:" –"}
+.how dt{font-weight:600;margin-top:14px}.how dd{margin:4px 0 0;color:var(--ink-2);font-size:14px;line-height:1.55;padding-bottom:14px;border-bottom:1px solid var(--rule)}.how dd:last-child{border:0}
+.how code{color:var(--pink);font-size:12px}
+.foot{margin-top:18px;color:var(--ink-3);font-size:12px;text-align:center}
+/* motion: blocks spring in like the site; numbers count up */
+@keyframes pop{0%{opacity:0;scale:.6}60%{opacity:1;scale:1.04}80%{scale:.98}100%{scale:1}}
+@keyframes grow{0%{scale:1 0}70%{scale:1 1.08}100%{scale:1 1}}
+.anim .hero,.anim .stage,.anim .ad,.anim .chart{animation:pop .7s cubic-bezier(.3,1.4,.5,1) backwards}
+.anim .stage:nth-of-type(3){animation-delay:.08s}.anim .stage:nth-of-type(5){animation-delay:.16s}
+.anim .bars .b{animation:grow .6s cubic-bezier(.3,1.4,.5,1) backwards;animation-delay:calc(var(--i) * 12ms)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+.trio .v{white-space:nowrap}
+@media (max-width:520px){.stage .n{font-size:38px}.trio .v{font-size:24px}.trio .cap{font-size:10px}.trio{grid-template-columns:1fr 1fr}.trio div:last-child{grid-column:span 2}h2{font-size:26px}}
 </style></head><body><main>
-<div class="top"><span class="cap">Воронка · ${esc(data.month)}</span><span class="cap live"><i></i>Live</span></div>
-<div class="per" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7">7 днів</button><button data-p="30" aria-pressed="true">30 днів</button></div>
+<div class="top"><span class="live"><i></i>live</span><span class="count">до фестивалю <b id="cd"></b> днів</span></div>
+<div class="per" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7" aria-pressed="true">7 днів</button><button data-p="30">30 днів</button></div>
 <div id="app"></div>
-<h2 class="cap">Як рахується</h2>
-<dl class="how">
-<dt>Прийшли на сайт</dt><dd>Унікальні відвідувачі veganweekend.org за період (Google Analytics, лише потік «Vegan Weekend»). Рахуються лише ті, хто дав згоду на cookies: поза ЄС — усі, у ЄС — після «Дивіться» в банері. Люди з блокувальниками реклами сюди не потрапляють — реальних відвідувачів трохи більше.</dd>
+<details><summary>Як рахується</summary><dl class="how">
+<dt>Прийшли на сайт</dt><dd>Унікальні відвідувачі сайту за період (Google Analytics, лише потік цього сайту). Рахуються лише ті, хто дав згоду на cookies: поза ЄС — усі, у ЄС — після «Дивіться» в банері. Люди з блокувальниками реклами сюди не потрапляють — реальних відвідувачів трохи більше.</dd>
 <dt>Натиснули «Купити квиток»</dt><dd>Кліки на будь-яку кнопку купівлі на сайті (подія <code>begin_checkout</code>). Дві спроби однієї людини — два кліки. Ті самі правила згоди, що й для відвідувачів.</dd>
 <dt>Оплатили</dt><dd>Унікальні успішні замовлення на WayForPay. Після кожної оплати WayForPay повідомляє наш сервер, а той передає покупку в Google — тому оплати рахуються всі, навіть без згоди на cookies, і повторні повідомлення не задвоюються. Одне замовлення може містити кілька квитків. Дані — з 06.10.2026.</dd>
-<dt>% між кроками</dt><dd>Скільки дійшло до кроку від попереднього. Оплати рахуються за всіма покупцями, а кліки — лише за тими, хто дав згоду, тож «оплатили з кліків» буває завищеним, а іноді й понад 100%.</dd>
-<dt>Від відвідувача до оплати</dt><dd>Оплати / відвідувачі за той самий період.</dd>
-<dt>Реклама Meta</dt><dd><b>Витрачено</b> — з рекламного кабінету. <b>Покупок з реклами</b> — покупки, які Meta зарахувала рекламі: людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою (стандартне налаштування кабінету). <b>Ціна квитка з реклами</b> — витрачено / покупки з реклами. <b>На будь-який квиток</b> — витрачено / усі оплати: скільки реклама коштує в перерахунку на кожен проданий квиток, звідки б покупець не прийшов.</dd>
+<dt>% між кроками</dt><dd>Скільки дійшло до кроку від попереднього. Оплати рахуються за всіма покупцями, а кліки — лише за тими, хто дав згоду, тож «оплатили з кліків» буває завищеним, а іноді й понад 100%. Ширина блоків воронки — наочна, не в масштабі; точні числа — на блоках.</dd>
+<dt>Порівняння з попереднім періодом</dt><dd>«Сьогодні» — з учора; «7 днів» — з попередніми 7 днями; «30 днів» — з попередніми 30.</dd>
+<dt>Реклама Meta</dt><dd><b>Квиток з реклами</b> — витрачено / покупки, які Meta зарахувала рекламі (людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою — стандартне налаштування кабінету). <b>На будь-який квиток</b> — витрачено / усі оплати: скільки реклама коштує в перерахунку на кожен проданий квиток, звідки б покупець не прийшов.</dd>
 <dt>Дні й оновлення</dt><dd>Дні — за київським часом. Сторінка оновлюється сама кожні 5 хв. Google домальовує дані до 24–48 год, тож цифри за сьогодні й учора можуть ще трохи зрости.</dd>
-</dl>
-<p class="foot">Оновлено ${esc(data.updated)} (Київ).</p>
+</dl></details>
+<p class="foot">Оновлено ${esc(data.updated)} (Київ)</p>
 </main>
 <script>
 const D=${JSON.stringify(data).replace(/</g, '\\u003c')};
-const fmt=n=>Math.round(n).toLocaleString('uk-UA'), uah=n=>fmt(n)+' грн', pct=(a,b)=>b?(a/b*100).toFixed(a/b<.1?1:0)+'%':'—';
+const fmt=n=>Math.round(n).toLocaleString('uk-UA'), pct=(a,b)=>b?(a/b*100).toFixed(a/b<.1?1:0)+'%':'—';
 const el=(t,c,txt)=>{const e=document.createElement(t);if(c)e.className=c;if(txt!=null)e.textContent=txt;return e};
-const app=document.getElementById('app');
+const app=document.getElementById('app'), reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const G=D.ga&&!D.ga.error?D.ga:null, M=D.meta&&!D.meta.error?D.meta:null;
-const tot=(ds,o)=>ds.reduce((a,d)=>a+((o||{})[d]||0),0);
-const word=p=>p===1?'сьогодні':'за '+p+' днів';
-
+const sum=(ds,o)=>ds.reduce((a,d)=>a+((o||{})[d]||0),0);
+const plural=(n,a,b,c)=>{n=Math.abs(n)%100;const m=n%10;return n>10&&n<20?c:m===1?a:m>=2&&m<=4?b:c};
+document.getElementById('cd').textContent=Math.max(0,Math.ceil((Date.parse('2026-11-22T11:00:00Z')-Date.now())/864e5));
+/* numbers count up once */
+function count(node,to,suffix){suffix=suffix||'';if(reduce||!to){node.textContent=fmt(to)+suffix;return}const t0=performance.now(),dur=700;const f=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);node.textContent=fmt(to*e)+suffix;if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
+let first=true;
 function render(p){
-  app.replaceChildren();
-  const ds=D.days.slice(-p);
-  const v=G?tot(ds,G.visitors):null, c=G?tot(ds,G.clicks):null, b=G?tot(ds,G.purchases):null;
-  const sp=M?tot(ds,M.spend):null, mb=M?tot(ds,M.purchases):null;
+  app.replaceChildren();app.classList.toggle('anim',first&&!reduce);
+  const ds=D.days.slice(-p), prev=D.days.slice(-2*p,-p);
+  const v=G?sum(ds,G.visitors):0,c=G?sum(ds,G.clicks):0,b=G?sum(ds,G.purchases):0,bp=G?sum(prev,G.purchases):0;
+  const label=p===1?'сьогодні':'за '+p+' днів', prevLabel=p===1?'учора':'за попередні '+p+' днів';
 
-  /* головне число — скільки оплатили */
-  const h=el('div','hero');h.append(el('div','cap','Оплатили '+word(p)),el('div','num',G?fmt(b):'—'));
-  const sub=el('p');
-  if(G){sub.append(el('em',null,pct(b,v)),document.createTextNode(' відвідувачів дійшли до оплати'))}
-  else sub.textContent=D.ga?'':'Google Analytics ще не підключено — docs/DASHBOARD.md';
-  h.append(sub);app.append(h);
-  if(D.ga&&D.ga.error)app.append(el('div','off err','Google: '+D.ga.error));
+  /* hero */
+  const h=el('section','hero');h.append(el('div','cap','Оплатили '+label));
+  const big=el('div','hn big');h.append(big);
+  const row=el('div','row');
+  if(G){const d=b-bp;const ch=el('span','chip'+(d>0?' up':''),d>0?'↑ на '+d+' більше, ніж '+prevLabel:d<0?'↓ на '+Math.abs(d)+' менше, ніж '+prevLabel:'стільки ж, як '+prevLabel);row.append(ch);
+    row.append(el('span',null,v?pct(b,v)+' відвідувачів дійшли до оплати':'відвідувачів ще немає'))}
+  else row.append(el('span',null,D.ga?'Google: '+D.ga.error:'Google Analytics ще не підключено'));
+  h.append(row);app.append(h);count(big,b);
 
-  /* воронка */
-  app.append(el('h2','cap','Воронка'));
-  const steps=[['Прийшли на сайт',v],['Натиснули «Купити квиток»',c],['Оплатили',b]], topv=Math.max(1,v||0);
-  steps.forEach(([label,val],i)=>{
-    const r=el('div','f');r.append(el('div','cap',label),el('div','num',val==null?'—':fmt(val)));
-    const st=el('div','step');
-    if(i&&val!=null&&steps[i-1][1]){st.append(el('b',null,pct(val,steps[i-1][1])),document.createTextNode(' з попереднього кроку'))}
-    r.append(st);
-    const ln=el('div','line');const li=el('i');li.style.width=val==null?'0':Math.max(.8,val/topv*100)+'%';ln.append(li);r.append(ln);
-    app.append(r)});
+  /* funnel */
+  const t=el('h2');t.append(document.createTextNode('Шлях до '),el('i',null,'квитка'));app.append(t);
+  const f=el('div','fun');const top=Math.max(1,v);
+  const st=[['s1','Прийшли на сайт',v],['s2','Натиснули «Купити квиток»',c],['s3','Оплатили',b]];
+  st.forEach(([cls,l,n],i)=>{
+    if(i){const s=el('div','step');s.append(el('b',null,pct(n,st[i-1][2])),document.createTextNode(i===1?' натиснули «Купити»':' оплатили'));f.append(s)}
+    const g=el('div','stage '+cls);g.style.setProperty('--w',(34+66*Math.sqrt(n/top))+'%');
+    const nn=el('div','hn n');g.append(el('div','l',l),nn);f.append(g);count(nn,n)});
+  app.append(f);
 
-  /* реклама */
-  app.append(el('h2','cap','Реклама Meta'));
-  if(M){const s=el('div','strip');
-    [['Витрачено',uah(sp),''],['Ціна квитка з реклами',mb?uah(sp/mb):'—','витрати / покупки з реклами'],['Покупок з реклами',fmt(mb),'за даними Meta'],['На будь-який квиток',b?uah(sp/b):'—','витрати / усі оплати']].forEach(([l,val,n])=>{const d=el('div');d.append(el('div','cap',l),el('div','num',val));if(n)d.append(el('small',null,n));s.append(d)});
-    app.append(s)}
-  else app.append(el('div','off'+(D.meta?' err':''),D.meta?'Meta: '+D.meta.error:'Ще не підключено — META_AD_ACCOUNT_ID і META_ADS_TOKEN (docs/DASHBOARD.md)'));
+  /* ads */
+  const a=el('h2');a.append(document.createTextNode('Реклама '),el('i',null,'Meta'));app.append(a);
+  if(M){const sp=sum(ds,M.spend),mb=sum(ds,M.purchases);
+    const box=el('section','ad');const say=el('div','say');say.append(document.createTextNode('Квиток з реклами коштує'),el('b',null,mb?fmt(sp/mb)+' грн':'—'),document.createTextNode(mb?'':' — реклама ще не принесла покупок за цей період'));box.append(say);
+    const tr=el('div','trio');[['Витрачено',fmt(sp)+' грн',''],['Покупок з реклами',fmt(mb),'за даними Meta'],['На будь-який квиток',b?fmt(sp/b)+' грн':'—','витрачено / усі оплати']].forEach(([l,val,n])=>{const d=el('div');d.append(el('div','cap',l),el('div','v',val));if(n)d.append(el('small',null,n));tr.append(d)});
+    box.append(tr);app.append(box)}
+  else{const td=el('div','todo');td.append(el('b',null,D.meta?'Meta: '+D.meta.error:'Ще не підключено.'),document.createTextNode(D.meta?'':' Тут зʼявиться, скільки коштує квиток з реклами.'));app.append(td)}
 
-  /* по днях */
-  if(p>1&&G){
-    app.append(el('h2','cap','По днях, нові зверху'));
-    const hd=el('div','day head');hd.append(el('span',null,'Дата'),el('span'),el('span','v m','Прийшли'),el('span','v','«Купити»'),el('span','v','Оплатили'));app.append(hd);
-    const maxb=Math.max(1,...ds.map(d=>G.purchases[d]||0));
-    [...ds].reverse().forEach(d=>{const r=el('div','day');const bar=el('span','bar');bar.style.width=((G.purchases[d]||0)/maxb*100)+'%';
-      const vv=(cls,n)=>{const s=el('span',cls);s.append(el('b',null,fmt(n)));return s};
-      r.append(el('span','d',d.slice(8)+'.'+d.slice(5,7)),bar,vv('v m',G.visitors[d]||0),vv('v',G.clicks[d]||0),vv('v',G.purchases[d]||0));app.append(r)})}
+  /* days */
+  if(G){
+    const n=p===1?14:p, days=D.days.slice(-n);
+    const dh=el('h2');dh.append(document.createTextNode('По '),el('i',null,'днях'));app.append(dh);
+    const ch=el('section','chart');const bars=el('div','bars');const max=Math.max(1,...days.map(d=>G.purchases[d]||0));
+    const best=days.reduce((a,d)=>(G.purchases[d]||0)>(G.purchases[a]||0)?d:a,days[0]);
+    const read=el('div','read');
+    const show=d=>{read.replaceChildren();const dd=el('span','d');dd.append(el('b',null,d.slice(8)+'.'+d.slice(5,7)));read.append(dd);
+      [['оплат',G.purchases[d]],['кліків «Купити»',G.clicks[d]],['відвідувачів',G.visitors[d]]].concat(M?[['грн на рекламу',M.spend[d]]]:[]).forEach(([l,x])=>{const s=el('span');s.append(el('b',null,fmt(x||0)),document.createTextNode(' '+l));read.append(s)});
+      bars.querySelectorAll('button').forEach(x=>x.setAttribute('aria-current',x.dataset.d===d?'true':'false'))};
+    days.forEach((d,i)=>{const x=G.purchases[d]||0;const btn=el('button');btn.dataset.d=d;btn.setAttribute('aria-label',d+': '+x+' оплат');
+      const bar=el('div','b'+(x?'':' zero'));bar.style.height=(x/max*100)+'%';bar.style.setProperty('--i',i);btn.append(bar);
+      if(d===best&&(G.purchases[d]||0)>0){const tag=el('span','best','рекорд');tag.style.setProperty('--h',(x/max*100)+'%');btn.append(tag)}
+      btn.addEventListener('pointerenter',()=>show(d));btn.addEventListener('focus',()=>show(d));btn.addEventListener('click',()=>show(d));bars.append(btn)});
+    ch.append(bars);const ax=el('div','axis');ax.append(el('span',null,days[0].slice(8)+'.'+days[0].slice(5,7)),el('span',null,'сьогодні'));ch.append(ax,read);app.append(ch);show(days[days.length-1]);
+  }
+  if(D.ga&&D.ga.error)app.append(el('div','err','Google: '+D.ga.error));
+  first=false;
 }
 const btns=[...document.querySelectorAll('.per button')];
 btns.forEach(x=>x.addEventListener('click',()=>{btns.forEach(y=>y.setAttribute('aria-pressed',y===x?'true':'false'));render(+x.dataset.p)}));
-render(30);
+render(7);
 </script></body></html>`;
 }
 
@@ -207,7 +268,7 @@ export async function handle(request, env = process.env) {
   const fresh = new URL(request.url).searchParams.has('fresh');
   if (!fresh && cache.html && Date.now() - cache.at < 5 * 60 * 1000) return html(cache.html);
 
-  const now = Math.floor(Date.now() / 1000), today = kyivDate(now), from = kyivDate(now - 29 * DAY);
+  const now = Math.floor(Date.now() / 1000), today = kyivDate(now), from = kyivDate(now - 59 * DAY);  // 60 днів: період + попередній такий самий для порівняння
   const data = {
     updated: new Date(now * 1000).toLocaleString('sv-SE', { timeZone: 'Europe/Kyiv' }).slice(0, 16),
     month: new Date(now * 1000).toLocaleDateString('uk-UA', { timeZone: 'Europe/Kyiv', month: 'long' }),
