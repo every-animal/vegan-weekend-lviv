@@ -20,6 +20,7 @@
    META_CAMPAIGN_MATCH                — слова в назвах кампаній Веган Вікенду (через кому); без нього — усі кампанії кабінету
    DASHBOARD_PASSWORD                 — необовʼязково: якщо задати, сторінка питатиме пароль (логін будь-який) */
 import { createSign, timingSafeEqual } from 'node:crypto';
+import { allOrders } from './_orders.mjs';
 
 const DAY = 86400;
 const kyivDate = ts => new Date(Number(ts) * 1000).toLocaleDateString('sv-SE', { timeZone: 'Europe/Kyiv' }); // YYYY-MM-DD за Києвом
@@ -86,7 +87,9 @@ async function ga4(propertyId, accessToken, from, stream = GA4_STREAM, exclude =
   }
   const rseen = new Set();
   for (const [d, id] of refundRows) { if (!id || rseen.has(id)) continue; rseen.add(id); const k = iso(d); refunds[k] = (refunds[k] || 0) + 1; }
-  return { visitors, clicks, purchases, tickets, refunds, excluded: (exclude || []).length };
+  const orders = {}; for (const [d, id, items] of bought) if (id && id !== '(not set)' && !orders[id]) orders[id] = { day: iso(d), tickets: Math.max(1, items) };
+  const refundedDays = {}; for (const [d, id] of refundRows) if (id && !refundedDays[id]) refundedDays[id] = iso(d);
+  return { visitors, clicks, purchases, tickets, refunds, excluded: (exclude || []).length, orders, refundedDays };
 }
 
 /* ---------- Meta Marketing API: витрати й покупки, які Meta приписує рекламі ---------- */
@@ -207,13 +210,13 @@ summary::-webkit-details-marker{display:none}summary:after{content:" +";color:va
 <details><summary>Питання й відповіді</summary><dl class="how">
 <dt>Прийшли на сайт</dt><dd>Унікальні відвідувачі сайту за період (Google Analytics, лише потік цього сайту). Рахуються лише ті, хто дав згоду на cookies: поза ЄС — усі, у ЄС — після «Дивіться» в банері. Люди з блокувальниками реклами сюди не потрапляють — реальних відвідувачів трохи більше.</dd>
 <dt>Натиснули «Купити квиток»</dt><dd>Кліки на будь-яку кнопку купівлі на сайті (подія <code>begin_checkout</code>). Дві спроби однієї людини — два кліки. Ті самі правила згоди, що й для відвідувачів.</dd>
-<dt>Оплатили</dt><dd>Унікальні успішні замовлення на WayForPay. Після кожної оплати WayForPay повідомляє наш сервер, а той передає покупку в Google — тому оплати рахуються всі, навіть без згоди на cookies, і повторні повідомлення не задвоюються. Одне замовлення може містити кілька квитків. Дані — з 06.10.2026.</dd>
+<dt>Оплатили</dt><dd>Унікальні успішні замовлення на WayForPay. Після кожної оплати WayForPay повідомляє наш сервер, і той одразу записує замовлення у власну базу (номер, кількість квитків, сума, час — без особистих даних) — тому оплати видно тут <b>за кілька секунд</b>, рахуються всі, навіть без згоди на cookies, і повторні повідомлення не задвоюються. Оплати 6–7 жовтня, до появи бази, взято з Google. Одне замовлення може містити кілька квитків.</dd>
 <dt>Квитки, замовлення й повернення</dt><dd>Головне число — <b>квитки</b>: одне замовлення може містити кілька (кількість приходить від WayForPay). У воронці «Оплатили» — <b>замовлення</b>, тобто люди, які оплатили. Якщо кошти за замовлення повернули, WayForPay повідомляє наш сервер — і таке замовлення разом з його квитками більше не рахується, а в рожевому блоці зʼявляється «повернено N». Повернення до 07.10.2026 і тестові покупки виключено вручну.</dd>
 <dt>Чому оплат більше, ніж кліків «Купити»?</dt><dd>Бо їх рахують різні джерела. Кліки — лише на сайті і лише в тих, хто дав згоду на cookies і не має блокувальника реклами. Оплати — усі: їх повідомляє WayForPay. До того ж частина покупців узагалі не натискає «Купити» на сайті: відкриває оплату з біо Instagram, з реклами, що веде одразу на WayForPay, з пересланого в чаті посилання чи закладки. Тому «оплатили з кліків» може бути понад 100% — це не помилка, а знак, що люди купують і повз сайт. Справжню конверсію краще дивитися як «від відвідувача до оплати».</dd>
 <dt>% між кроками</dt><dd>Скільки дійшло до кроку від попереднього. Оплати рахуються за всіма покупцями, а кліки — лише за тими, хто дав згоду, тож «оплатили з кліків» буває завищеним, а іноді й понад 100%. Ширина блоків воронки — наочна, не в масштабі; точні числа — на блоках.</dd>
 <dt>Порівняння з попереднім періодом</dt><dd>«Сьогодні» — з учора; «7 днів» — з попередніми 7 днями; «30 днів» — з попередніми 30. «Весь час» — від 6 жовтня 2026, коли почалося відстеження оплат; порівняння немає.</dd>
 <dt>Що показує блок «Реклама Meta»?</dt><dd>Лише кампанії, у назві яких є мітка <code>VWL26</code> або <code>vw12lviv</code> — решта кампаній кабінету показані закресленими й не рахуються. <b>Квиток з реклами</b> — витрачено / покупки, які Meta зарахувала рекламі (людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою — стандартне налаштування кабінету). <b>На будь-який квиток</b> — витрачено / усі оплати: скільки реклама коштує в перерахунку на кожен проданий квиток, звідки б покупець не прийшов.</dd>
-<dt>Дні й оновлення</dt><dd>Дні — за київським часом. Сторінка оновлюється сама кожні 5 хв. Google домальовує дані до 24–48 год, тож цифри за сьогодні й учора можуть ще трохи зрости.</dd>
+<dt>Дні й оновлення</dt><dd>Дні — за київським часом. Сторінка оновлюється сама кожні 5 хв. Квитки й оплати — миттєво (з нашої бази). Відвідувачі й кліки «Купити» — з Google, який домальовує дані від кількох хвилин до 24–48 год, тож за сьогодні вони ще можуть зрости, і «оплатили з кліків» сьогодні буває завищеним.</dd>
 </dl></details>
 <p class="foot">Оновлено ${esc(data.updated)} (Київ)</p>
 </main>
@@ -222,7 +225,7 @@ const D=${JSON.stringify(data).replace(/</g, '\\u003c')};
 const fmt=n=>Math.round(n).toLocaleString('uk-UA'), pct=(a,b)=>b?(a/b*100).toFixed(a/b<.1?1:0)+'%':'—';
 const el=(t,c,txt)=>{const e=document.createElement(t);if(c)e.className=c;if(txt!=null)e.textContent=txt;return e};
 const app=document.getElementById('app'), reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const G=D.ga&&!D.ga.error?D.ga:null, M=D.meta&&!D.meta.error?D.meta:null;
+const G=D.ga&&!D.ga.error?D.ga:null, M=D.meta&&!D.meta.error?D.meta:null, S=D.sales||null;
 const sum=(ds,o)=>ds.reduce((a,d)=>a+((o||{})[d]||0),0);
 const plural=(n,a,b,c)=>{n=Math.abs(n)%100;const m=n%10;return n>10&&n<20?c:m===1?a:m>=2&&m<=4?b:c};
 document.getElementById('cd').textContent=Math.max(0,Math.ceil((Date.parse('2026-11-22T11:00:00Z')-Date.now())/864e5));
@@ -234,17 +237,17 @@ function render(p){
   app.replaceChildren();app.classList.toggle('anim',first&&!reduce);
   const all=p==='all';
   const ds=all?D.days.filter(d=>d>=TRACK):D.days.slice(-p), prev=all?[]:D.days.slice(-2*p,-p);
-  const v=G?sum(ds,G.visitors):0,c=G?sum(ds,G.clicks):0,b=G?sum(ds,G.purchases):0,tk=G?sum(ds,G.tickets):0,tkp=G?sum(prev,G.tickets):0,rf=G?sum(ds,G.refunds):0;
+  const v=G?sum(ds,G.visitors):0,c=G?sum(ds,G.clicks):0,b=S?sum(ds,S.purchases):0,tk=S?sum(ds,S.tickets):0,tkp=S?sum(prev,S.tickets):0,rf=S?sum(ds,S.refunds):0;
   const label=all?'з 6 жовтня':p===1?'сьогодні':'за '+p+' днів', prevLabel=p===1?'учора':'за попередні '+p+' днів';
 
   /* hero */
   const h=el('section','hero');h.append(el('div','cap','Квитків продано '+label));
   const big=el('div','hn big');h.append(big);
   const row=el('div','row');
-  if(G&&all)row.append(el('span','chip','від початку відстеження'));
-  if(G&&!all){const d=tk-tkp;const ch=el('span','chip'+(d>0?' up':''),d>0?'↑ на '+d+' більше, ніж '+prevLabel:d<0?'↓ на '+Math.abs(d)+' менше, ніж '+prevLabel:'стільки ж, як '+prevLabel);row.append(ch);
+  if(S&&all)row.append(el('span','chip','від початку відстеження'));
+  if(S&&!all){const d=tk-tkp;const ch=el('span','chip'+(d>0?' up':''),d>0?'↑ на '+d+' більше, ніж '+prevLabel:d<0?'↓ на '+Math.abs(d)+' менше, ніж '+prevLabel:'стільки ж, як '+prevLabel);row.append(ch);
     }
-  if(G){row.append(el('span',null,'з '+fmt(b)+' '+plural(b,'замовлення','замовлень','замовлень')+(rf?' · повернено '+fmt(rf):'')+(v?' · купили '+pct(b,v)+' відвідувачів':'')))}
+  if(S){row.append(el('span',null,'з '+fmt(b)+' '+plural(b,'замовлення','замовлень','замовлень')+(rf?' · повернено '+fmt(rf):'')+(v?' · купили '+pct(b,v)+' відвідувачів':'')))}
   else row.append(el('span',null,D.ga?'Google: '+D.ga.error:'Google Analytics ще не підключено'));
   h.append(row);app.append(h);count(big,tk);
 
@@ -273,19 +276,19 @@ function render(p){
   else{const td=el('div','todo');td.append(el('b',null,D.meta?'Meta: '+D.meta.error:'Ще не підключено.'),document.createTextNode(D.meta?'':' Тут зʼявиться, скільки коштує квиток з реклами.'));app.append(td)}
 
   /* days */
-  if(G){
+  if(S){
     const days=all?ds:D.days.slice(-(p===1?14:p));
     const dh=el('h2');dh.append(document.createTextNode('По '),el('i',null,'днях'));app.append(dh);
-    const ch=el('section','chart');const bars=el('div','bars');const max=Math.max(1,...days.map(d=>G.tickets[d]||0));
-    const best=days.reduce((a,d)=>(G.tickets[d]||0)>(G.tickets[a]||0)?d:a,days[0]);
+    const ch=el('section','chart');const bars=el('div','bars');const max=Math.max(1,...days.map(d=>S.tickets[d]||0));
+    const best=days.reduce((a,d)=>(S.tickets[d]||0)>(S.tickets[a]||0)?d:a,days[0]);
     const read=el('div','read');
     const show=d=>{read.replaceChildren();const dd=el('span','d');dd.append(el('b',null,d.slice(8)+'.'+d.slice(5,7)));read.append(dd);
       const W=(n,a,b,c)=>plural(n||0,a,b,c);
-      [[G.tickets[d],W(G.tickets[d],'квиток','квитки','квитків')],[G.purchases[d],W(G.purchases[d],'замовлення','замовлення','замовлень')],[G.clicks[d],W(G.clicks[d],'клік','кліки','кліків')+' «Купити»'],[G.visitors[d],W(G.visitors[d],'відвідувач','відвідувачі','відвідувачів')]].concat(M?[[M.spend[d],'грн на рекламу']]:[]).forEach(([x,l])=>{const s=el('span');s.append(el('b',null,fmt(x||0)),document.createTextNode(' '+l));read.append(s)});
+      [[S.tickets[d],W(S.tickets[d],'квиток','квитки','квитків')],[S.purchases[d],W(S.purchases[d],'замовлення','замовлення','замовлень')]].concat(G?[[G.clicks[d],W(G.clicks[d],'клік','кліки','кліків')+' «Купити»'],[G.visitors[d],W(G.visitors[d],'відвідувач','відвідувачі','відвідувачів')]]:[]).concat(M?[[M.spend[d],'грн на рекламу']]:[]).forEach(([x,l])=>{const s=el('span');s.append(el('b',null,fmt(x||0)),document.createTextNode(' '+l));read.append(s)});
       bars.querySelectorAll('button').forEach(x=>x.setAttribute('aria-current',x.dataset.d===d?'true':'false'))};
-    days.forEach((d,i)=>{const x=G.tickets[d]||0;const btn=el('button');btn.dataset.d=d;btn.setAttribute('aria-label',d+': '+x+' квитків');
+    days.forEach((d,i)=>{const x=S.tickets[d]||0;const btn=el('button');btn.dataset.d=d;btn.setAttribute('aria-label',d+': '+x+' квитків');
       const bar=el('div','b'+(x?'':' zero'));bar.style.height=(x/max*100)+'%';bar.style.setProperty('--i',i);btn.append(bar);
-      if(d===best&&(G.tickets[d]||0)>0){const tag=el('span','best','рекорд');tag.style.setProperty('--h',(x/max*100)+'%');btn.append(tag)}
+      if(d===best&&(S.tickets[d]||0)>0){const tag=el('span','best','рекорд');tag.style.setProperty('--h',(x/max*100)+'%');btn.append(tag)}
       btn.addEventListener('pointerenter',()=>show(d));btn.addEventListener('focus',()=>show(d));btn.addEventListener('click',()=>show(d));bars.append(btn)});
     ch.append(bars);const ax=el('div','axis');ax.append(el('span',null,days[0].slice(8)+'.'+days[0].slice(5,7)),el('span',null,'сьогодні'));ch.append(ax,read);app.append(ch);show(days[days.length-1]);
   }
@@ -324,10 +327,29 @@ export async function handle(request, env = process.env) {
     month: new Date(now * 1000).toLocaleDateString('uk-UA', { timeZone: 'Europe/Kyiv', month: 'long' }),
     today, days: days(from, today)
   };
+  let db = null;
   await Promise.all([
+    allOrders(env).then(x => { db = x; }, e => { data.dbError = e.message; }),
     env.GA4_PROPERTY_ID && (env.GA4_SA_JSON || (env.GCP_PROJECT_NUMBER && env.GCP_SERVICE_ACCOUNT_EMAIL)) ? googleToken(env, request.headers.get('x-vercel-oidc-token') || env.VERCEL_OIDC_TOKEN).then(t => ga4(env.GA4_PROPERTY_ID, t, from, env.GA4_STREAM_ID || GA4_STREAM, String(env.DASHBOARD_EXCLUDE_ORDERS || '').split(',').map(x => x.trim()).filter(Boolean))).then(x => { data.ga = x; }, e => { data.ga = { error: e.message }; }) : null,
     env.META_AD_ACCOUNT_ID && env.META_ADS_TOKEN ? meta(env.META_AD_ACCOUNT_ID, env.META_ADS_TOKEN, from, today, env.META_CAMPAIGN_MATCH).then(x => { data.meta = x; }, e => { data.meta = { error: e.message }; }) : null
   ]);
+  /* оплати: база (миттєво, з моменту підключення) + GA (історія до бази); одне замовлення — раз, перевага в бази */
+  if (db || (data.ga && !data.ga.error)) {
+    const exclude = new Set(String(env.DASHBOARD_EXCLUDE_ORDERS || '').split(',').map(x => x.trim()).filter(Boolean));
+    const g = data.ga && !data.ga.error ? data.ga : { orders: {}, refundedDays: {} };
+    const all = {};
+    for (const [id, o] of Object.entries(g.orders || {})) all[id] = { day: o.day, tickets: o.tickets, refunded: id in (g.refundedDays || {}), rday: (g.refundedDays || {})[id] };
+    for (const [id, o] of Object.entries(db || {})) all[id] = { day: kyivDate(o.t), tickets: o.tickets, refunded: o.status === 'refunded', rday: o.rt ? kyivDate(o.rt) : kyivDate(o.t) };
+    for (const id of Object.keys(g.refundedDays || {})) if (all[id]) { all[id].refunded = true; all[id].rday = all[id].rday || g.refundedDays[id]; }
+    const sales = { purchases: {}, tickets: {}, refunds: {}, source: db ? (data.ga && !data.ga.error ? 'db+ga' : 'db') : 'ga' };
+    for (const [id, o] of Object.entries(all)) {
+      if (exclude.has(id)) continue;
+      if (o.refunded) { sales.refunds[o.rday] = (sales.refunds[o.rday] || 0) + 1; continue; }
+      sales.purchases[o.day] = (sales.purchases[o.day] || 0) + 1; sales.tickets[o.day] = (sales.tickets[o.day] || 0) + o.tickets;
+    }
+    data.sales = sales;
+  }
+  if (data.ga) { delete data.ga.orders; delete data.ga.refundedDays; }
   cache = { at: Date.now(), html: page(data) };
   return html(cache.html);
 }

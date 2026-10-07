@@ -12,6 +12,7 @@
    Секрети — лише в змінних середовища Vercel (репозиторій публічний):
    WAYFORPAY_SECRET_KEY, META_CAPI_TOKEN, необовʼязково GA4_API_SECRET і META_TEST_EVENT_CODE. */
 import { createHmac, createHash } from 'node:crypto';
+import { saveOrder } from './_orders.mjs';
 
 const PIXEL_ID = '1647718446547735';
 const GA4_ID = 'G-4PKFB5CKBV';
@@ -118,6 +119,7 @@ export async function handle(request, env = process.env, fetchImpl = fetch) {
         method: 'POST', body: JSON.stringify(gaPurchase(p))
       }).catch(e => console.error('wayforpay: ga4 failed', p.orderReference, String(e)));
     }
+    await saveOrder(p, 'paid', env, fetchImpl).catch(e => console.error('wayforpay: store failed', p.orderReference, String(e)));
     console.log('wayforpay: purchase sent', p.orderReference, p.amount, p.currency);
   } else if (isTicketRefund(p)) {
     /* у Meta немає події «повернення» — лише GA */
@@ -126,6 +128,7 @@ export async function handle(request, env = process.env, fetchImpl = fetch) {
         method: 'POST', body: JSON.stringify(gaRefund(p))
       }).catch(e => console.error('wayforpay: ga4 refund failed', p.orderReference, String(e)));
     }
+    await saveOrder(p, 'refunded', env, fetchImpl).catch(e => console.error('wayforpay: store failed', p.orderReference, String(e)));
     console.log('wayforpay: refund sent', p.orderReference, p.amount, p.currency);
   } else {
     console.log('wayforpay: skipped', p.orderReference, p.transactionStatus);
