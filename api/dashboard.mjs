@@ -137,6 +137,7 @@ h2 i{font-style:italic;color:var(--pink);font-variation-settings:"wght" 900,"wdt
 .s1{background:var(--card)}.s2{background:#a46a8b}.s3{background:var(--pink);color:var(--on-pink)}
 .step{display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--ink-2);font-size:13px}
 .step b{font-family:"HN";font-size:24px;font-variation-settings:"wght" 800,"wdth" 500;color:var(--pink)}
+.step{flex-wrap:wrap;justify-content:center;text-align:center}.step .why{flex-basis:100%;font-size:12px;color:var(--ink-3)}
 .step:before{content:"";width:2px;height:22px;background:var(--rule)}
 .total{margin-top:14px;text-align:center;color:var(--ink-2);font-size:14px}.total b{color:var(--pink)}
 /* ads */
@@ -180,13 +181,14 @@ summary::-webkit-details-marker{display:none}summary:after{content:" +";color:va
 <div class="top"><span class="live"><i></i>live</span><span class="count">до фестивалю <b id="cd"></b> днів</span></div>
 <div class="per" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7" aria-pressed="true">7 днів</button><button data-p="30">30 днів</button><button data-p="all">Весь час</button></div>
 <div id="app"></div>
-<details><summary>Як рахується</summary><dl class="how">
+<details><summary>Питання й відповіді</summary><dl class="how">
 <dt>Прийшли на сайт</dt><dd>Унікальні відвідувачі сайту за період (Google Analytics, лише потік цього сайту). Рахуються лише ті, хто дав згоду на cookies: поза ЄС — усі, у ЄС — після «Дивіться» в банері. Люди з блокувальниками реклами сюди не потрапляють — реальних відвідувачів трохи більше.</dd>
 <dt>Натиснули «Купити квиток»</dt><dd>Кліки на будь-яку кнопку купівлі на сайті (подія <code>begin_checkout</code>). Дві спроби однієї людини — два кліки. Ті самі правила згоди, що й для відвідувачів.</dd>
 <dt>Оплатили</dt><dd>Унікальні успішні замовлення на WayForPay. Після кожної оплати WayForPay повідомляє наш сервер, а той передає покупку в Google — тому оплати рахуються всі, навіть без згоди на cookies, і повторні повідомлення не задвоюються. Одне замовлення може містити кілька квитків. Дані — з 06.10.2026.</dd>
+<dt>Чому оплат більше, ніж кліків «Купити»?</dt><dd>Бо їх рахують різні джерела. Кліки — лише на сайті і лише в тих, хто дав згоду на cookies і не має блокувальника реклами. Оплати — усі: їх повідомляє WayForPay. До того ж частина покупців узагалі не натискає «Купити» на сайті: відкриває оплату з біо Instagram, з реклами, що веде одразу на WayForPay, з пересланого в чаті посилання чи закладки. Тому «оплатили з кліків» може бути понад 100% — це не помилка, а знак, що люди купують і повз сайт. Справжню конверсію краще дивитися як «від відвідувача до оплати».</dd>
 <dt>% між кроками</dt><dd>Скільки дійшло до кроку від попереднього. Оплати рахуються за всіма покупцями, а кліки — лише за тими, хто дав згоду, тож «оплатили з кліків» буває завищеним, а іноді й понад 100%. Ширина блоків воронки — наочна, не в масштабі; точні числа — на блоках.</dd>
 <dt>Порівняння з попереднім періодом</dt><dd>«Сьогодні» — з учора; «7 днів» — з попередніми 7 днями; «30 днів» — з попередніми 30. «Весь час» — від 6 жовтня 2026, коли почалося відстеження оплат; порівняння немає.</dd>
-<dt>Реклама Meta</dt><dd><b>Квиток з реклами</b> — витрачено / покупки, які Meta зарахувала рекламі (людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою — стандартне налаштування кабінету). <b>На будь-який квиток</b> — витрачено / усі оплати: скільки реклама коштує в перерахунку на кожен проданий квиток, звідки б покупець не прийшов.</dd>
+<dt>Що показує блок «Реклама Meta»?</dt><dd>Лише кампанії, у назві яких є мітка <code>VWL26</code> або <code>vw12lviv</code> — решта кампаній кабінету показані закресленими й не рахуються. <b>Квиток з реклами</b> — витрачено / покупки, які Meta зарахувала рекламі (людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою — стандартне налаштування кабінету). <b>На будь-який квиток</b> — витрачено / усі оплати: скільки реклама коштує в перерахунку на кожен проданий квиток, звідки б покупець не прийшов.</dd>
 <dt>Дні й оновлення</dt><dd>Дні — за київським часом. Сторінка оновлюється сама кожні 5 хв. Google домальовує дані до 24–48 год, тож цифри за сьогодні й учора можуть ще трохи зрости.</dd>
 </dl></details>
 <p class="foot">Оновлено ${esc(data.updated)} (Київ)</p>
@@ -226,9 +228,12 @@ function render(p){
   const t=el('h2');t.append(document.createTextNode('Шлях до '),el('i',null,'квитка'));app.append(t);
   const f=el('div','fun');const top=Math.max(1,v);
   const st=[['s1','Прийшли на сайт',v],['s2','Натиснули «Купити квиток»',c],['s3','Оплатили',b]];
+  let w=100;
   st.forEach(([cls,l,n],i)=>{
-    if(i){const s=el('div','step');s.append(el('b',null,pct(n,st[i-1][2])),document.createTextNode(i===1?' натиснули «Купити»':' оплатили'));f.append(s)}
-    const g=el('div','stage '+cls);g.style.setProperty('--w',(34+66*Math.sqrt(n/top))+'%');
+    if(i){const s=el('div','step');s.append(el('b',null,pct(n,st[i-1][2])),document.createTextNode(i===1?' натиснули «Купити»':' оплатили'));
+      if(st[i-1][2]&&n>st[i-1][2])s.append(el('span','why','частина покупців іде на оплату не через сайт — див. «Питання й відповіді» внизу'));f.append(s)}
+    /* воронка завжди звужується: блок не ширший за попередній (ширина наочна, точні числа — на блоках) */
+    w=Math.min(w,34+66*Math.sqrt(n/top));const g=el('div','stage '+cls);g.style.setProperty('--w',w+'%');
     const nn=el('div','hn n');g.append(el('div','l',l),nn);f.append(g);count(nn,n)});
   app.append(f);
 
