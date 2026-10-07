@@ -88,3 +88,10 @@ test('signature check is exact', () => {
   assert.equal(validSignature({ ...p, merchantSignature: 'x' }, SECRET), false);
   assert.equal(validSignature(p, 'other'), false);
 });
+
+test('a refund goes to GA4 as refund (same transaction), nothing to Meta, and is accepted', async () => {
+  const f = fakeFetch(); const r = await handle(req(JSON.stringify(payment({ transactionStatus: 'Refunded', reasonCode: 1100 }))), { ...env, GA4_API_SECRET: 'ga' }, f);
+  assert.equal(r.status, 200); assert.equal((await r.json()).status, 'accept');
+  assert.equal(f.calls.length, 1); assert.match(f.calls[0].url, /google-analytics/);
+  assert.equal(f.calls[0].body.events[0].name, 'refund'); assert.equal(f.calls[0].body.events[0].params.transaction_id, payment().orderReference);
+});
