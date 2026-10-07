@@ -19,7 +19,9 @@ test('the funnel comes from GA4: visitors, begin_checkout and purchase by day', 
   globalThis.fetch = async (url, init) => {
     url = String(url);
     if (url.includes('oauth2')) return { json: async () => ({ access_token: 't' }) };
-    const b = JSON.parse(init.body), ev = b.dimensionFilter && b.dimensionFilter.filter.stringFilter.value;
+    const b = JSON.parse(init.body), ex = b.dimensionFilter.andGroup.expressions;
+    assert.equal(ex[0].filter.fieldName, 'streamId'); assert.equal(ex[0].filter.stringFilter.value, '14373728016');
+    const ev = ex[1] && ex[1].filter.stringFilter.value;
     const value = ev === 'purchase' ? '3' : ev === 'begin_checkout' ? '20' : '400';
     return { json: async () => ({ rows: [{ dimensionValues: [{ value: today }], metricValues: [{ value }] }] }) };
   };
