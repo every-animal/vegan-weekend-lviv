@@ -112,13 +112,24 @@ h2{margin:44px 0 0;padding-bottom:10px;border-bottom:1px solid var(--rule);font-
 .day .v{text-align:right}.day .v b{font-family:"Heading Now",system-ui,sans-serif;font-variation-settings:"wght" 480,"wdth" 560;font-size:22px;font-weight:400}
 .day.head{color:var(--ink-3);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:10px 0}
 .off{padding:16px 0;color:var(--ink-2);border-bottom:1px solid var(--rule)}.off.err{color:var(--warn)}
+.how{margin:0}.how dt{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);padding-top:16px}.how dd{margin:6px 0 0;padding-bottom:16px;border-bottom:1px solid var(--rule);color:var(--ink-2);font-size:14px;line-height:1.55}.how b{color:var(--ink);font-weight:500}.how code{font-size:12px;color:var(--accent)}
 .foot{margin-top:28px;color:var(--ink-3);font-size:12px;line-height:1.6}
 @media (max-width:620px){.strip{grid-template-columns:1fr 1fr}.strip>div:nth-child(3){padding-left:0;border-left:0}.strip>div:nth-child(n+3){border-top:1px solid var(--rule)}.f .num{font-size:36px}.strip .num{font-size:27px}.day{grid-template-columns:48px 1fr auto auto}.day .m{display:none}}
 </style></head><body><main>
 <div class="top"><span class="cap">Воронка · ${esc(data.month)}</span><span class="cap live"><i></i>Live</span></div>
 <div class="per" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7">7 днів</button><button data-p="30" aria-pressed="true">30 днів</button></div>
 <div id="app"></div>
-<p class="foot">Оновлено ${esc(data.updated)} (Київ), сторінка оновлюється сама кожні 5 хв. Усі цифри воронки — Google Analytics; оплати туди шле сервер з вебхука WayForPay (з 06.10.2026). Google рахує лише тих, хто дав згоду на cookies: поза ЄС — усіх, у ЄС — після «Дивіться».</p>
+<h2 class="cap">Як рахується</h2>
+<dl class="how">
+<dt>Прийшли на сайт</dt><dd>Унікальні відвідувачі veganweekend.org за період (Google Analytics, лише потік «Vegan Weekend»). Рахуються лише ті, хто дав згоду на cookies: поза ЄС — усі, у ЄС — після «Дивіться» в банері. Люди з блокувальниками реклами сюди не потрапляють — реальних відвідувачів трохи більше.</dd>
+<dt>Натиснули «Купити квиток»</dt><dd>Кліки на будь-яку кнопку купівлі на сайті (подія <code>begin_checkout</code>). Дві спроби однієї людини — два кліки. Ті самі правила згоди, що й для відвідувачів.</dd>
+<dt>Оплатили</dt><dd>Унікальні успішні замовлення на WayForPay. Після кожної оплати WayForPay повідомляє наш сервер, а той передає покупку в Google — тому оплати рахуються всі, навіть без згоди на cookies, і повторні повідомлення не задвоюються. Одне замовлення може містити кілька квитків. Дані — з 06.10.2026.</dd>
+<dt>% між кроками</dt><dd>Скільки дійшло до кроку від попереднього. Оплати рахуються за всіма покупцями, а кліки — лише за тими, хто дав згоду, тож «оплатили з кліків» буває завищеним, а іноді й понад 100%.</dd>
+<dt>Від відвідувача до оплати</dt><dd>Оплати / відвідувачі за той самий період.</dd>
+<dt>Реклама Meta</dt><dd><b>Витрачено</b> — з рекламного кабінету. <b>Покупок з реклами</b> — покупки, які Meta зарахувала рекламі: людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою (стандартне налаштування кабінету). <b>Ціна квитка з реклами</b> — витрачено / покупки з реклами. <b>На будь-який квиток</b> — витрачено / усі оплати: скільки реклама коштує в перерахунку на кожен проданий квиток, звідки б покупець не прийшов.</dd>
+<dt>Дні й оновлення</dt><dd>Дні — за київським часом. Сторінка оновлюється сама кожні 5 хв. Google домальовує дані до 24–48 год, тож цифри за сьогодні й учора можуть ще трохи зрости.</dd>
+</dl>
+<p class="foot">Оновлено ${esc(data.updated)} (Київ).</p>
 </main>
 <script>
 const D=${JSON.stringify(data).replace(/</g, '\\u003c')};
