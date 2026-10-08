@@ -37,3 +37,11 @@ CLI (`ea-vercel deploy`) — лише якщо Git-інтеграція недо
 | A | `@` | `64.29.17.1` |
 
 Старі записи Webflow (`cdn.webflow.com`, `198.202.211.1`, AAAA `2620:cb:2000::1`) прибрати; MX / TXT не чіпати. Після — перевірити сертифікат, редирект з голого домену, `og:image`, `pnpm check https://www.veganweekend.org/`, картку в Telegram / Facebook Sharing Debugger.
+
+## Повернути версію 1.0 (до v2 від 08.10.2026)
+
+Версія до відгуку команди збережена тегом **`v1.0`** у GitHub (і останнім прод-деплоєм v1 у Vercel: `dpl_9fZpfA1ktLfpET6HDDekThVAoqbS`).
+
+- **Швидко, на кілька хвилин** — Vercel → Deployments → деплой v1 → «Instant Rollback». Наступний пуш у `main` знову викладе поточний код.
+- **Насовсім** — повернути сайт із тегу через PR: `git switch -c back-to-v1 && git checkout v1.0 -- site handoff/checks` → коміт → PR → злити.
+- **Частково** (напр., лише анімацію hero) — взяти потрібні правила з `git show v1.0:site/index.html`.

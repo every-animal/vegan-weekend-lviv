@@ -9,8 +9,7 @@
 <title>Веган Вікенд Львів — 22.11</title>
 <meta name="description" content="Веган Вікенд Львів — благодійний фестиваль 22 листопада в Jam Factory Art Center: сцена, лекторій, виставка, маркет і фудзона. 100% прибутку — на підтримку Сил оборони.">
 <meta name="theme-color" content="#6D6D6D">
-<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-light.png" media="(prefers-color-scheme: light)">
-<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-dark.png" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon.png">
 <link rel="apple-touch-icon" sizes="256x256" href="assets/favicon/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="uk_UA">
@@ -60,8 +59,20 @@ a{color:inherit}a:hover{color:inherit}
 .sec{position:relative;padding:clamp(56px,5.2vw,98px) var(--pad);scroll-margin-top:56px}
 .wrap{max-width:1560px;margin:0 auto;position:relative;z-index:2}
 .skew{clip-path:polygon(0 0,100% 3.4vw,100% 100%,0 calc(100% - 3.4vw));margin:-3.4vw 0;z-index:3}
-.rv{transition:opacity .7s ease,translate .8s cubic-bezier(.2,.9,.2,1)}
-.rv.pre{opacity:0;translate:0 56px}
+/* motion (v2, owner 08.10.2026): calm reveals instead of springs and stickers — one ease, one rhythm.
+   A block rises a little and fades in; a heading slides up out of its own line, as if from under a mask; a label only fades in.
+   Blocks that come on screen together follow one another 80 ms apart (--d, set by the reveal script). Each plays once. */
+.vw{--ez:cubic-bezier(.16,1,.3,1)}
+.rv{transition:opacity .9s var(--ez) var(--d,0s),translate .9s var(--ez) var(--d,0s),clip-path 1.2s var(--ez) var(--d,0s)}
+.rv.pre{opacity:0;translate:0 24px}
+.lb.rv.pre{translate:none}
+h2.rv{transition-duration:1.2s}
+/* a heading is wiped open from the top while it rises; one pixel stays open — a fully clipped element is never «on screen» for the observer */
+h2.rv.pre{opacity:0;translate:0 .5em;clip-path:inset(-.3em -.2em calc(100% - 1px) -.2em)}
+@media (prefers-reduced-motion:no-preference){h2.rv:not(.pre){clip-path:inset(-.3em -.2em -.3em -.2em)}}
+/* «line»: the text slides up inside a fixed window just around its own box — the clip moves against the slide, so the edge stays put */
+@keyframes vw-line{from{translate:0 1.05em;clip-path:inset(-1.25em -.6em .85em -.6em)}to{translate:0 0;clip-path:inset(-.2em -.6em -.2em -.6em)}}
+@keyframes vw-rise{from{opacity:0;translate:0 24px}}
 .lg{display:block;background:var(--fg);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}
 .lg-jf{aspect-ratio:691/456;-webkit-mask-image:url(assets/logos/jam-factory.png);mask-image:url(assets/logos/jam-factory.png)}
 .lg-kt{aspect-ratio:500/361;-webkit-mask-image:url(assets/logos/kozhna-tvaryna.png);mask-image:url(assets/logos/kozhna-tvaryna.png)}
@@ -111,12 +122,10 @@ a{color:inherit}a:hover{color:inherit}
 .hero-city{font-size:calc(var(--F)*.57);line-height:.84;margin-left:calc(var(--F)*1.16);font-variation-settings:"wght" 520,"wdth" 600;letter-spacing:-.015em;white-space:nowrap;text-transform:none}
 .hero-cta{--bf:calc(2.1*var(--u));display:flex;align-items:center;gap:calc(1.7*var(--u));padding:calc(var(--F)*.12 + 2.5425*var(--u)) calc(1.8*var(--u)) 0 0}
 .hero-cta .btn-xl{font-size:var(--bf)}
-.play{position:relative;flex:none;display:grid;place-items:center;--s:calc(3.28*var(--bf));width:var(--s);aspect-ratio:1;border-radius:50%;background:var(--bg);color:var(--fg);text-decoration:none;text-transform:uppercase;rotate:-7deg;translate:0 calc(.238*var(--bf));box-shadow:rgba(0,0,0,.17) 0 calc(var(--s)*-.07) calc(var(--s)*.08) 0 inset,rgba(0,0,0,.15) 0 calc(var(--s)*-.11) calc(var(--s)*.1) 0 inset,rgba(0,0,0,.1) 0 calc(var(--s)*-.24) calc(var(--s)*.13) 0 inset,rgba(0,0,0,.06) 0 2px 1px,rgba(0,0,0,.09) 0 4px 2px,rgba(0,0,0,.09) 0 8px 4px,rgba(0,0,0,.09) 0 16px 8px,rgba(0,0,0,.09) 0 32px 16px;transition:rotate .3s cubic-bezier(.3,1.8,.5,1),scale .3s cubic-bezier(.3,1.8,.5,1)}
-.play:hover{color:var(--fg);rotate:5deg;scale:1.07}
+.play{position:relative;flex:none;display:grid;place-items:center;--s:calc(3.28*var(--bf));width:var(--s);aspect-ratio:1;border-radius:50%;background:var(--bg);color:var(--fg);text-decoration:none;text-transform:uppercase;rotate:-2deg;translate:0 calc(.238*var(--bf));box-shadow:rgba(0,0,0,.17) 0 calc(var(--s)*-.07) calc(var(--s)*.08) 0 inset,rgba(0,0,0,.15) 0 calc(var(--s)*-.11) calc(var(--s)*.1) 0 inset,rgba(0,0,0,.1) 0 calc(var(--s)*-.24) calc(var(--s)*.13) 0 inset,rgba(0,0,0,.06) 0 2px 1px,rgba(0,0,0,.09) 0 4px 2px,rgba(0,0,0,.09) 0 8px 4px,rgba(0,0,0,.09) 0 16px 8px,rgba(0,0,0,.09) 0 32px 16px;transition:rotate .3s cubic-bezier(.3,1.8,.5,1),scale .3s cubic-bezier(.3,1.8,.5,1)}
+.play:hover{color:var(--fg);rotate:1.5deg;scale:1.05}
 .play:active{scale:.98}
-.play .ring{position:absolute;inset:0;width:100%;height:100%;animation:vw-spin 14s linear infinite}
-.play text{font-size:21px;font-variation-settings:"wght" 820,"wdth" 560;fill:currentColor}
-.play .tri{position:relative;width:calc(var(--s)*.25);height:calc(var(--s)*.25);fill:currentColor;translate:7% 0}
+.play .tri{position:relative;width:calc(var(--s)*.3);height:calc(var(--s)*.3);fill:currentColor;translate:7% 0}
 /* video window (owner's decision 05.10.2026): the round button opens the video over the whole page, in the colours of the section; «Закрити» sits where the nav is */
 .vdo{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:56px var(--pad) var(--pad);border:0;box-sizing:border-box;background:var(--bg);color:var(--fg)}
 .vdo[open]{display:flex;align-items:center;justify-content:center}
@@ -131,39 +140,27 @@ a{color:inherit}a:hover{color:inherit}
 .tpop br{display:none}
 /* «Закрити» here and in the video window is the same text button as «Не підглядайте» (.cbn-no); these rules only place it */
 .tpop .tpop-x{display:block;margin:14px 0 0 auto}
-@keyframes vw-spin{to{transform:rotate(360deg)}}
 @keyframes vw-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
 .hero-row{position:absolute;left:calc(2.82*var(--u));right:calc(3.9*var(--u));bottom:calc(2.075*var(--u));display:flex;justify-content:space-between;align-items:flex-start}
-/* hero intro (owner's change 05.10.2026): the spring of the numbers 3 / 11 / 5.7 (vw-wd, 9.2), once, on load, ~1.5 s in all.
-   Text springs in width: narrow → far too wide → back below its width → once more → settles. Its own weight and final width come from
-   --fw / --fd, the three swing widths from --f1 / --f2 / --f3. What has no width to spring (logos, the round button, the small text that
-   would rewrap) springs in scale on the same beat. */
-@keyframes vw-spw{0%{font-variation-settings:"wght" var(--fw),"wdth" 100;animation-timing-function:cubic-bezier(.3,0,.2,1)}36.7%{font-variation-settings:"wght" var(--fw),"wdth" var(--f1)}60%{font-variation-settings:"wght" var(--fw),"wdth" var(--f2)}80%{font-variation-settings:"wght" var(--fw),"wdth" var(--f3)}100%{font-variation-settings:"wght" var(--fw),"wdth" var(--fd)}}
-@keyframes vw-sps{0%{scale:0;animation-timing-function:cubic-bezier(.3,0,.2,1)}36.7%{scale:1.16}60%{scale:.93}80%{scale:1.04}100%{scale:1}}
-.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b{animation:vw-spw .9s var(--gd,0s) linear backwards}
-.hero-logos .lg,.hero-cta .play,.hero-sub,.cdw-l{animation:vw-sps .9s var(--gd,0s) linear backwards}
-.L,.hero-date{--fw:400;--fd:835;--f1:1000;--f2:740;--f3:890}
-.hero-city{--fw:520;--fd:600;--f1:900;--f2:470;--f3:680}
-.hero-cta .btn-xl{--fw:700;--fd:670;--f1:950;--f2:560;--f3:740}
-.wg b{--fw:900;--fd:var(--w,600);--f1:calc(var(--w,600) + 240);--f2:calc(var(--w,600) - 110);--f3:calc(var(--w,600) + 60)}
-.ln1 .L:nth-child(2){--gd:.04s}.ln1 .L:nth-child(3){--gd:.08s}.ln1 .L:nth-child(4){--gd:.12s}.ln1 .L:nth-child(5){--gd:.16s}
-.ln2 .L:nth-child(1){--gd:.18s}.ln2 .L:nth-child(2){--gd:.22s}.ln2 .L:nth-child(3){--gd:.26s}.ln2 .L:nth-child(4){--gd:.3s}.ln2 .L:nth-child(5){--gd:.34s}.ln2 .L:nth-child(6){--gd:.38s}
-.hero-date{--gd:.2s}
-.hero-logos .lg-jf{--gd:.4s}.hero-logos .lg-kt{--gd:.44s}
-.hero-city{--gd:.46s}
-.hero-cta .play{--gd:.5s}.hero-cta .btn-xl{--gd:.54s}
+/* hero intro (v2, owner 08.10.2026; replaces the width spring of 05.10.2026): on load, once, ~2 s in all.
+   ВЕГАН, ВІКЕНД, the date and the city slide up out of their lines; the two logos fade in; the buttons, the line under them and the countdown rise */
+.ln,.hero-date,.hero-city{animation:vw-line 1.2s var(--gd,0s) var(--ez) backwards}
+.hero-logos .lg{animation:vw-fade .9s var(--gd,0s) var(--ez) backwards}
+.hero-cta>*,.hero-sub,.cdw{animation:vw-rise .9s var(--gd,0s) var(--ez) backwards}
+.ln1{--gd:.1s}.hero-date{--gd:.3s}.ln2{--gd:.22s}.hero-city{--gd:.38s}
+.hero-logos .lg-jf{--gd:.5s}.hero-logos .lg-kt{--gd:.58s}
+.hero-cta .play{--gd:.6s}.hero-cta .btn-xl{--gd:.68s}.hero-sub{--gd:.8s}.cdw{--gd:.88s}
 /* the intro waits (html.iw) until both fonts are in and the page is past its first heavy paint — at most 3 s. Started during the load
-   it ran on a busy phone with frames of 150–250 ms: the letters jumped from narrow to wide (owner's report 06.10.2026) */
-html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.hero-cta .play,.hero-sub,.cdw-l){animation-play-state:paused}
-.hero-sub{--gd:.56s;transform-origin:0 50%}.cdw-l{--gd:.58s;transform-origin:100% 50%}
-.wg-d b{--gd:.6s}.wg-h b{--gd:.62s}.wg-m b{--gd:.64s}.wg-s b{--gd:.66s}
+   it ran on a busy phone with frames of 150–250 ms (owner's report 06.10.2026) */
+html.iw :is(.ln,.hero-date,.hero-city,.hero-logos .lg,.hero-cta>*,.hero-sub,.cdw){animation-play-state:paused}
 .hero-sub,.cdw-l{--st:max(11px,calc(1.17*var(--u)));font-size:var(--st);line-height:1.3;letter-spacing:.012em;font-variation-settings:"wght" 700,"wdth" 520;color:var(--fg);padding-top:calc(3.36*var(--u) - 2.43*var(--st))}
 .hero-sub{max-width:30em;text-align:left}
 .cdw{display:flex;gap:calc(2.3*var(--u));align-items:flex-start;color:var(--fg)}
 .cdw-l{text-align:right}
 .wg{display:flex;flex-direction:column;gap:calc(.62*var(--u));align-items:flex-start}
 .wg b{display:block;font-weight:normal;font-size:calc(4.2*var(--u));line-height:.8;white-space:nowrap;font-feature-settings:"tnum" 1;font-variation-settings:"wght" 900,"wdth" var(--w,600)}
-.wg-d{--w:760}.wg-h{--w:650}.wg-m{--w:540}.wg-s{--w:430}
+/* the countdown: one width for all four numbers (v2) */
+.wg{--w:600}
 .wg small{font-size:calc(1.4*var(--u));line-height:1;font-style:italic;font-variation-settings:"wght" 880,"wdth" 760;letter-spacing:-.01em}
 .mq{display:flex;overflow:hidden;user-select:none}
 .mq-t{display:flex;flex:none;align-items:center;justify-content:space-around;min-width:100%;gap:.9em;padding-right:.9em;white-space:nowrap;animation:vw-mq var(--dur,30s) linear infinite}
@@ -183,7 +180,10 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 .about-top{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);gap:clamp(24px,4vw,72px);align-items:start}
 .mani{margin-top:20px;font-size:clamp(25px,3.4vw,60px);line-height:1.02;letter-spacing:-.012em;font-variation-settings:"wght" 820,"wdth" 520;text-wrap:balance;color:var(--fg)}
 .mani .w{display:inline-block}
-.mani em{font-variation-settings:"wght" 900,"wdth" 760}
+.mani .w{transition:translate 1.2s var(--ez) var(--d,0s),clip-path 1.2s var(--ez) var(--d,0s)}
+/* the slide is longer than the line, so the accents of Ї and Й stay hidden too: window [−.2em, box + .2em], slide 1.45em */
+.mani.pre .w{translate:0 1.45em;clip-path:inset(-1.65em -.3em 1.25em -.3em)}
+@media (prefers-reduced-motion:no-preference){.mani:not(.pre) .w{clip-path:inset(-.2em -.3em -.2em -.3em)}}
 .ph{position:relative;overflow:hidden;background:var(--fg);display:flex;align-items:flex-end;padding:12px;min-height:160px;transition:scale .35s cubic-bezier(.3,1.6,.5,1),rotate .35s cubic-bezier(.3,1.6,.5,1)}
 .ph::before{content:"";position:absolute;inset:-25%;background:var(--bg);-webkit-mask:url(assets/patterns/fur.png) center/cover no-repeat;mask:url(assets/patterns/fur.png) center/cover no-repeat}
 .ph:hover{scale:1.04;rotate:0deg;z-index:5}
@@ -228,13 +228,12 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 .zl{list-style:none;border-bottom:4px solid var(--fg)}
 .z{position:relative;display:grid;grid-template-columns:var(--zc) minmax(0,1fr) minmax(0,25vw);align-items:center;gap:0 2vw;padding:0 var(--pad);border-top:4px solid var(--fg);color:var(--fg);overflow-x:clip;overflow-y:visible;transition:background .22s,color .22s}
 .z-n{align-self:start;padding-top:1.6em}
-.z-t{font-size:7.2vw;line-height:.8;padding:.15em 0 .14em;text-transform:uppercase;white-space:nowrap;font-variation-settings:"wght" 900,"wdth" var(--wd,330);transition:font-variation-settings .25s linear}
-.z-d{color:var(--tx);font-size:clamp(13px,1.05vw,16px);letter-spacing:.012em;font-variation-settings:"wght" 660,"wdth" 500;line-height:1.3;text-align:right;transition:translate .3s}
+.z-t{font-size:7.2vw;line-height:.8;padding:.15em 0 .14em;text-transform:uppercase;white-space:nowrap;font-variation-settings:"wght" 900,"wdth" 400}
+.z-d{color:var(--tx);font-size:clamp(13px,1.05vw,16px);letter-spacing:.012em;font-variation-settings:"wght" 660,"wdth" 500;line-height:1.3;text-align:right}
 .z:hover{background:var(--fg);color:var(--bg);z-index:6}
-.z-ph{position:absolute;left:63%;top:50%;z-index:3;width:clamp(140px,15.5vw,300px);aspect-ratio:4/5;object-fit:cover;pointer-events:none;opacity:0;scale:.3;rotate:calc(var(--r,5deg)*-3);translate:calc(-50% + var(--mx)*1.6vw) 12%;box-shadow:0 2px 3px rgba(0,0,0,.12),0 10px 14px rgba(0,0,0,.16),0 26px 34px rgba(0,0,0,.2);transition:opacity .14s ease,scale .2s ease,rotate .2s ease,translate .2s ease}
-.z:hover .z-ph{opacity:1;scale:1;rotate:var(--r,5deg);translate:calc(-50% + var(--mx)*1.6vw) -50%;transition:opacity .1s ease,scale .5s cubic-bezier(.3,1.7,.45,1),rotate .65s cubic-bezier(.3,1.7,.45,1),translate .5s cubic-bezier(.2,1.25,.4,1)}
-.z:hover .z-t{font-style:italic}
-.z:hover .z-d{color:var(--bg);translate:-10px 0}
+.z-ph{position:absolute;left:63%;top:50%;z-index:3;width:clamp(140px,15.5vw,300px);aspect-ratio:4/5;object-fit:cover;pointer-events:none;opacity:0;scale:.94;rotate:var(--r,5deg);translate:-50% -46%;box-shadow:0 2px 3px rgba(0,0,0,.12),0 10px 14px rgba(0,0,0,.16),0 26px 34px rgba(0,0,0,.2);transition:opacity .2s ease,scale .2s ease,translate .2s ease}
+.z:hover .z-ph{opacity:1;scale:1;translate:-50% -50%;transition:opacity .35s var(--ez),scale .7s var(--ez),translate .7s var(--ez)}
+.z:hover .z-d{color:var(--bg)}
 .zones-foot{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px 40px;margin-top:clamp(26px,3vw,48px);padding:0 var(--pad) 0 calc(var(--pad) + var(--zc) + 2.14vw)}
 .zones-foot p{max-width:32em}
 .lnk{font-variation-settings:"wght" 820,"wdth" 700;text-transform:uppercase;font-size:clamp(15px,1.3vw,20px);color:var(--fg);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:.24em;transition:font-variation-settings .3s}
@@ -245,29 +244,13 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 .fund-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:clamp(24px,5vw,90px);align-items:start;margin-top:clamp(20px,2.6vw,44px)}
 .fund-big{--p:1;--fx:500;color:var(--fg);margin-top:16px;font-size:clamp(190px,26vw,470px);line-height:.76;white-space:nowrap;width:max-content;font-variation-settings:"wght" 1000,"wdth" calc(100 + var(--p)*var(--fx));letter-spacing:-.02em}
 .fund-h{font-size:clamp(30px,4.2vw,78px);line-height:.92;color:var(--tx)}
-.fund-h i{font-variation-settings:"wght" 900,"wdth" 300;letter-spacing:0}
 .fund-grid p{margin:0 0 34px;max-width:30em}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:clamp(22px,3vw,48px);margin-top:clamp(44px,5vw,84px);padding-top:clamp(22px,2.6vw,40px);border-top:4px solid var(--fg)}
 .stat-n{display:flex;align-items:baseline;gap:.08em;font-size:clamp(96px,10.5vw,200px);font-variation-settings:"wght" 1000,"wdth" 210;line-height:.8;color:var(--fg)}
 .stat-n small{font-size:.26em;white-space:nowrap;font-variation-settings:"wght" 880,"wdth" 760;text-transform:uppercase;font-style:italic;letter-spacing:-.01em}
 .stat .lb{margin-top:12px;font-size:14px}
 .stat-n>span{display:inline-block;font-variation-settings:"wght" 1000,"wdth" 210}
-/* stat numbers: out of the narrowest cut the width axis springs past its place and settles (variant 04 «Розтяжка») */
-.stat-n>span.pre{font-variation-settings:"wght" 1000,"wdth" 100}
-.stat-n>span.go{animation:vw-wd 1.56s linear both}
-.stat:nth-child(2) .stat-n>span.go{animation-delay:.18s}
-.stat:nth-child(3) .stat-n>span.go{animation-delay:.36s}
-/* theme text: a paragraph pops in tilted, like a sticker, and straightens; side by side they follow one another */
 .pp{display:block}
-/* theme paragraphs (owner's decision 06.10.2026): they spring in like the hero — the hero's own scale spring (vw-sps: grows,
-   overshoots, falls back below, settles), played once when the paragraph comes on screen; the three follow one another.
-   Replaces the scroll-bound flight of 7.4. .pre / .go come from the paragraph script; without it the text is simply there */
-.pov-body .pp{transform-origin:0 50%}
-.pov-body .pp.pre{scale:0}
-.pov-body .pp.go{animation:vw-sps .9s var(--gd,0s) linear both}
-.pov-body .pov-x .pp{--gd:.12s}.pov-body .b:not(.pov-x) .pp{--gd:.24s}
-@media (max-width:820px){.pov-body .pp{--gd:0s !important}}
-@keyframes vw-wd{0%{font-variation-settings:"wght" 1000,"wdth" 100;animation-timing-function:cubic-bezier(.3,0,.2,1)}36.7%{font-variation-settings:"wght" 1000,"wdth" 400}60%{font-variation-settings:"wght" 1000,"wdth" 150}80%{font-variation-settings:"wght" 1000,"wdth" 250}100%{font-variation-settings:"wght" 1000,"wdth" 210}}
 .stats-cap{margin-top:clamp(44px,5vw,84px);margin-bottom:calc(clamp(44px,5vw,84px)*-1 + 18px)}
 
 .was{padding:clamp(48px,4.4vw,84px) 0 clamp(6px,1vw,20px);overflow:hidden}
@@ -280,7 +263,6 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 .strip .ph{transition:scale .4s cubic-bezier(.3,1.6,.5,1),rotate .4s cubic-bezier(.3,1.6,.5,1),box-shadow .3s ease}
 @media (hover:hover){.strip .ph:hover{scale:1.09;rotate:0deg;z-index:5;box-shadow:0 18px 34px rgba(0,0,0,.3)}}
 .revs-h{color:var(--fg);font-size:clamp(34px,5vw,96px);margin-bottom:clamp(20px,2.2vw,38px)}
-.revs-h i{font-variation-settings:"wght" 900,"wdth" 210;font-size:1.4em;line-height:.6;letter-spacing:0}
 .revs{padding:16px 0 34px;--dur:84s}
 .revs .mq-t{gap:clamp(18px,2vw,30px);padding-right:clamp(18px,2vw,30px);align-items:flex-start;justify-content:flex-start}
 .revs .rev{flex:none;width:clamp(310px,25vw,380px);white-space:normal;container-type:inline-size}
@@ -307,20 +289,22 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 .place-rt{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .place-rt.rt-m{display:none}
 .place-rt .rt-l{fill:none;stroke:var(--fg);stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:0}
-.place-rt .dot{fill:var(--bg);stroke:var(--fg);stroke-width:7;transform-box:fill-box;transform-origin:center;scale:0;transition:scale .4s cubic-bezier(.3,1.9,.5,1)}
+.place-rt .dot{fill:var(--bg);stroke:var(--fg);stroke-width:7;transform-box:fill-box;transform-origin:center;scale:0;transition:scale .5s var(--ez)}
 .place-rt .dot.on{scale:1}
 .place-h{position:absolute;left:0;top:0;z-index:2}
 .place-t{font-size:7.2cqi;line-height:.86;margin-top:clamp(16px,1.6cqi,24px)}
 .place-t span{white-space:nowrap}
+/* type (v2, owner 08.10.2026): fewer cuts — the accent word of a heading is the same cut, only italic (as «у Львові» always was);
+   no narrow heavy words dropped into wide headings. «Приходь собою» keeps its two cuts */
 .place-t i{font-variation-settings:"wght" 540,"wdth" 720}
-.place-sp{position:absolute;left:var(--x);top:var(--y);z-index:2;display:flex;flex-direction:column;gap:.5em;white-space:nowrap;filter:var(--halo2);scale:0;rotate:calc(var(--r)*4);transform-origin:0 0;transition:scale .45s cubic-bezier(.3,1.8,.45,1),rotate .6s cubic-bezier(.3,1.8,.45,1)}
-.place-sp.on{scale:1;rotate:var(--r)}
-.place-sp.up{translate:0 -100%;transform-origin:0 100%}
+.place-sp{position:absolute;left:var(--x);top:var(--y);z-index:2;display:flex;flex-direction:column;gap:.5em;white-space:nowrap;filter:var(--halo2);rotate:var(--r);transform-origin:0 0;opacity:0;--ty:12px;translate:0 var(--ty);transition:opacity .6s var(--ez),translate .9s var(--ez)}
+.place-sp.on{opacity:1;--ty:0px}
+.place-sp.up{translate:0 calc(-100% + var(--ty));transform-origin:0 100%}
 .place-sp b{font-weight:normal;font-variation-settings:"wght" 820,"wdth" 520;font-size:2.7cqi;line-height:.95;letter-spacing:-.005em}
-.place-pin{position:absolute;left:var(--x);top:var(--y);width:11.4cqi;translate:-50% -50%;z-index:4;scale:0;transition:scale .5s cubic-bezier(.3,1.9,.5,1)}
-.place-pin.on{scale:1}
+.place-pin{position:absolute;left:var(--x);top:var(--y);width:11.4cqi;translate:-50% -50%;z-index:4;opacity:0;scale:.85;transition:opacity .6s var(--ez),scale .9s var(--ez)}
+.place-pin.on{opacity:1;scale:1}
 .pin-b{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:1;border-radius:50%;background:var(--btn-bg);color:var(--btn-ink);--s:11.4cqi;box-shadow:rgba(0,0,0,.17) 0 calc(var(--s)*-.07) calc(var(--s)*.08) 0 inset,rgba(0,0,0,.15) 0 calc(var(--s)*-.11) calc(var(--s)*.1) 0 inset,rgba(0,0,0,.1) 0 calc(var(--s)*-.24) calc(var(--s)*.13) 0 inset,rgba(0,0,0,.06) 0 2px 1px,rgba(0,0,0,.09) 0 4px 2px,rgba(0,0,0,.09) 0 8px 4px,rgba(0,0,0,.09) 0 16px 8px,rgba(0,0,0,.09) 0 32px 16px;transition:rotate .3s cubic-bezier(.3,1.8,.5,1),scale .3s cubic-bezier(.3,1.8,.5,1)}
-.pin-b .ring{position:absolute;inset:0;width:100%;height:100%;animation:vw-spin 16s linear infinite}
+.pin-b .ring{position:absolute;inset:0;width:100%;height:100%}
 .pin-b text{font-size:21px;font-variation-settings:"wght" 820,"wdth" 560;fill:currentColor;text-transform:uppercase}
 .pin-b .lg{position:relative;width:44%;background:var(--btn-ink)}
 .place-pin:hover .pin-b{rotate:-8deg;scale:1.08}
@@ -341,9 +325,8 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 .cp-i{width:1.05em;height:1.05em;flex:none;translate:0 .05em;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
 .cp-i .ck{opacity:0}.cp.ok .cp-i .ck{opacity:1}.cp.ok .cp-i .sq{opacity:0}
 
-.tix{padding-top:clamp(96px,8.6vw,154px);padding-bottom:clamp(150px,13.5vw,240px);overflow:hidden;overflow:clip;margin-bottom:0}
+.tix{padding-top:clamp(96px,8.6vw,154px);padding-bottom:clamp(88px,7.8vw,140px);overflow:hidden;overflow:clip;margin-bottom:0}
 .tix-h{position:relative;z-index:2;filter:var(--halo);font-size:clamp(38px,6.6vw,128px);color:var(--fg);text-align:center;text-wrap:balance}
-.tix-h i{font-variation-settings:"wght" 860,"wdth" 300;font-size:1.22em;line-height:.6;letter-spacing:.01em;padding-right:.08em}
 .ticket-w{perspective:1400px;margin:clamp(30px,3.6vw,60px) auto 0;max-width:1120px}
 .ticket{position:relative;display:grid;grid-template-columns:minmax(0,1fr) clamp(250px,29vw,372px);text-decoration:none;rotate:-2deg;transition:transform .18s ease-out,rotate .4s cubic-bezier(.3,1.6,.5,1);transform-style:preserve-3d;will-change:transform}
 @media (hover:hover){.ticket:hover{rotate:0deg}}
@@ -358,19 +341,6 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 .t-price small{font-size:.17em;line-height:.742;font-variation-settings:"wght" 880,"wdth" 700}
 .t-stub .lb{color:var(--tx)}
 .t-stub .t-tier{color:var(--bg)}
-.coon-track{position:absolute;left:0;right:0;bottom:0;height:3.4vw;z-index:1;pointer-events:none}
-.coon{--ch:clamp(72px,9.4vw,150px);--lt:.15s;position:absolute;left:-30%;bottom:130%;margin-bottom:calc(var(--ch)*-.075);height:var(--ch);aspect-ratio:2/1;color:var(--fg);translate:-50% 0;rotate:1.947deg;transform-origin:50% 100%;animation:coon-run 19.48s linear infinite}
-.coon svg{display:block;width:100%;height:100%;overflow:visible;fill:currentColor}
-.coon-c{fill:var(--bg)}
-.coon-t{fill:none;stroke:currentColor;stroke-width:46;stroke-dasharray:19 11}
-.coon-l{stroke:currentColor;stroke-width:25;stroke-linecap:round;animation:coon-leg var(--lt) linear infinite}
-.coon-l2{animation-delay:calc(var(--lt)/-2)}
-.coon-b{animation:coon-bob calc(var(--lt)/2) ease-in-out infinite alternate}
-.coon-tg{animation:coon-tail calc(var(--lt)*2) ease-in-out infinite alternate}
-@keyframes coon-leg{0%{transform:skewX(38deg) scaleY(1)}50%{transform:skewX(-38deg) scaleY(1)}75%{transform:skewX(0deg) scaleY(.66)}100%{transform:skewX(38deg) scaleY(1)}}
-@keyframes coon-bob{from{transform:translateY(0)}to{transform:translateY(-4px)}}
-@keyframes coon-tail{from{transform:rotate(-4deg)}to{transform:rotate(6deg)}}
-@keyframes coon-run{0%{left:-30%;bottom:130%;scale:1 1}19.2%{left:130%;bottom:-30%;scale:1 1}19.21%,50%{left:130%;bottom:-30%;scale:-1 1}69.2%{left:-30%;bottom:130%;scale:-1 1}69.21%,100%{left:-30%;bottom:130%;scale:1 1}}
 .tix-cta{display:flex;justify-content:center;margin-top:clamp(36px,3.4vw,58px);position:relative;z-index:2}
 .tix-note{text-align:center;margin-top:clamp(32px,3.4vw,56px);color:var(--fg);position:relative;z-index:2}
 
@@ -418,7 +388,7 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 .place-rt .rt-l{stroke-width:17}.place-rt .dot{stroke-width:4.5}
 .place-sp{left:var(--xm);top:var(--ym)}
 .place-sp b{font-size:5.6cqi}
-.place-sp.up{translate:none;transform-origin:0 0}
+.place-sp.up{translate:0 var(--ty);transform-origin:0 0}
 .place-pin{left:var(--xm);top:var(--ym);width:25cqi}
 .pin-b{--s:25cqi}
 .place-bot{margin-top:26px}
@@ -446,23 +416,19 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
    (class .on from the zone script; owner's decision 06.10.2026) */
 .zones .z{cursor:pointer;-webkit-tap-highlight-color:transparent}
 /* the photo lands in the free space: under the row when the row is in the upper half of the screen, over it when in the lower (.up) — the open zone stays readable */
-.zones .z .z-ph{display:block;left:auto;right:var(--pad);top:calc(100% - 4px);bottom:auto;width:46vw;translate:0 -30%}
-.zones .z.up .z-ph{top:auto;bottom:calc(100% - 4px);translate:0 30%}
+.zones .z .z-ph{display:block;left:auto;right:var(--pad);top:calc(100% - 4px);bottom:auto;width:46vw;translate:0 -6%}
+.zones .z.up .z-ph{top:auto;bottom:calc(100% - 4px);translate:0 6%}
 .zones .z.on{background:var(--fg);color:var(--bg);z-index:6}
-.zones .z.on .z-t{font-style:italic}
 .zones .z.on .z-d{color:var(--bg)}
-.zones .z.on .z-ph{opacity:1;scale:1;rotate:var(--r,5deg);translate:0 0;transition:opacity .1s ease,scale .5s cubic-bezier(.3,1.7,.45,1),rotate .65s cubic-bezier(.3,1.7,.45,1),translate .5s cubic-bezier(.2,1.25,.4,1)}
+.zones .z.on .z-ph{opacity:1;scale:1;translate:0 0;transition:opacity .35s var(--ez),scale .7s var(--ez),translate .7s var(--ez)}
 @media (hover:none){
 /* a touch leaves :hover stuck on what was tapped — on a phone only .on turns a row over */
 .zones .z:not(.on):hover{background:none;color:var(--fg);z-index:auto}
-.zones .z:not(.on):hover .z-t{font-style:normal}
 .zones .z:not(.on):hover .z-d{color:inherit}
-.zones .z:not(.on):hover .z-ph{opacity:0;scale:.3;rotate:calc(var(--r,5deg)*-3)}
+.zones .z:not(.on):hover .z-ph{opacity:0;scale:.94}
 }
-.z:hover .z-d{translate:0 0}
 .fund-big{font-size:58vw;--fx:180}
 .ticket{grid-template-columns:minmax(0,1fr);rotate:-1.5deg}
-.coon{--lt:.19s}
 .t-main{border-radius:30px 30px 0 0;--n1:0 100%;--n2:100% 100%}
 .t-stub{border-left:0;border-top:5px dashed var(--fg);flex-direction:row;flex-wrap:wrap;align-items:center;border-radius:0 0 30px 30px;--n1:0 0;--n2:100% 0;transform-origin:0 0}
 @media (hover:hover){.ticket:hover .t-stub{translate:0 12px;rotate:2.5deg}}
@@ -476,9 +442,6 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 }
 @media (hover:none){
 .z-ph{display:none}
-}
-@media (max-width:520px){
-.coon{--lt:.27s}
 }
 .about{padding-bottom:clamp(96px,10vw,180px)}
 @media (max-width:820px){.about{padding-bottom:70px}}
@@ -525,13 +488,13 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 .mn-l:nth-child(2){--i:1}.mn-l:nth-child(3){--i:2}.mn-l:nth-child(4){--i:3}.mn-l:nth-child(5){--i:4}
 .vw.menu .mnav{animation:mn-in .45s cubic-bezier(.2,.8,.2,1) backwards}
 .vw.menu .mn-l{animation:mn-row .5s cubic-bezier(.2,.8,.2,1) var(--d) backwards}
-.vw.menu .mn-l b{animation:mn-up .62s cubic-bezier(.3,1.45,.5,1) calc(var(--d) + .05s) backwards}
+.vw.menu .mn-l b{animation:mn-up .9s var(--ez) calc(var(--d) + .05s) backwards}
 .vw.menu .mn-l .lb{animation:mn-fade .3s ease calc(var(--d) + .22s) backwards}
 .vw.menu .mn-b .btn{animation:mn-pop .55s cubic-bezier(.3,1.6,.5,1) .52s backwards}
 .vw.menu .mn-b .btn+.btn{animation-delay:.62s}
 @keyframes mn-in{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
 @keyframes mn-row{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
-@keyframes mn-up{from{translate:0 118%;rotate:5deg}to{translate:0 0;rotate:0deg}}
+@keyframes mn-up{from{translate:0 118%}to{translate:0 0}}
 @keyframes mn-fade{from{opacity:0}}
 @keyframes mn-pop{from{scale:0}}
 /* the buttons hold on to the bottom edge of the panel: even where the rows cannot shrink any further they stay in view and the rows scroll under them */
@@ -567,7 +530,7 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 /* what we have done together: two numbers side by side, the third under them */
 .stats{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px 14px}
 .stat:nth-child(3){grid-column:1/-1}
-.tix{padding-bottom:128px}
+.tix{padding-bottom:72px}
 /* reviews -> location: the same rhythm as on a wide screen */
 .revs{padding-bottom:22px}
 .place{padding-top:20px}
@@ -618,12 +581,15 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 }
 @media (max-width:480px){
 .b,.pov-body .b{font-size:clamp(13px,3.59vw,15.5px)}
+/* the tickets heading: «поки early birds» stays one line now that «поки» is in the wide cut (v2) — the size follows the screen */
+.tix-h{font-size:calc((100vw - 2*var(--pad))/11.1)}
 .mani{font-size:clamp(22px,6.41vw,30px)}
+/* «Ми об’єднуємо» keeps its own first line, as when it was in the wide cut: the hand breaks below were set for that (v2) */
+.mani em{display:block}
 }
-/* reviews heading in two lines: «кажуть» touches the line above it and does not run into it */
+/* reviews heading in two lines, «кажуть» on the second */
 @media (max-width:460px){
-.revs-h{margin-bottom:30px}
-.revs-h i{display:block;position:relative;top:.15em}
+.revs-h i{display:block}
 }
 @media (max-width:350px){
 .nav .btn-s{font-size:13px;padding:.8em 1em}
@@ -645,7 +611,6 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 @keyframes cbn-yes{0%{translate:0 0;rotate:var(--cbr)}28%{translate:0 -16px;rotate:1.5deg}100%{translate:0 150%;rotate:-9deg}}
 @keyframes cbn-no{0%{translate:0 0;rotate:var(--cbr)}100%{translate:-135% 26%;rotate:-16deg}}
 .cbn-h{max-width:6.2em;font-size:34px;line-height:.9;letter-spacing:-.012em;font-variation-settings:"wght" 540,"wdth" 720}
-.cbn-h i{font-variation-settings:"wght" 900,"wdth" 300;font-size:1.22em;line-height:.74}
 .cbn-t{margin-top:12px;font-size:13px;line-height:1.42;letter-spacing:.012em;font-variation-settings:"wght" 620,"wdth" 500;text-wrap:pretty}
 .cbn-b{display:flex;align-items:center;gap:20px;margin-top:18px}
 .cbn .btn{font-size:17px}
@@ -670,16 +635,15 @@ html.iw :is(.L,.hero-date,.hero-city,.hero-cta .btn-xl,.wg b,.hero-logos .lg,.he
 @media (prefers-reduced-motion:reduce){
 .vw *,.vw *::before,.vw *::after{animation:none !important;transition:none !important}
 /* the stops of the route are switched on by the scroll code, and that code does not run here: they are simply shown */
-.place-sp{scale:1;rotate:var(--r)}
-.place-rt .dot,.place-pin{scale:1}
+.place-sp{opacity:1;--ty:0px}
+.place-rt .dot{scale:1}
+.place-pin{opacity:1;scale:1}
 /* the rows that ride by themselves stand still here, so they can be moved by hand: trackpad, shift + wheel, or dragged with the mouse */
 .strip,.revs{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;cursor:grab}
 .strip::-webkit-scrollbar,.revs::-webkit-scrollbar{display:none}
 .strip.drag,.revs.drag{cursor:grabbing}
 .strip .mq-t[aria-hidden],.revs .mq-t[aria-hidden]{display:none}
 .strip .ph img{-webkit-user-drag:none}
-/* the raccoon does not run: he stands on the slope where he can be seen */
-.coon{left:78%;bottom:22%}
 html{scroll-behavior:auto}
 }
 </style>
@@ -761,7 +725,7 @@ html{scroll-behavior:auto}
 <div class="hero-bot">
 <div class="hero-city halo" aria-hidden="true"><i>Л</i>ьв<i>ів</i></div>
 <div class="hero-cta">
-<a class="play" href="assets/video/how-it-was.mp4" aria-haspopup="dialog" aria-label="Дивитись відео: як це було"><svg class="ring" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="vw-ring" d="M100 100 m-73 0 a73 73 0 1 1 146 0 a73 73 0 1 1 -146 0"></path></defs><text><textPath href="#vw-ring" startOffset="0" textLength="452" lengthAdjust="spacing">Дивись відео • Як це було • </textPath></text></svg><svg class="tri" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.2 L20.5 12 L6.5 20.8 Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"></path></svg></a>
+<a class="play" href="assets/video/how-it-was.mp4" aria-haspopup="dialog" aria-label="Дивитись відео: як це було"><svg class="tri" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.2 L20.5 12 L6.5 20.8 Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"></path></svg></a>
 <a class="btn btn-xl" href="https://secure.wayforpay.com/payment/vegan_weekend_lviv" target="_blank" rel="noopener">Купити квиток <span class="arr" aria-hidden="true">↗</span></a>
 </div>
 </div>
@@ -777,7 +741,7 @@ html{scroll-behavior:auto}
 <div class="about-top">
 <div>
 <div class="lb rv">Про фестиваль</div>
-<p class="mani" data-prog="1.25" data-ps="0.82" data-words="1"><em><span class="w" data-r="-9.2" data-dx="-2">Ми</span> <span class="w" data-r="9.6" data-dx="3">об’єднуємо</span></em> <span class="w" data-r="-9.4" data-dx="8">проактивну</span> <span class="w" data-r="-5.4" data-dx="-7">молодь,</span> <span class="w" data-r="-9.2" data-dx="7">креативні</span> <span class="w" data-r="8.1" data-dx="8">індустрії,</span> <span class="w" data-r="-9.5" data-dx="-0">локальний</span> <span class="w" data-r="-8.2" data-dx="-5">бізнес</span> <br class="mbr"><span class="w" data-r="-10.0" data-dx="-4">та</span> <span class="w" data-r="-8.6" data-dx="-11">громадянський</span> <span class="w" data-r="-7.8" data-dx="8">сектор</span> <span class="w" data-r="5.5" data-dx="-12">навколо</span> <span class="w" data-r="-6.5" data-dx="10">веганства.</span></p>
+<p class="mani" data-lines="1"><em><span class="w">Ми</span> <span class="w">об’єднуємо</span></em> <span class="w">проактивну</span> <span class="w">молодь,</span> <span class="w">креативні</span> <span class="w">індустрії,</span> <span class="w">локальний</span> <span class="w">бізнес</span> <br class="mbr"><span class="w">та</span> <span class="w">громадянський</span> <span class="w">сектор</span> <span class="w">навколо</span> <span class="w">веганства.</span></p>
 </div>
 <div class="ph has ph-a" data-par="0.1"><img src="assets/photos/about-1-fur.jpg" srcset="assets/photos/about-1-fur-480.jpg 480w, assets/photos/about-1-fur-600.jpg 600w, assets/photos/about-1-fur-720.jpg 720w, assets/photos/about-1-fur.jpg 1000w" sizes="(max-width: 820px) min(50vw, 268px), min(31vw, 500px)" alt="Гостя фестивалю з рожевим і бузковим хутром у руках" loading="lazy" style="object-position: 50% 32%"></div>
 </div>
@@ -806,9 +770,9 @@ html{scroll-behavior:auto}
 <div class="lb pov-lb halo rv">Тема фестивалю</div>
 <h2 class="pov-t halo" aria-label="Точка зору"><span aria-hidden="true"><span class="hx">Т</span><span class="sock eyeO" data-sock="1"><span class="pupil"></span></span><span class="hx">чка</span> <span class="hx"><i>з</i></span><span class="sock eyeO e2" data-sock="1"><span class="pupil"></span></span><span class="hx">р<i>у</i></span></span></h2>
 <div class="pov-body">
-<p class="pov-lead"><span class="pp w" data-r="-4">У культурі, мистецтві <br class="mbr">та <br>міському просторі тварини <br class="mbr">часто лишаються фоном, <br class="mbr">ресурсом чи символом. <br class="mbr">Дикі чи корисні. <br><br class="mbr">Милі чи небезпечні.</span></p>
-<p class="b pov-x" id="pov-x"><span class="pp w" data-r="3.4">«Точка зору» змінює цю рамку. <br class="mbr">Кожен вид живе у власному сенсорному світі — <br class="mbr">зі своїм досвідом, ритмами й значеннями. <br class="mbr">Ми показуємо красу та різноманіття цих світів <br class="mbr">і повертаємо тваринам статус суб’єктів.</span></p>
-<p class="b"><span class="pp w" data-r="-3">У Львові продовжуємо <span class="tm" data-act="more">тему</span>, розпочату <br class="mbr">на липневому Веган Вікенді: вчимося дивитися <br class="mbr">на світ не лише з людської перспективи. <br class="mbr">Мистецтво й технології допоможуть побачити, <br class="mbr">як його відчувають інші живі істоти.</span></p>
+<p class="pov-lead rv"><span class="pp">У культурі, мистецтві <br class="mbr">та <br>міському просторі тварини <br class="mbr">часто лишаються фоном, <br class="mbr">ресурсом чи символом. <br class="mbr">Дикі чи корисні. <br><br class="mbr">Милі чи небезпечні.</span></p>
+<p class="b pov-x rv" id="pov-x"><span class="pp">«Точка зору» змінює цю рамку. <br class="mbr">Кожен вид живе у власному сенсорному світі — <br class="mbr">зі своїм досвідом, ритмами й значеннями. <br class="mbr">Ми показуємо красу та різноманіття цих світів <br class="mbr">і повертаємо тваринам статус суб’єктів.</span></p>
+<p class="b rv"><span class="pp">У Львові продовжуємо <span class="tm" data-act="more">тему</span>, розпочату <br class="mbr">на липневому Веган Вікенді: вчимося дивитися <br class="mbr">на світ не лише з людської перспективи. <br class="mbr">Мистецтво й технології допоможуть побачити, <br class="mbr">як його відчувають інші живі істоти.</span></p>
 </div>
 <svg class="pov-bgl pov-tail" viewBox="0 474 1280 278" aria-hidden="true"><g class="pov-bgl-g"><g transform="translate(640 358) rotate(90) scale(0.25) translate(-1481 -2359)"><path vector-effect="non-scaling-stroke" d="M2028 3182q12 2 18 8q6 6 10 15q4 9 4 17q0 8 2 14q2 6 5 9q3 3 6 4q3 1 9 9q6 8 11 8q5 0 6-1q1-1 1-7q0-6-5-17q-5-11-6-19q-1-8-4-12q-3-4-8-7q-5-3-6-14q-1-11-5-19q-4-8-7-10q-3-2-4-5q-1-3-1-10q0-7-3-14q-3-7-3-9q0-2 3-5q3-3 18 0q15 3 22 10q7 7 13 11q6 4 9 4q3 0 5-2q2-2 2-13q0-11 1-14q1-3 5-5q4-2 11-1q7 1 12 5q5 4 9 5q4 1 17 14q13 13 15 14q2 1 11 1q9 0 12 1q3 1 7 5q4 4 8 4q4 0 5-1q1-1 1-12q0-11-3-16q-3-5-10-8q-7-3-13-3q-6 0-16-10q-10-10-14-18q-4-8-9-12q-5-4-6-8q-1-4-4-7q-3-3-6-9q-3-6-3-19q0-13 5-20q5-7 6-19q1-12 5-14q4-2 13 1q9 3 18 11q9 8 10 17q1 9 6 16q5 7 17 11q12 4 18 8q6 4 12 4q6 0 12 3q6 3 11 4q5 1 11 5q6 4 9 7q3 3 6 9q3 6 11 12q8 6 10 13q2 7 6 11q4 4 8 18q4 14 16 24q12 10 18 17q6 7 10 9q4 2 25 2q21 0 35 4q14 4 23 9q9 5 12 5q3 0 9 5q6 5 17 5q11 0 12-4q1-4-2-10q-3-6-11-11q-8-5-17-7q-9-2-14-9q-5-7-7-13q-2-6-2-16q0-10 2-14q2-4 2-11q0-7-4-14q-4-7-4-28q0-21-2-23q-2-2-9-6q-7-4-10-4q-3 0-13-8q-10-8-16-9q-6-1-9 2q-3 3-3 12q0 9-1 13q-1 4-3 6q-2 2-13 2q-11 0-16-2q-5-2-9 1q-4 3-4 5q0 2-2 4q-2 2-9 2q-7 0-14-10q-7-10-12-14q-5-4-10-5q-5-1-15-7q-10-6-17-15q-7-9-25-22q-18-13-22-19q-4-6-5-14q-1-8-2-9q-1-1-1-6q0-5 3-8q3-3 8-3q5 0 12 4q7 4 9 4q2 0 5 3q3 3 10 6q7 3 9 5q2 2 6 3q4 1 15 10q11 9 21 9M2058 760q24-24 28-25q4-1 8-7q4-6 12-14q8-8 11-9q3-1 6 0q3 1 11 7q8 6 10 11q2 5 2 12q0 7-2 14q-2 7-4 9q-2 2-3 10q-1 8-2 9q-1 1 0 27q1 26-1 31q-2 5-3 17q-1 12-4 18q-3 6-3 10q0 4-7 11q-7 7-9 13q-2 6-14 16q-12 10-13 16q-1 6-5 13q-4 7-6 9q-2 2-18 8M2092 1120q10-4 10-23q0-19 1-22q1-3 6-7q5-4 6-9q1-5 6-9q5-4 5-17q0-13 1-15q1-2 8-7q7-5 10-8q3-3 4-6q1-3 7-8q6-5 16-22q10-17 10-26q0-9 3-18q3-9 3-24q0-15 2-22q2-7 2-18q0-11 2-16q2-5 3-16q1-11 9-21q8-10 14-31q6-21 11-30q5-9 5-12q0-3 6-19q6-16 9-19q3-3 6-4q3-1 4-4q1-3 7-9q6-6 11-14q5-8 13-13q8-5 16 3q8 8 14 9q6 1 9 3q3 2 3 10q0 8-2 12q-2 4-5 21q-3 17-7 29q-4 12-4 18q0 6-3 11q-3 5-4 14q-1 9-3 12q-2 3-3 12q-1 9-4 15q-3 6-4 12q-1 6-3 11q-2 5-12 16q-10 11-13 21q-3 10-12 24q-9 14-9 20q0 6-2 12q-2 6-6 12q-4 6-11 13q-7 7-8 10q-1 3-1 9q0 6 3 13q3 7 3 15q0 8-2 12q-2 4-3 12q-1 8 7 22q8 14 8 25q0 11-6 15q-6 4-16 15q-10 11-11 19q-1 8-4 10q-3 2-4 9q-1 7-4 10q-3 3-5 14q-2 11-10 23q-8 12-14 18q-6 6-7 11q-1 5-7 15q-6 10-11 27q-5 17 3 26q8 9 6 21q-2 12-9 19q-7 7-9 7q-2 0-5 3q-3 3-11 3q-8 0-11-4q-3-4-3-6q0-2-12-12M2120 1666q2 2 14 3q12 1 16 5q4 4 4 10q0 6-2 10q-2 4-2 11q0 7-2 11q-2 4-2 12q0 8 3 15q3 7 9 12q6 5 6 11q0 6-2 10q-2 4-3 27q-1 23-3 27q-2 4-2 12q0 8 2 13q2 5 3 19q1 14 0 15q-1 1-1 7q0 6-3 11q-3 5-7 27M2454 402q-4-10-7-12q-3-2-10-1q-7 1-12 7q-5 6-11 6q-6 0-14-4q-8-4-12-3q-4 1-7 4q-3 3-4 6q-1 3-7 9q-6 6-8 6q-2 0-4 2q-2 2-3 10q-1 8-8 17q-7 9-11 9q-4 0-6-2q-2-2-2-8q0-6 3-10q3-4 3-15q0-11-3-14q-3-3-7-4q-4-1-7 0q-3 1-6 4q-3 3-6 11q-3 8-3 23q0 15-2 20q-2 5-5 8q-3 3-9 3q-6 0-11 3q-5 3-8 16q-3 13-12 23q-9 10-17 13q-8 3-14 10q-6 7-10 9q-4 2-8 6q-4 4-5 8q-1 4-12 15q-11 11-17 14q-6 3-18 15q-12 12-20 14q-8 2-11 5q-3 3-9 4q-6 1-15 9q-9 8-16 10q-7 2-10 7q-3 5-9 9q-6 4-18 4M2454 402q12 0 25-13q13-13 17-14q4-1 18 2q14 3 26 12q12 9 15 9q3 0 7-3q4-3 7-10q3-7 7-8q4-1 7 0q3 1 8 6q5 5 12 5q7 0 16-9q9-9 12-10q3-1 10 4q7 5 15 17q8 12 7 34q-1 22-3 26q-2 4-2 12q0 8-11 16q-11 8-26 24q-15 16-15 18q0 2-5 11q-5 9-3 14q2 5 2 14q0 9-2 16q-2 7-15 26q-13 19-19 30q-6 11-6 13q0 2-5 8q-5 6-6 11q-1 5-10 17q-9 12-12 19q-3 7-3 10q0 3-7 13q-7 10-9 22q-2 12-6 19q-4 7-3 13q1 6 3 8q2 2 7 2q5 0 11 2q6 2 8 8q2 6 4 8q2 2 4 3q2 1 11 0q9-1 21-13q12-12 13-16q1-4 6-9q5-5 9-12q4-7 12-17q8-10 8-13q0-3 4-12q4-9 9-13q5-4 15-8q10-4 13-2q3 2 3 4q0 2 2 4q2 2 15 2q13 0 14 1q1 1 2 10q1 9 3 12q2 3 6 3q4 0 8-2q4-2 8-9q4-7 9-11q5-4 9-4q4 0 6 2q2 2 2 6q0 4-4 9q-4 5-5 9q-1 4-16 19q-15 15-14 23q1 8 7 15q6 7 6 11q0 4-4 11q-4 7-10 12q-6 5-21 5q-15 0-20 5q-5 5-6 13q-1 8-2 9q-1 1-1 5q0 4 2 8q2 4 2 9q0 5-3 8q-3 3-4 9q-1 6-3 8q-2 2-7 13q-5 11-5 17q0 6 2 8q2 2 6 2q4 0 9-5q5-5 9-13q4-8 7-10q3-2 4-6q1-4 10-15q9-11 11-12q2-1 15-1q13 0 22-10q9-10 15-12q6-2 16-9q10-7 12-9q2-2 3-6q1-4 13-16q12-12 19-14q7-2 12-6q5-4 8-9q3-5 13-14q10-9 13-20q3-11 6-17q3-6 9-13q6-7 9-8q3-1 8 1q5 2 5 14q0 12 2 17q2 5 2 17q0 12-1 13q-1 1 0 5q1 4 7 4q6 0 10-5q4-5 5-9q1-4 18-21q17-17 21-18q4-1 6 0q2 1 2 10q0 9-7 21q-7 12-11 15q-4 3-5 7q-1 4-16 18q-15 14-24 25q-9 11-13 13q-4 2-8 11q-4 9-9 16q-5 7-9 11q-4 4-17 4q-13 0-16 3q-3 3-3 15q0 12-3 21q-3 9-3 15q0 6-13 21q-13 15-15 19q-2 4-2 9q0 5 1 6q1 1 9 0q8-1 26-22q18-21 25-28q7-7 15-12q8-5 27-24q19-19 22-20q3-1 9-7q6-6 7-9q1-3 4-6q3-3 7-4q4-1 6 0q2 1 4 3q2 2 2 5q0 3-11 14q-11 11-12 16q-1 5-4 10q-3 5-3 9q0 4 2 6q2 2 6 2q4 0 10-6q6-6 13-8q7-2 12 1q5 3 5 8q0 5 2 7M2930 3838q-16 12-27 13q-11 1-15 5q-4 4-15 5q-11 1-14-2q-3-3-3-5q0-2-3-5q-3-3-4-6q-1-3-8-10q-7-7-8-10q-1-3-15-18q-14-15-18-24q-4-9-7-12q-3-3-20-16q-17-13-37-23q-20-10-30-21q-10-11-15-14q-5-3-7-7q-2-4-4-4q-2 0-7-4q-5-4-10-4q-5 0-7 2q-2 2-1 7q1 5 14 16q13 11 18 17q5 6 8 12q3 6 5 8q2 2 6 3q4 1 10 10q6 9 13 13q7 4 6 12q-1 8-6 12q-5 4-7 9q-2 5 3 17q5 12 15 28q10 16 11 27q1 11-1 14q-2 3-6 3q-4 0-8-5q-4-5-6-11q-2-6-5-9q-3-3-5-9q-2-6-4-8q-2-2-6-2M2495 1574q-17 0-32-4q-15-4-18-11q-3-7 0-19q3-12 6-15q3-3 6-4q3-1 6-7q3-6 6-9q3-3 3-10q0-7-5-12q-5-5-10-7q-5-2-10-10q-5-8-5-14q0-6 2-14q2-8 8-13q6-5 6-10q0-5-2-8q-2-3-4-14q-2-11-1-12q1-1 2-11q1-10 5-14q4-4 6-9q2-5 2-10q0-5-3-8q-3-3-9-5q-6-2-9-5q-3-3-4-9q-1-6-4-8q-3-2-10-2q-7 0-9 1q-2 1-8 7q-6 6-18 15q-12 9-23 10q-11 1-13-3q-2-4-1-11q1-7 12-20q11-13 13-18q2-5 10-14q8-9 11-15q3-6 25-24q22-18 27-19q5-1 10-7q5-6 7-6q2 0 9-4q7-4 36-7q29-3 39-9q10-6 25-6q15 0 23-6q8-6 23-9q15-3 18-6q3-3 22-12q19-9 38-9q19 0 24-3q5-3 10-3q5 0 23 8q18 8 24 8q6 0 12 3q6 3 13 10q7 7 7 16q0 9-3 17q-3 8-3 18q0 10-2 15q-2 5-2 11q0 6-6 21q-6 15-6 22q0 7-3 12q-3 5-8 20q-5 15-8 30q-3 15-7 27q-4 12-4 21q0 9-3 19q-3 10-3 15q0 5 1 6q1 1 1 5q0 4 2 6q2 2 6 2q4 0 12-3q8-3 12-6q4-3 9-4q5-1 13-7q8-6 19-6q11 0 14 3q3 3 2 6q-1 3-9 11q-8 8-17 13q-9 5-13 9q-4 4-6 5q-2 1-8 1q-6 0-7-1q-1-1-7 0q-6 1-10 5q-4 4-5 11q-1 7-9 17q-8 10-9 13q-1 3-7 8q-6 5-11 6q-5 1-10 6q-5 5-18 5q-13 0-22-11q-9-11-13-12q-4-1-22 0q-18 1-23 4q-5 3-10 3q-5 0-18 4q-13 4-17 8q-4 4-7 5q-3 1-6 8q-3 7-6 10q-3 3-5 9q-2 6-2 10q0 4-7 11q-7 7-11 7q-4 0-6-2q-2-2-9-4q-7-2-24-2zM2088 4628q14-4 22-4q8 0 17-9q9-9 22-6q13 3 21 3q8 0 14 2q6 2 13 2q7 0 13-6q6-6 12-8q6-2 10-2q4 0 8-2q4-2 12-2q8 0 12-5q4-5 4-18q0-13-2-18q-2-5-2-14q0-9 1-10q1-1 7 0q6 1 17 12q11 11 18 12q7 1 11 4q4 3 15 4q11 1 18-1q7-2 11-7q4-5 5-9q1-4 7-10q6-6 10-8q4-2 13-3q9-1 18-11q9-10 10-13q1-3 1-15q0-12-4-19q-4-7-8-8q-4-1-9-6q-5-5-10-6q-5-1-9-4q-4-3-6-11q-2-8-1-9q1-1 1-11q0-10-20-30M2178 2074q14 18 17 24q3 6 11 15q8 9 14 13q6 4 18 6q12 2 17 6q5 4 16 8q11 4 15 8q4 4 5 7q1 3 8 12q7 9 9 15q2 6 2 19q0 13 1 14q1 1 2 21q1 20 2 21q1 1 1 14q0 13 3 17q3 4 6 3q3-1 5-4q2-3 2-7q0-4 1-5q1-1 1-22q0-21 2-26q2-5 2-12q0-7 2-13q2-6 5-9q3-3 13 0q10 3 20 14q10 11 16 13q6 2 14 9q8 7 8 10q0 3-5 13q-5 10-5 23q0 13-2 16q-2 3-2 10q0 7 8 18q8 11 15 12q7 1 10 4q3 3 3 11q0 8-4 13q-4 5-9 6q-5 1-9 5q-4 4-5 14q-1 10-3 14q-2 4 0 14q2 10 9 20q7 10 7 21q0 11-3 16q-3 5-2 7q1 2 1 12q0 10-3 13q-3 3-6 4q-3 1-6 5q-3 4-1 12q2 8 2 17q0 9-4 13q-4 4-15 10q-11 6-16 12q-5 6-6 22q-1 16-4 26q-3 10-3 14q0 4-10 11q-10 7-13 14q-3 7-4 17q-1 10-8 19q-7 9-6 13q1 4 7 10q6 6 6 10q0 4-4 6q-4 2-21 4q-17 2-19 4q-2 2-3 6q-1 4-1 14q0 10-10 19q-10 9-16 19q-6 10-6 15q0 5 3 10q3 5 4 10q1 5 11 15q10 10 14 11q4 1 17 15q13 14 13 19q0 5-2 7q-2 2-6 2q-4 0-13-8q-9-8-16-10q-7-2-13-2q-6 0-9 3q-3 3-2 11q1 8 8 14q7 6 18 8q11 2 25 18q14 16 22 32M2414 3466q-6-2-7-3q-1-1-8-1q-7 0-16-7q-9-7-11-12q-2-5-3-16q-1-11-5-20q-4-9-4-14q0-5-4-9q-4-4-7-20q-3-16-6-22q-3-6-3-31q0-25 2-30q2-5 2-11q0-6-5-10q-5-4-6-13q-1-9 3-19q4-10 5-21q1-11 5-15q4-4 11-4q7 0 14 2q7 2 18 9q11 7 21 10q10 3 18 13q8 10 21 16q13 6 15 8q2 2 8 3q6 1 18 13q12 12 20 15q8 3 11 6q3 3 4 7q1 4 7 8q6 4 9 4q3 0 6 2q3 2 8 2q5 0 10-4q5-4 8-9q3-5 6-6q3-1 7-1q4 0 13 3q9 3 11 5q2 2 8 4q6 2 8 5q2 3 1 19q-1 16 5 20q6 4 7 13q1 9 4 15q3 6 11 16q8 10 8 18q0 8 3 15q3 7 5 9q2 2 4 14q2 12 7 19q5 7 6 13q1 6 6 14q5 8 6 13q1 5 6 13q5 8 6 13q1 5 3 7q2 2 6 12q4 10 7 13q3 3 6 13q3 10 5 12q2 2 7 21q5 19 5 24q0 5-2 7q-2 2-10 2q-8 0-13-2q-5-2-13-8q-8-6-16-8q-8-2-18-8q-10-6-20-7q-10-1-21-11q-11-10-19-13q-8-3-18-9q-10-6-17-7q-7-1-15-6q-8-5-12-6q-4-1-8-5q-4-4-8-5q-4-1-11-7q-7-6-12-7q-5-1-8-4q-3-3-11-5q-8-2-22-13q-14-11-19-12q-5-1-12-6q-7-5-9-5q-2 0-9-8q-7-8-13-10zM2634 2930q-4-4-11-3q-7 1-12 5q-5 4-17 9q-12 5-20 5q-8 0-10-2q-2-2-11-5q-9-3-20-3q-11 0-14 1q-3 1-7 6q-4 5-4 11q0 6 4 16q4 10 12 14q8 4 16 13q8 9 8 12q0 3 3 10q3 7 4 16q1 9 15 27q14 18 18 19q4 1 9 7q5 6 9 7q4 1 10 6q6 5 11 7q5 2 9 6q4 4 13 4q9 0 12-4q3-4 3-8q0-4 4-7q4-3 8-3q4 0 10 6q6 6 12 10q6 4 13 13q7 9 11 11q4 2 13 5q9 3 19 4q10 1 19 5q9 4 23 5q14 1 18 3q4 2 8 6q4 4 12 7q8 3 15 4q7 1 13 6q6 5 13 5q7 0 8-1q1-1 6 3q5 4 7 7q2 3 3 9q1 6 3 8q2 2 7 3q5 1 17 7q12 6 23 6q11 0 12-1q1-1 1-21q0-20-5-28q-5-8-9-23q-4-15-9-23q-5-8-5-11q0-3-6-9q-6-6-8-11q-2-5-2-9q0-4-2-9q-2-5-2-18q0-13-4-22q-4-9-5-27q-1-18-3-21q-2-3-7-18q-5-15-8-19q-3-4-4-10q-1-6-4-8q-3-2-7-2q-4 0-11-6q-7-6-9-15q-2-9-4-11q-2-2-12-3q-10-1-18-7q-8-6-9-15q-1-9-3-11q-2-2-3-6q-1-4 1-14q2-10 6-13q4-3 5-9q1-6 8-10q7-4 7-8q0-4-6-8q-6-4-6-10q0-6 2-14q2-8 6-11q4-3 7-3q3 0 8 3q5 3 7 3q2 0 10 7q8 7 20 7M2145 3465q-5-1-18-4q-13-3-19-1q-6 2-12 8q-6 6-6 14q0 8 2 14q2 6 2 16q0 10-5 17q-5 7-6 17q-1 10-6 15q-5 5-4 31q1 26 2 27q1 1 2 11q1 10 4 21q3 11 2 27q-1 16 0 17q1 1 2 10q1 9 5 13q4 4 5 11q1 7 12 19q11 12 12 21q1 9 8 17q7 8 7 11q0 3 2 7q2 4 16 5q14 1 17 4q3 3 13 7q10 4 12 6q2 2 5 9q3 7 10 11q7 4 14 11q7 7 9 12q2 5 11 14q9 9 12 9q3 0 10 3q7 3 15 4q8 1 13 7q5 6 8 7q3 1 6 1q3 0 7 2q4 2 11 2q7 0 16-9q9-9 9-19q0-10-4-14q-4-4-4-6q0-2-2-4q-2-2-4-9q-2-7-2-12q0-5-3-11q-3-6-5-21q-2-15-7-24q-5-9-5-22q0-13-3-17q-3-4-5-14q-2-10-7-17q-5-7-7-13q-2-6-3-14q-1-8-3-12q-2-4-2-12q0-8 2-12q2-4 2-9q0-5-2-8q-2-3-3-11q-1-8-4-14q-3-6-4-11q-1-5-6-11q-5-6-6-12q-1-6-6-14q-5-8-6-14q-1-6-12-25q-11-19-21-25q-10-6-18-8q-8-2-14-5q-6-3-10-8q-4-5-12-7q-8-2-11-5q-3-3-8-4zM2632 2934q-12 10-18 19q-6 9-7 11q-1 2 1 5q2 3 13 4q11 1 15 2q4 1 6 3q2 2 7 2q5 0 9 2q4 2 7 2q3 0 13 4q10 4 16 9q6 5 11 5q5 0 11-2q6-2 11 0q5 2 19 3q14 1 19 5q5 4 10 5q5 1 9 4q4 3 17 4q13 1 21 6q8 5 15 5q7 0 9-1q2-1 7-9q5-8 6-14q1-6 7-12q6-6 6-12q0-6-2-9q-2-3-16-13q-14-10-25-11q-11-1-12 0q-1 1-1 7q0 6 1 9q1 3 4 6q3 3 3 13q0 10-4 13q-4 3-11 3q-7 0-14-5q-7-5-13-7q-6-2-20-11q-14-9-16-9q-2 0-4-2q-2-2-2-6q0-4 1-5q1-1 20 0q19 1 23-1q4-2 6-9q2-7 2-14q0-7-9-17q-9-10-13-12q-4-2-10-8q-6-6-21-8q-15-2-19-6q-4-4-11-8q-7-4-9-7q-2-3-3-9q-1-6-4-10q-3-4-6-7q-3-3-6-4q-3-1-8-7q-5-6-18-13q-13-7-16-12q-3-5-3-12q0-7 3-11q3-4 6-5q3-1 6-4q3-3 11-2q8 1 11 4q3 3 12 3q9 0 23-16q14-16 17-26q3-10 8-12q5-2 11-2q6 0 8-2q2-2 3-7q1-5 5-7q4-2 10-1q6 1 8 3q2 2 4 8q2 6 6 10q4 4 10 5q6 1 11 5q5 4 21 4q16 0 40 6M2870 4096q-2-6-6-7q-4-1-10-6q-6-5-15-3q-9 2-13 6q-4 4-6 12q-2 8-2 14q0 6-7 13q-7 7-6 11q1 4 7 10q6 6 7 9q1 3 0 4q-1 1-1 9q0 8-14 12q-14 4-19 4q-5 0-8-3q-3-3-5-9q-2-6-4-7q-2-1-9-1q-7 0-14-7q-7-7-9-12q-2-5-2-11q0-6-3-16q-3-10-3-21q0-11-17-17q-17-6-19-9q-2-3-3-12q-1-9-7-16q-6-7-12-9q-6-2-11 2q-5 4-12 4q-7 0-11-2q-4-2-10-2q-6 0-8 2q-2 2-3 6q-1 4 0 7q1 3 6 7q5 4 9 16q4 12 9 18q5 6 13 6q8 0 12 4q4 4 6 11q2 7 10 9M2698 3850q4 12 7 15q3 3 7 12q4 9 10 18q6 9 6 16q0 7 1 11q1 4 3 6q2 2 2 8q0 6-4 13q-4 7-9 9q-5 2-16 3q-11 1-13 5q-2 4-2 10q0 6 1 10q1 4 3 6q2 2 2 12q0 10 5 23q5 13 11 13q6 0 8-2q2-2 4-7q2-5 2-10q0-5 2-10q2-5 3-13q1-8 3-10q2-2 11-3q9-1 11-3q2-2 6-3q4-1 11-8q7-7 12-7q5 0 9-4q4-4 5-13q1-9 4-11q3-2 6-3q3-1 9 0q6 1 18 12q12 11 16 11q4 0 10 3q6 3 9 7q3 4 9 4q6 0 9-3q3-3 4-12q1-9 0-12q-1-3-6-6q-5-3-8-8q-3-5-9-10q-6-5-7-8q-1-3 0-5q1-2 8-6q7-4 15-2q8 2 14 2q6 0 8-2q2-2 12-3q10-1 16-3q6-2 8-4q2-2 2-6q0-4-2-6q-2-2-3-6q-1-4 15-14M2960 3908q-16 14-19 14q-3 0-8 3q-5 3-6 8q-1 5-3 7q-2 2-3 6q-1 4-1 9q0 5 4 11q4 6 6 12q2 6 20 24M2906 2387q4-1 9-6q5-5 5-10q0-5-7-12q-7-7-8-39q-1-32-7-39q-6-7-12-10q-6-3-11-4q-5-1-9-6q-4-5-10-6q-6-1-8-4q-2-3-7-6q-5-3-8-4q-3-1-13-1q-10 0-20-5q-10-5-20-6q-10-1-16-5q-6-4-15-5q-9-1-13-3q-4-2-16 0q-12 2-15 5q-3 3-11 3q-8 0-11 2q-3 2-4 9q-1 7 0 10q1 3 5 7q4 4 22 5q18 1 24 3q6 2 18 2q12 0 13 1q1 1 9 2q8 1 15 4q7 3 13 8q6 5 9 6q3 1 10 8q7 7 7 14q0 7-3 10q-3 3-16 3q-13 0-21 2q-8 2-10 5q-2 3-2 12q0 9-7 17q-7 8-11 8q-4 0-8-2q-4-2-10-3q-6-1-15 4q-9 5-17 14q-8 9-7 15q1 6 4 9q3 3 11 6q8 3 15 3q7 0 11-2q4-2 20-2q16 0 17 1q1 1 18 4q17 3 24 6q7 3 20 3q13 0 16-3q3-3 5-3q2 0 10-5q8-5 13-6q5-1 13-7q8-6 12-7zM2362 4380q6-6 6-12q0-6 3-11q3-5 3-10q0-5-5-9q-5-4-6-10q-1-6 1-10q2-4 7-7q5-3 19-2q14 1 28 14q14 13 20 13q6 0 11 2q5 2 9 2q4 0 9-2q5-2 19 3q14 5 24 14q10 9 10 14q0 5-7 15q-7 10-9 11q-2 1-14 1q-12 0-16 1q-4 1-6 3q-2 2-3 6q-1 4 1 8q2 4 2 12q0 8-3 11q-3 3-10 4q-7 1-9 5q-2 4-2 8q0 4 4 13q4 9 16 21q12 12 14 20q2 8 6 13q4 5 13 6q9 1 13-3q4-4 5-8q1-4 6-10q5-6 11-7q6-1 14 2q8 3 11 6q3 3 12 4q9 1 14 4q5 3 10 9q5 6 9 6q4 0 10-5q6-5 8-5q2 0 5-4q3-4 3-15q0-11-8-17q-8-6-9-9q-1-3-1-14q0-11 4-14q4-3 12-4q8-1 14-4q6-3 11-8q5-5 7-19q2-14 8-19q6-5 20-8q14-3 28-15q14-12 22-14q8-2 20-3q12-1 26-15M2536 4700q-18-4-22-2q-4 2-15 2q-11 0-20 3q-9 3-28 3q-19 0-21-3q-2-3 4-10q6-7 13-8q7-1 15-4q8-3 23-4q15-1 19-3q4-2 8-2q4 0 8-2q4-2 10-9q6-7 10-9q4-2 24-5q20-3 32-10q12-7 20-9q8-2 15-9q7-7 7-9q0-2 5-6q5-4 7-8q2-4 11-6q9-2 16-7q7-5 23-8q16-3 24-9q8-6 17-10q9-4 12-7q3-3 13-7q10-4 15-9q5-5 9-6q4-1 10-7q6-6 8-6q2 0 4-3q2-3 11-6q9-3 13-9M2226 4170q2 2 5 1q3-1 9-7q6-6 6-15q0-9-5-24q-5-15-12-30q-7-15-7-24q0-9 1-10q1-1 6-1q5 0 12 2q7 2 13 2q6 0 9 1q3 1 11 9q8 8 13 8q5 0 7-2q2-2 2-6q0-4-2-9q-2-5-2-15q0-10-2-12q-2-2-4-8q-2-6-2-16q0-10-2-16q-2-6-6-12q-4-6-5-12q-1-6-16-20q-15-14-23-26q-8-12-18-16q-10-4-14-2q-4 2-5 11q-1 9 3 16q4 7 6 15q2 8 0 10q-2 2-7 2q-5 0-13-9q-8-9-11-15q-3-6-5-16q-2-10-5-13q-3-3-3-5q0-2-3-5q-3-3-6-4q-3-1-7 0q-4 1-6 4q-2 3-8 27q-6 24-9 27q-3 3-19 1M2682 4124q0 8 5 15q5 7 8 14q3 7 3 15q0 8-8 16q-8 8-20 8q-12 0-19-6q-7-6-10-6q-3 0-6 3q-3 3-2 11q1 8 8 12q7 4 8 13q1 9 5 13q4 4 11 5q7 1 12 5q5 4 4 12q-1 8-6 13q-5 5-12 5q-7 0-13-5q-6-5-11-5q-5 0-9 4q-4 4-3 10q1 6 5 11q4 5 10 8q6 3 13 3q7 0 14 4q7 4 13 4q6 0 7-1q1-1 1-11q0-10 3-14q3-4 6-5q3-1 15-1q12 0 14-1q2-1 9-12q7-11 15-18q8-7 24-6q16 1 19 5q3 4 4 11q1 7-5 13q-6 6-7 9q-1 3-4 6q-3 3-4 7q-1 4-7 11q-6 7-7 10q-1 3 3 8q4 5 9 7q5 2 7 12M2994 2406q-6-2-11-4q-5-2-7-1q-2 1-5 4q-3 3-4 8q-1 5-6 10q-5 5-8 5q-3 0-6 2q-3 2-6 12q-3 10-8 10q-5 0-7-2q-2-2-3-4q-1-2-1-10q0-8-5-12q-5-4-9-2q-4 2-7 15q-3 13-8 18q-5 5-8 5q-3 0-8-3q-5-3-7-3q-2 0-10-7q-8-7-17-8q-9-1-10 0q-1 1-1 5q0 4-6 10q-6 6-12 9q-6 3-10 3q-4 0-10-2q-6-2-9-1q-3 1-5 5q-2 4-1 8q1 4 6 7q5 3 17 4q12 1 13 2q1 1 14 1q13 0 17 2q4 2 11 2q7 0 9-2q2-2 16-5q14-3 21-7q7-4 11-4q4 0 7-3q3-3 7-4q4-1 17-1q13 0 17-2q4-2 8-2q4 0 7-3q3-3 14-8q11-5 14-8q3-3 4-7q1-4 1-11q0-7-1-9q-1-2-5-6q-4-4-10-6zM2744 1571q-4 1-14 1q-10 0-15-3q-5-3-9-2q-4 1-12 6q-8 5-9 8q-1 3 0 11q1 8 4 11q3 3 6 3q3 0 5 2q2 2 1 16q-1 14 1 21q2 7 5 10q3 3 3 9q0 6-6 10q-6 4-9 8q-3 4-5 4q-2 0-4 2q-2 2-2 7q0 5 3 8q3 3 4 8q1 5-1 7q-2 2-11 5q-9 3-13 6q-4 3-5 7q-1 4-1 8q0 4 1 5q1 1 8 1q7 0 11-4q4-4 10-7q6-3 12-8q6-5 14-16q8-11 10-11q2 0 7-5q5-5 10-6q5-1 9-4q4-3 4-6q0-3-3-6q-3-3-5-3q-2 0-4-3q-2-3 2-15q4-12 7-16q3-4 5-5q2-1 6 0q4 1 6 3q2 2 2 5q0 3 2 7q2 4 7 4q5 0 8-3q3-3 3-17q0-14-6-21q-6-7-7-11q-1-4-9-11q-8-7-8-9q0-2-3-5q-3-3-7-5q-4-2-8-1zM2040 498q8-8 11-27q3-19 7-29q4-10 5-17q1-7 8-17q7-10 7-19q0-9 3-19q3-10 5-13q2-3 2-6q0-3 8-12q8-9 12-16q4-7 7-9q3-2 8-2q5 0 8 4q3 4 3 39q0 35-1 36q-1 1-1 7q0 6-2 11q-2 5-2 11q0 6-4 17q-4 11-4 17q0 6-3 18q-3 12-8 18q-5 6-6 9q-1 3-5 6q-4 3-5 6q-1 3 0 17q1 14-7 24q-8 10-17 11q-9 1-13-1q-4-2-10-8q-6-6-4-13q2-7 2-16q0-9-1-10q-1-1-1-5q0-4-4-8M2596 88q12 6 17 6q5 0 17 3q12 3 20 9q8 6 20 8q12 2 20 7q8 5 21 10q13 5 18 10q5 5 12 7q7 2 12 6q5 4 13 7q8 3 12 7q4 4 8 5q4 1 7 4q3 3 9 5q6 2 38 6M2028 3794q18 0 20 1q2 1 8 7q6 6 12 10q6 4 11 10q5 6 6 17q1 11 7 24q6 13 6 24q0 11-2 17q-2 6-2 15q0 9 3 18q3 9 3 17M2821 1847q1-1 7 0q6 1 12 6q6 5 15 22q9 17 13 21q4 4 4 10q0 6-4 10q-4 4-6 9q-2 5-7 10q-5 5-11 15q-6 10-7 11q-1 1-55 0q-54-1-59-6q-5-5-6-8q-1-3 1-8q2-5 6-7q4-2 12-2q8 0 16-4q8-4 16-6q8-2 8-15q0-13-1-14q-1-1-17-2q-16-1-19-4q-3-3-4-8q-1-5 0-9q1-4 4-8q3-4 7-8q4-4 10-6q6-2 19-2q13 0 18 2q5 2 16 2q11 0 12-1zM2358 4380q-10-12-12-12q-2 0-6-3q-4-3-8-10q-4-7-4-9q0-2-7-12q-7-10-17-14q-10-4-14-8q-4-4-6-5q-2-1-11-1q-9 0-14-2q-5-2-10 2q-5 4-8 9q-3 5 1 12q4 7 6 7q2 0 7 3q5 3 17 13q12 10 13 14q1 4 4 7q3 3 4 12q1 9 3 11q2 2 3 8q1 6 4 12q3 6 3 9q0 3 3 7q3 4 7 6q4 2 6 9q2 7 5 11q3 4 10 4q7 0 9-2q2-2 2-6q0-4-5-10q-5-6-6-20q-1-14 21-40M2210 3337q-2-9-3-24q-1-15-7-21q-6-6-11-7q-5-1-8-3q-3-2-6-5q-3-3-4-7q-1-4-5-8q-4-4-5-8q-1-4-1-18q0-14 3-17q3-3 6-4q3-1 6 0q3 1 7 7q4 6 7 7q3 1 8 6q5 5 13 8q8 3 11 8q3 5 5 14q2 9 8 17q6 8 6 18q0 10-4 20q-4 10-1 18q3 8 2 14q-1 6-3 8q-2 2-6 2q-4 0-6-2q-2-2-6-8q-4-6-6-15zM2448 4142q-2-2-8-2q-6 0-13 4q-7 4-14 4q-7 0-8-1q-1-1-4-13q-3-12-4-22q-1-10-3-15q-2-5-2-11q0-6-2-11q-2-5-2-12q0-7-3-13q-3-6-2-10q1-4 3-6q2-2 6-3q4-1 8 1q4 2 6 4q2 2 5 10q3 8 14 18q11 10 13 14q2 4 2 9q0 5 2 10q2 5 2 13q0 8 8 30M2796 4344q-2 10-6 15q-4 5-8 14q-4 9-3 16q1 7 7 15q6 8 18 8q12 0 15-1q3-1 8-6q5-5 12-7q7-2 10-6q3-4 3-12q0-8-3-11q-3-3-5-10q-2-7-4-9q-2-2-5-2q-3 0-6-3q-3-3-3-9q0-6-3-10q-3-4-7-5q-4-1-20 21M2377 1515q1-1 3-1q2 0 8-7q6-7 10-8q4-1 6-3q2-2 8-13q6-11 6-25q0-14-1-17q-1-3-6-9q-5-6-8-7q-3-1-13 1q-10 2-16 7q-6 5-7 10q-1 5-9 19q-8 14-8 24q0 10 2 17q2 7 6 10q4 3 11 3q7 0 8-1zM2096 4002q0 4 4 9q4 5 19 19q15 14 16 17q1 3 11 15q10 12 15 21q5 9 12 16q7 7 13 10q6 3 9 8q3 5 10 11q7 6 9 13q2 7 2 15q0 8 6 12M2934 4076q0-2 0-12q0-10-7-19q-7-9-8-18q-1-9-3-13q-2-4-3-10q-1-6-5-11q-4-5-8-5q-4 0-6 2q-2 2-2 11q0 9-2 12q-2 3-3 9q-1 6-4 10q-3 4-2 14q1 10 5 17q4 7 11 12q7 5 13 7q6 2 11 2q5 0 9-3q4-3 4-5zM2162 404q4-10 5-17q1-7 3-9q2-2 10-3q8-1 12-3q4-2 12-2q8 0 12 2q4 2 4 9q0 7-4 14q-4 7-4 15q0 8-3 19q-3 11-5 14q-2 3-12 2q-10-1-21-12q-11-11-12-15q-1-4 3-14zM2613 4333q3-3 8-6q5-3 4-14q-1-11-4-13q-3-2-5-7q-2-5-13-15q-11-10-16-9q-5 1-7 4q-2 3-2 11q0 8-2 13q-2 5-2 8q0 3 2 7q2 4 10 14q8 10 16 10q8 0 11-3zM2454 4144q12 6 14 17q2 11 5 16q3 5 2 12q-1 7-9 12q-8 5-15 5q-7 0-11-1q-4-1-6-3q-2-2-2-7q0-5 3-8q3-3 5-3q2 0 7-5q5-5 3-33M2686 3920q0-12-5-24q-5-12-13-20q-8-8-12-10q-4-2-9-1q-5 1-8 5q-3 4-2 8q1 4 8 11q7 7 10 12q3 5 4 10q1 5 6 10q5 5 9 5q4 0 10-4M2288 313q6-7 6-16q0-9-1-10q-1-1 0-3q1-2 1-9q0-7-2-9q-2-2-8-4q-6-2-9-2q-3 0-9 3q-6 3-9 7q-3 4-3 8q0 4-1 5q-1 1 2 9q3 8 10 14q7 6 7 8q0 2 2 4q2 2 5 2q3 0 9-7zM2601 1763q-1-1-7-7q-6-6-7-9q-1-3 0-8q1-5 3-7q2-2 4-2q2 0 10-7q8-7 13-7q5 0 11 2q6 2 8 4q2 2 0 19q-2 17-5 20q-3 3-16 3q-13 0-14-1zM2327 4209q9-1 12-3q3-2 3-11q0-9-7-18q-7-9-15-8q-8 1-12 3q-4 2-11 2q-7 0-8 1q-1 1-1 9q0 8 5 14q5 6 11 7q6 1 10 3q4 2 13 1zM2882 2794q6 0 10 2q4 2 6 7q2 5 9 9q7 4 7 15q0 11-8 18q-8 7-11 8q-3 1-7 1q-4 0-5-1q-1-1-2-3q-1-2-1-9q0-7-1-8q-1-1-1-16q0-15 2-21M2842 3122q0-6-2-24q-2-18-7-22q-5-4-10-2q-5 2-9 6q-4 4-6 9q-2 5-2 8q0 3 4 13q4 10 10 17q6 7 11 7q5 0 8-3q3-3 3-9zM2719 4416q3-4 5-6q2-2 4-2q2 0 7-3q5-3 10-2q5 1 6 2q1 1 0 15q-1 14-5 19q-4 5-13 8q-9 3-17 3q-8 0-9-1q-1-1 0-8q1-7 4-10q3-3 4-7q1-4 4-8zM2803 1799q3-5 3-9q0-4-1-5q-1-1-11-2q-10-1-17 2q-7 3-14 3q-7 0-9 1q-2 1-5 6q-3 5-3 8q0 3 3 5q3 2 23 2q20 0 24-3q4-3 7-8zM2836 1624q6-4 8-5q2-1 9-1q7 0 8 1q1 1 1 7q0 6-1 7q-1 1 0 11q1 10 0 11q-1 1-12 1q-11 0-15-5q-4-5-5-7q-1-2 0-9q1-7 7-11zM2680 636q2-4 2-7q0-3 5-10q5-7 11-9q6-2 10-2q4 0 5 1q1 1 1 8q0 7-6 12q-6 5-7 9q-1 4-4 7q-3 3-8 3q-5 0-7-2q-2-2-3-4q-1-2 1-6zM2888 2764q6 4 15 4q9 0 10-1q1-1 1-14q0-13-4-18q-4-5-6-10q-2-5-10-14q-8-9-14-11q-6-2-14-2M2415 2994q-1-4-5-8q-4-4-5-11q-1-7 1-9q2-2 8-1q6 1 16 10q10 9 9 18q-1 9-2 10q-1 1-7 1q-6 0-10-3q-4-3-5-7zM2548 4016q-2 0-5 0q-3 0-10-9q-7-9-7-11q0-2-3-7q-3-5-1-8q2-3 7-3q5 0 12 7q7 7 8 11q1 4 3 6q2 2 2 6q0 4-2 6q-2 2-4 2zM2875 3736q-3-4-10-10q-7-6-12-7q-5-1-7 1q-2 2-1 8q1 6 11 14q10 8 15 8q5 0 6-1q1-1 1-5q0-4-3-8zM2322 2984q8 8 16 13q8 5 15 5q7 0 9-2q2-2 2-7q0-5-3-8q-3-3-14-6q-11-3-19-1M2174 4222q0-8 0-10q0-2-2-4q-2-2-10-1q-8 1-11 7q-3 6-2 11q1 5 3 7q2 2 9 2q7 0 9-1q2-1 3-2q1-1 1-9zM2766 2821q-4 1-7 0q-3-1-5-5q-2-4-1-12q1-8 3-10q2-2 5-2q3 0 8 4q5 4 5 10q0 6-2 10q-2 4-6 5zM2540 4716q-10 8-21 8q-11 0-16 4q-5 4-12 4q-7 0-8 1q-1 1-21 3M2143 4528q-5-2-7-6q-2-4-2-6q0-2 2-4q2-2 8-1q6 1 12 4q6 3 6 7q0 4-1 5q-1 1-7 2q-6 1-11-1zM2862 2696q-6-8-12-10q-6-2-9-2q-3 0-6 3q-3 3-3 6q0 3 2 6q2 3 8 6q6 3 14 3M2540 4700q8-4 15-4q7 0 8-1q1-1 4 1q3 2 3 6q0 4-4 8q-4 4-24 4M2171 1364q-5-2-8-2q-3 0-5 2q-2 2-3 7q-1 5 1 7q2 2 9 2q7 0 9-2q2-2 2-7q0-5-5-7zM2696 3848q-6-6-7-9q-1-3 1-7q2-4 6-5q4-1 7 2q3 3 5 11M2158 4700q2 6 0 8q-2 2-7 2q-5 0-6-1q-1-1 0-6q1-5 3-7q2-2 6 0M2876 2736q6 0 10 3q4 3 4 12q0 9-2 11M2306 1057q2-3 0-5q-2-2-4-2q-2 0-4 2q-2 2 0 5q2 3 4 3q2 0 4-3zM2874 2736q-12-14-14-26M2100 3956q-16 10-22 18M2872 2748q2 6 12 14M2880 2782l4-16M2220 4734q-6-2-14 2"></path></g></g></svg>
 </div>
@@ -822,12 +786,12 @@ html{scroll-behavior:auto}
 </div>
 </div>
 <ul class="zl">
-<li class="z"><span class="z-n lb">01</span><span class="z-t" data-max="960">Сцена</span><span class="z-d">Лайнап оголосимо зовсім скоро</span><img class="z-ph" src="assets/photos/zone-1-stage.jpg" srcset="assets/photos/zone-1-stage-480.jpg 480w, assets/photos/zone-1-stage-600.jpg 600w, assets/photos/zone-1-stage-720.jpg 720w, assets/photos/zone-1-stage.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: 5deg"></li>
-<li class="z"><span class="z-n lb">02</span><span class="z-t" data-max="730">Лекторій</span><span class="z-d">Розмови, після яких дивишся на світ інакше</span><img class="z-ph" src="assets/photos/zone-2-lecture.jpg" srcset="assets/photos/zone-2-lecture-480.jpg 480w, assets/photos/zone-2-lecture-600.jpg 600w, assets/photos/zone-2-lecture-720.jpg 720w, assets/photos/zone-2-lecture.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: -4deg"></li>
-<li class="z"><span class="z-n lb">03</span><span class="z-t" data-max="670">Виставка</span><span class="z-d">Мультимедійна. Досвід інших живих істот через мистецтво і технології</span><img class="z-ph" src="assets/photos/zone-3-expo.jpg" srcset="assets/photos/zone-3-expo-480.jpg 480w, assets/photos/zone-3-expo-600.jpg 600w, assets/photos/zone-3-expo-720.jpg 720w, assets/photos/zone-3-expo.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: 4deg"></li>
-<li class="z"><span class="z-n lb">04</span><span class="z-t" data-max="920">Маркет</span><span class="z-d">Локальні бренди, які хочеться підтримати</span><img class="z-ph" src="assets/photos/zone-4-market.jpg" srcset="assets/photos/zone-4-market-480.jpg 480w, assets/photos/zone-4-market-600.jpg 600w, assets/photos/zone-4-market-720.jpg 720w, assets/photos/zone-4-market.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: -5deg"></li>
-<li class="z"><span class="z-n lb">05</span><span class="z-t" data-max="700">Фудзона</span><span class="z-d">Усе рослинне. Усе смачне</span><img class="z-ph" src="assets/photos/zone-5-food.jpg" srcset="assets/photos/zone-5-food-480.jpg 480w, assets/photos/zone-5-food-600.jpg 600w, assets/photos/zone-5-food-720.jpg 720w, assets/photos/zone-5-food.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 52%; --r: 4deg"></li>
-<li class="z"><span class="z-n lb">06</span><span class="z-t" data-max="410">Благодійність</span><span class="z-d">Активності, де кожна гривня <br>працює на збір</span><img class="z-ph" src="assets/photos/zone-6-charity.jpg" srcset="assets/photos/zone-6-charity-480.jpg 480w, assets/photos/zone-6-charity-600.jpg 600w, assets/photos/zone-6-charity-720.jpg 720w, assets/photos/zone-6-charity.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: -4deg"></li>
+<li class="z"><span class="z-n lb">01</span><span class="z-t">Сцена</span><span class="z-d">Лайнап оголосимо зовсім скоро</span><img class="z-ph" src="assets/photos/zone-1-stage.jpg" srcset="assets/photos/zone-1-stage-480.jpg 480w, assets/photos/zone-1-stage-600.jpg 600w, assets/photos/zone-1-stage-720.jpg 720w, assets/photos/zone-1-stage.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: 5deg"></li>
+<li class="z"><span class="z-n lb">02</span><span class="z-t">Лекторій</span><span class="z-d">Розмови, після яких дивишся на світ інакше</span><img class="z-ph" src="assets/photos/zone-2-lecture.jpg" srcset="assets/photos/zone-2-lecture-480.jpg 480w, assets/photos/zone-2-lecture-600.jpg 600w, assets/photos/zone-2-lecture-720.jpg 720w, assets/photos/zone-2-lecture.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: -4deg"></li>
+<li class="z"><span class="z-n lb">03</span><span class="z-t">Виставка</span><span class="z-d">Мультимедійна. Досвід інших живих істот через мистецтво і технології</span><img class="z-ph" src="assets/photos/zone-3-expo.jpg" srcset="assets/photos/zone-3-expo-480.jpg 480w, assets/photos/zone-3-expo-600.jpg 600w, assets/photos/zone-3-expo-720.jpg 720w, assets/photos/zone-3-expo.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: 4deg"></li>
+<li class="z"><span class="z-n lb">04</span><span class="z-t">Маркет</span><span class="z-d">Локальні бренди, які хочеться підтримати</span><img class="z-ph" src="assets/photos/zone-4-market.jpg" srcset="assets/photos/zone-4-market-480.jpg 480w, assets/photos/zone-4-market-600.jpg 600w, assets/photos/zone-4-market-720.jpg 720w, assets/photos/zone-4-market.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: -5deg"></li>
+<li class="z"><span class="z-n lb">05</span><span class="z-t">Фудзона</span><span class="z-d">Усе рослинне. Усе смачне</span><img class="z-ph" src="assets/photos/zone-5-food.jpg" srcset="assets/photos/zone-5-food-480.jpg 480w, assets/photos/zone-5-food-600.jpg 600w, assets/photos/zone-5-food-720.jpg 720w, assets/photos/zone-5-food.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 52%; --r: 4deg"></li>
+<li class="z"><span class="z-n lb">06</span><span class="z-t">Благодійність</span><span class="z-d">Активності, де кожна гривня <br>працює на збір</span><img class="z-ph" src="assets/photos/zone-6-charity.jpg" srcset="assets/photos/zone-6-charity-480.jpg 480w, assets/photos/zone-6-charity-600.jpg 600w, assets/photos/zone-6-charity-720.jpg 720w, assets/photos/zone-6-charity.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: -4deg"></li>
 </ul>
 <div class="zones-foot">
 <p class="b rv">«Точка зору» проявиться в кожній зоні&nbsp;— від лекторію та виставки до візуального оформлення. Деталі програми та лайнап&nbsp;— зовсім скоро.</p>
@@ -838,7 +802,7 @@ html{scroll-behavior:auto}
 <section class="sec p skew fund" id="fund">
 <div class="wrap">
 <div class="lb rv">Про збір</div>
-<div class="fund-big" data-prog="1" aria-hidden="true">100%</div>
+<div class="fund-big" aria-hidden="true">100%</div>
 <div class="fund-grid">
 <h2 class="fund-h d rv"><span class="vh">100% </span>прибутку — <br><i>на підтримку</i> <br class="mbr">Сил оборони</h2>
 <div>
@@ -935,27 +899,6 @@ html{scroll-behavior:auto}
 </section>
 
 <section class="sec p skew tix" id="tickets">
-<div class="coon-track" aria-hidden="true"><div class="coon">
-<svg viewBox="0 0 440 220" aria-hidden="true">
-<g class="coon-b">
-<g class="coon-tg" style="transform-origin: 126px 124px"><path class="coon-t" d="M126 124 C96 122 62 108 30 86"></path><circle cx="25" cy="83" r="23"></circle></g>
-<line class="coon-l coon-l2" x1="148" y1="150" x2="148" y2="196" style="transform-origin: 148px 150px"></line>
-<line class="coon-l" x1="266" y1="150" x2="266" y2="196" style="transform-origin: 266px 150px"></line>
-<path d="M104 124 C100 66 170 44 232 58 C276 68 300 96 296 128 C292 160 262 176 200 176 C150 176 108 168 104 124 Z"></path>
-<line class="coon-l" x1="172" y1="152" x2="172" y2="198" style="transform-origin: 172px 152px"></line>
-<line class="coon-l coon-l2" x1="246" y1="152" x2="246" y2="198" style="transform-origin: 246px 152px"></line>
-<path d="M290 86 C282 62 294 44 308 49 C320 54 324 68 322 80 Z"></path>
-<path d="M330 72 C328 50 342 38 354 45 C365 52 364 72 358 84 Z"></path>
-<path d="M278 112 C276 80 304 62 332 66 C356 70 374 86 386 104 C394 108 406 116 410 124 C412 132 404 138 396 138 C386 150 358 158 330 154 C300 150 280 136 278 112 Z"></path>
-<path class="coon-c" d="M314 88 C330 76 356 80 372 98 C358 90 338 90 320 98 C314 96 312 91 314 88 Z"></path>
-<path class="coon-c" d="M350 124 C364 114 386 116 400 124 C403 130 398 135 392 135 C380 144 360 146 346 141 C340 135 343 128 350 124 Z"></path>
-<circle cx="402" cy="127" r="7"></circle>
-<circle class="coon-c" cx="350" cy="108" r="4.5"></circle>
-<path class="coon-c" d="M299 78 C296 66 301 58 307 60 C312 63 313 70 312 76 Z"></path>
-<path class="coon-c" d="M338 70 C338 58 344 52 350 55 C355 59 354 70 351 77 Z"></path>
-</g>
-</svg>
-</div></div>
 <div class="wrap">
 <h2 class="tix-h d rv">Бери квиток, <i>поки</i> early birds</h2>
 <div class="ticket-w rv">
@@ -1029,8 +972,6 @@ html{scroll-behavior:auto}
   var collect = function () {
     els.hero = root.querySelector('[data-hero]');
     els.par = all('[data-par]');
-    els.prog = all('[data-prog]');
-    els.zt = all('.z-t');
     els.sock = all('[data-sock]');
     els.tilt = root.querySelector('[data-tilt]');
     els.route = root.querySelector('[data-route]');
@@ -1038,22 +979,6 @@ html{scroll-behavior:auto}
     els.letters = all('.L');
   };
   collect();
-  /* the stat numbers (the spring): a number waits narrow, plays when its card is fully on screen and is wound back
-     only after the card has left the screen completely, so scrolling away and back plays it again.
-     (The paragraphs of the theme are not here: they follow the scroll, like the words of the manifesto) */
-  var watchIn = function () {
-    if (self._io3) { self._io3.disconnect(); self._io3 = null; }
-    if (reduce || !('IntersectionObserver' in window)) return;
-    self._io3 = new IntersectionObserver(function (en) {
-      en.forEach(function (x) {
-        var n = x.target._n; if (!n) return;
-        if (x.intersectionRatio >= 0.98) { n.classList.remove('pre'); n.classList.add('go'); }
-        else if (!x.isIntersecting) { n.classList.remove('go'); n.classList.add('pre'); }
-      });
-    }, { threshold: [0, 0.98] });
-    all('.stat').forEach(function (st) { var n = st.querySelector('.stat-n>span'); if (!n) return; st._n = n; n.classList.add('pre'); self._io3.observe(st); });
-  };
-  watchIn();
 
   /* countdown to the start of the festival: 22.11.2026 13:00 Kyiv (UTC+2) */
   var target = Date.UTC(2026, 10, 22, 11, 0, 0);
@@ -1069,15 +994,25 @@ html{scroll-behavior:auto}
   tick();
   self._cdT = setInterval(tick, 1000);
 
-  /* reveal */
+  /* reveal (v2): every block comes in once, when it reaches the screen; blocks arriving together follow one another 80 ms apart.
+     What is already on screen at load (under the hero on a phone) waits for the hero's own intro. The manifesto ([data-lines])
+     comes in line by line: its words are grouped by the line they sit on */
+  var lines = function (el, d0) {
+    var ws = el.querySelectorAll('.w'), top = null, n = -1;
+    for (var j = 0; j < ws.length; j++) { var t = ws[j].offsetTop; if (top === null || t > top + 2) { top = t; n++; } ws[j].style.setProperty('--d', (d0 + n * 0.1).toFixed(2) + 's'); }
+  };
   if ('IntersectionObserver' in window && !reduce) {
-    var vh0 = window.innerHeight;
+    var first = window.scrollY < window.innerHeight / 2;
     self._io = new IntersectionObserver(function (en) {
-      en.forEach(function (e) { if (e.isIntersecting) { e.target.classList.remove('pre'); self._io.unobserve(e.target); } });
-    }, { rootMargin: '0px 0px -4% 0px', threshold: 0.02 });
-    all('.rv').forEach(function (el) {
-      if (el.getBoundingClientRect().top > vh0 * 0.92) { el.classList.add('pre'); self._io.observe(el); }
-    });
+      var k = 0, d0 = first ? 0.8 : 0; first = false;
+      en.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var el = e.target;
+        if (el.hasAttribute('data-lines')) lines(el, d0); else el.style.setProperty('--d', (d0 + Math.min(k * 0.08, 0.4)).toFixed(2) + 's');
+        k++; el.classList.remove('pre'); self._io.unobserve(el);
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0 });
+    all('.rv,[data-lines]').forEach(function (el) { el.classList.add('pre'); self._io.observe(el); });
   }
 
   /* pointer + clicks */
@@ -1183,26 +1118,29 @@ html{scroll-behavior:auto}
     el.style.setProperty('--k', k);
   };
   var flipL = function (el) { el.classList.toggle('it'); kernL(el); kernL(el.nextElementSibling); };
-  /* a flip changes the letter's width, so the letters shift under the pointer: a letter flips again only after a real move */
+  /* the letters stand as in the logo; only the pointer tilts one, and it goes back to the logo a moment after the pointer leaves
+     (v2, owner 08.10.2026: no flips by themselves).
+     A flip changes the letter's width, so the letters shift under the pointer: a letter flips again only after a real move */
   var lastF = { x: -1e9, y: -1e9 };
   self._onOver = function (e) {
     var t = e.target;
     if (!t || !t.classList || !t.classList.contains('L')) return;
+    clearTimeout(t._rt);
+    if (t._hv) return;
     var now = performance.now(), dx = e.clientX - lastF.x, dy = e.clientY - lastF.y;
     if (dx * dx + dy * dy < 144) return;
     if (t._ft && now - t._ft < 600) return;
     t._ft = now; lastF.x = e.clientX; lastF.y = e.clientY;
-    flipL(t);
+    t._hv = true; flipL(t);
+  };
+  self._onOut = function (e) {
+    var t = e.target;
+    if (!t || !t.classList || !t.classList.contains('L') || !t._hv) return;
+    clearTimeout(t._rt);
+    t._rt = setTimeout(function () { if (t._hv) { t._hv = false; flipL(t); } }, 700);
   };
   document.addEventListener('pointerover', self._onOver);
-  if (!reduce) {
-    self._flT = setInterval(function () {
-      if (!els.letters.length) return;
-      var r = els.hero ? els.hero.getBoundingClientRect() : null;
-      if (!r || r.bottom < 0) return;
-      flipL(els.letters[Math.floor(Math.random() * els.letters.length)]);
-    }, 1700);
-  }
+  document.addEventListener('pointerout', self._onOut);
 
   var lastKey = '';
   var layout = function (vh, vw) {
@@ -1220,33 +1158,9 @@ html{scroll-behavior:auto}
       ty = clamp(-(base + r.height / 2 - vh / 2) * parseFloat(el.getAttribute('data-par')) * (vw < 820 ? 0.45 : 1), -260, 260);
       el._ty = ty; el.style.translate = '0 ' + ty.toFixed(1) + 'px';
     }
-    for (i = 0; i < els.prog.length; i++) {
-      el = els.prog[i];
-      r = el.getBoundingClientRect();
-      p = clamp((vh * (parseFloat(el.getAttribute('data-ps')) || 0.92) - r.top) / (vh * 0.62 + r.height * 0.5) * (parseFloat(el.getAttribute('data-prog')) || 1), 0, 1);
-      el.style.setProperty('--p', p.toFixed(3));
-      if (el.hasAttribute('data-words')) {
-        /* manifesto: words pop in tilted, like stickers, and straighten */
-        var ws = el._ws || (el._ws = el.querySelectorAll('.w')), nw = ws.length, kk = 2.6;
-        for (var j = 0; j < nw; j++) {
-          var w = ws[j], u = clamp((p * (nw + kk) - j) / kk, 0, 1);
-          if (w._u === u) continue; w._u = u;
-          if (u >= 1) { w.style.transform = ''; continue; }
-          var q = 1 - u;
-          w.style.transform = 'translate(' + (q * (parseFloat(w.getAttribute('data-dx')) || 0)).toFixed(1) + 'px,' + (q * 0.5).toFixed(3) + 'em) rotate(' + (q * (parseFloat(w.getAttribute('data-r')) || 0)).toFixed(2) + 'deg) scale(' + clamp(u * 2.2, 0, 1).toFixed(3) + ')';
-        }
-      }
-    }
-    for (i = 0; i < els.zt.length; i++) {
-      el = els.zt[i];
-      r = el.getBoundingClientRect();
-      var c = 1 - clamp(Math.abs(r.top + r.height / 2 - vh * 0.5) / (vh * 0.48), 0, 1);
-      var mx = parseFloat(el.getAttribute('data-max') || '700');
-      el.style.setProperty('--wd', Math.round(110 + (mx - 110) * c * c * (3 - 2 * c)));
-    }
     el = els.route;
     if (el) {
-      /* the route is drawn by the scroll; each stop pops in when the line reaches it */
+      /* the route is drawn by the scroll; each stop fades in when the line reaches it */
       r = el.getBoundingClientRect();
       var rd = clamp((clamp((vh * 0.96 - r.top) / (vh * 0.5 + r.height * 0.55), 0, 1) - 0.08) / 0.8, 0, 1), rmob = vw <= 820 ? 1 : 0;
       if (el._d !== rd || el._mob !== rmob) {
@@ -1296,7 +1210,7 @@ html{scroll-behavior:auto}
 })();
 </script>
 <script>
-/* start the hero intro (see html.iw): both fonts loaded, then two frames so the first paint is done; 3 s at most (on a slow line the spring should play in the real font, not jump into it) */
+/* start the hero intro (see html.iw): both fonts loaded, then two frames so the first paint is done; 3 s at most (on a slow line the intro should play in the real font, not jump into it) */
 (function () {
   var d = document.documentElement;
   var go = function () { if (d.classList.contains('iw')) requestAnimationFrame(function () { requestAnimationFrame(function () { d.classList.remove('iw'); }); }); };
@@ -1361,21 +1275,6 @@ html{scroll-behavior:auto}
   sync(); if (mq.addEventListener) mq.addEventListener('change', sync);
   t.addEventListener('click', function (e) { if (!mq.matches) return; e.preventDefault(); flip(); if (e.detail) t.blur(); });
   t.addEventListener('keydown', function (e) { if (mq.matches && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); flip(); } });
-})();
-</script>
-<script>
-/* theme paragraphs spring in once, when a paragraph is at least 30% on screen (or its top is past 70% of the screen) */
-(function () {
-  if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var ps = document.querySelectorAll('.pov-body > p');
-  var io = new IntersectionObserver(function (es) {
-    es.forEach(function (e) {
-      if (!e.isIntersecting || (e.intersectionRatio < 0.3 && e.boundingClientRect.top > window.innerHeight * 0.7)) return;
-      var pp = e.target.querySelector('.pp'); if (pp) { pp.classList.remove('pre'); pp.classList.add('go'); }
-      io.unobserve(e.target);
-    });
-  }, { threshold: [0, 0.15, 0.3, 0.6, 1] });
-  ps.forEach(function (p) { var pp = p.querySelector('.pp'); if (pp) pp.classList.add('pre'); io.observe(p); });
 })();
 </script>
 <script>
