@@ -35,8 +35,11 @@ const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info|
   const cd1=await p.evaluate(()=>['d','h','m','s'].map(k=>document.querySelector('[data-cd="'+k+'"]').textContent).join(':'));await p.waitForTimeout(1300);const cd2=await p.evaluate(()=>['d','h','m','s'].map(k=>document.querySelector('[data-cd="'+k+'"]').textContent).join(':'));
   ok('countdown runs',/^\d+:\d\d:\d\d:\d\d$/.test(cd1)&&cd1!==cd2,cd1+' → '+cd2);
   const it1=await p.evaluate(()=>[...document.querySelectorAll('.L')].map(e=>e.classList.contains('it')?1:0).join(''));await p.waitForTimeout(5400);const it2=await p.evaluate(()=>[...document.querySelectorAll('.L')].map(e=>e.classList.contains('it')?1:0).join(''));
-  ok('hero letters switch by themselves',it1!==it2,it1+' → '+it2);
-  ok('reveal: some blocks wait below the fold at load',await p.evaluate(()=>document.querySelectorAll('.rv.pre').length)>0);
+  const lr=await p.evaluate(()=>{const e=document.querySelectorAll('.L')[2].getBoundingClientRect();return [e.left+e.width/2,e.top+e.height/2]});await p.mouse.move(lr[0]-200,lr[1]+300);await p.mouse.move(lr[0],lr[1],{steps:8});await p.waitForTimeout(250);
+  const it3=await p.evaluate(()=>[...document.querySelectorAll('.L')].map(e=>e.classList.contains('it')?1:0).join(''));await p.mouse.move(lr[0],lr[1]+330,{steps:5});await p.waitForTimeout(1200);
+  const it4=await p.evaluate(()=>[...document.querySelectorAll('.L')].map(e=>e.classList.contains('it')?1:0).join(''));
+  ok('hero letters: stand as in the logo, tilt only under the pointer and come back',it1===it2&&it3!==it1&&it4===it1,[it1,it2,it3,it4].join(' → '));
+  ok('reveal: some blocks wait below the fold at load',await p.evaluate(()=>document.querySelectorAll('.rv.pre').length)>0);const w0=await p.evaluate(()=>document.querySelector('.mani').classList.contains('pre'));
   // cookie card (it covers the lower left corner, so it is answered before the other checks)
   const ck=await p.evaluate(()=>{const c=document.querySelector('.cbn'),r=c.getBoundingClientRect(),cs=getComputedStyle(c);return [cs.position,c.offsetWidth,Math.round(innerHeight-r.bottom),Math.round(r.left),cs.backgroundColor,cs.color,cs.rotate,Number(cs.zIndex)<Number(getComputedStyle(document.querySelector('.nav')).zIndex)]});
   ok('cookie card: fixed in the lower left corner, 440 wide, pink with grey text, tilted, under the nav',ck[0]==='fixed'&&ck[1]===440&&ck[2]===24&&ck[3]<40&&ck[4]==='rgb(254, 117, 190)'&&ck[5]==='rgb(109, 109, 109)'&&ck[6]==='-2deg'&&ck[7],JSON.stringify(ck));
@@ -47,10 +50,10 @@ const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info|
   // hero condenses
   await go(300);await p.waitForTimeout(200);ok('hero title condenses with the scroll (--hs)',parseFloat(await p.evaluate(()=>document.querySelector('[data-hero]').style.getPropertyValue('--hs')))>0.3);
   // manifesto scrub
-  const ym=await Y('.mani');await go(ym-720*0.95);await p.waitForTimeout(200);const w0=await p.evaluate(()=>[...document.querySelectorAll('.mani .w')].filter(e=>e.style.transform).length);
-  await go(ym-720*0.2);await p.waitForTimeout(200);const w1=await p.evaluate(()=>[...document.querySelectorAll('.mani .w')].filter(e=>e.style.transform).length);
-  await go(ym-720*0.95);await p.waitForTimeout(200);const w2=await p.evaluate(()=>[...document.querySelectorAll('.mani .w')].filter(e=>e.style.transform).length);
-  ok('manifesto: words come in with the scroll and go back out',w0>5&&w1===0&&w2===w0,`unfinished words ${w0} → ${w1} → ${w2}`);
+  const ym=await Y('.mani');
+  await go(ym-720*0.4);await p.waitForTimeout(1800);const w1=await p.evaluate(()=>{const m=document.querySelector('.mani');return [m.classList.contains('pre'),new Set([...m.querySelectorAll('.w')].map(e=>e.style.getPropertyValue('--d'))).size,getComputedStyle(m.querySelector('.w')).translate]});
+  await go(0);await p.waitForTimeout(200);await go(ym-720*0.4);await p.waitForTimeout(100);const w2=await p.evaluate(()=>document.querySelector('.mani').classList.contains('pre'));
+  ok('manifesto: comes in line by line once, and stays',w0===true&&w1[0]===false&&w1[1]>=3&&w1[2]==='none'&&w2===false,JSON.stringify([w0,w1,w2]));
   // eyes
   const yp=await Y('.pov-t');await go(yp-200);await p.mouse.move(100,100);await p.waitForTimeout(300);const e1=await p.evaluate(()=>document.querySelector('.pupil').style.transform);await p.mouse.move(1200,650);await p.waitForTimeout(300);const e2=await p.evaluate(()=>document.querySelector('.pupil').style.transform);
   ok('pupils follow the pointer',e1&&e2&&e1!==e2,e1+' → '+e2);
@@ -63,13 +66,14 @@ const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info|
   const BG=()=>['[data-vw]','.hero','#about'].map(s=>getComputedStyle(document.querySelector(s)).backgroundColor).join(' ');const bg1=await p.evaluate(BG);await p.click('.pov-act [data-act="flip"]');await p.waitForTimeout(150);const bg2=await p.evaluate(BG);
   ok('change of the point of view swaps the colours (root, a grey section, a pink section)',bg1==='rgb(109, 109, 109) rgb(109, 109, 109) rgb(254, 117, 190)'&&bg2==='rgb(254, 117, 190) rgb(254, 117, 190) rgb(109, 109, 109)',bg1+' → '+bg2);await p.click('.pov-act [data-act="flip"]');
   // zones width
-  const yz=await Y('.z');await go(yz-360);await p.waitForTimeout(350);const wd=await p.evaluate(()=>[...document.querySelectorAll('.z-t')].map(e=>+e.style.getPropertyValue('--wd')));
-  ok('zone titles widen near the middle of the screen',Math.max(...wd)>500&&Math.min(...wd)<300,wd.join(','));
+  const ZW=()=>p.evaluate(()=>[...document.querySelectorAll('.z-t')].map(e=>getComputedStyle(e).fontVariationSettings+' '+getComputedStyle(e).fontStyle));
+  const yz=await Y('.z');await go(yz-360);await p.waitForTimeout(350);const wd1=await ZW();await go(yz-100);await p.waitForTimeout(350);const wd2=await ZW();
+  ok('zone titles: one cut for all six, the scroll does not change it',new Set(wd1.concat(wd2)).size===1,[...new Set(wd1.concat(wd2))].join(' | '));
   // stats
-  const ys=await Y('.stats');await go(ys-300);await p.waitForTimeout(500);const s1=await p.evaluate(()=>[...document.querySelectorAll('.stat-n>span')].map(e=>e.className).join(','));
-  await go(0);await p.waitForTimeout(400);const s2=await p.evaluate(()=>[...document.querySelectorAll('.stat-n>span')].map(e=>e.className).join(','));
-  await go(ys-300);await p.waitForTimeout(500);const s3=await p.evaluate(()=>[...document.querySelectorAll('.stat-n>span')].map(e=>e.className).join(','));
-  ok('numbers: spring plays, rewinds off screen, plays again',s1==='go,go,go'&&s2==='pre,pre,pre'&&s3==='go,go,go',[s1,s2,s3].join(' | '));
+  const SC=()=>p.evaluate(()=>[...document.querySelectorAll('.stat')].map(e=>e.classList.contains('pre')?'pre':'in').join(','));
+  const s1=await SC();const ys=await Y('.stats');await go(ys-300);await p.waitForTimeout(1200);const s2=await SC();const fv=await p.evaluate(()=>getComputedStyle(document.querySelector('.stat')).opacity);
+  await go(0);await p.waitForTimeout(300);const s3=await SC();
+  ok('numbers: come in once with the blocks around them, and stay',s1==='pre,pre,pre'&&s2==='in,in,in'&&fv==='1'&&s3==='in,in,in',[s1,s2,fv,s3].join(' | '));
   // route
   const yr=await Y('[data-route]');await go(yr-720);await p.waitForTimeout(300);const r0=await p.evaluate(()=>[document.querySelector('.rt-d .rt-l').style.strokeDashoffset,document.querySelectorAll('[data-route] .on').length]);
   await go(yr+100);await p.waitForTimeout(700);const r1=await p.evaluate(()=>[document.querySelector('.rt-d .rt-l').style.strokeDashoffset,document.querySelectorAll('[data-route] .on').length]);
@@ -120,9 +124,8 @@ const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info|
     ok(`reduced motion ${w}px: nothing is hidden, nothing animates`,hid.length===0&&anim===0,hid.slice(0,5).join(',')+' animated:'+anim);
     const rows=await p.evaluate(()=>['.strip','.revs'].map(s=>{const e=document.querySelector(s);const its=e.querySelectorAll('.mq-t:not([aria-hidden]) > *');e.scrollLeft=1e6;const r=its[its.length-1].getBoundingClientRect();const v=[getComputedStyle(e).overflowX,its.length,Math.round(r.left),Math.round(r.right),innerWidth];e.scrollLeft=0;return v}));
     ok(`reduced motion ${w}px: gallery and reviews can be scrolled by hand to the last card`,rows.every(v=>v[0]==='auto'&&v[1]>=8&&v[2]>=0&&v[3]<=v[4]),JSON.stringify(rows));
-    const yc=await p.evaluate(()=>document.querySelector('.coon-track').getBoundingClientRect().bottom+scrollY);await p.evaluate(([v,hh])=>window.scrollTo({top:v-hh+120,behavior:'instant'}),[yc,h]);await p.waitForTimeout(200);
-    const cn=await p.evaluate(()=>{const e=document.querySelector('.coon'),r=e.getBoundingClientRect();return [Math.round(r.left),Math.round(r.right),Math.round(r.top),Math.round(r.bottom),innerWidth,innerHeight,e.checkVisibility({checkOpacity:true,checkVisibilityCSS:true})&&r.width>40]});
-    ok(`reduced motion ${w}px: the raccoon stands where he can be seen`,cn[6]&&cn[0]>=0&&cn[1]<=cn[4]&&cn[2]>=0&&cn[3]<=cn[5],cn.join(','));
+    const st=await p.evaluate(()=>[...document.querySelectorAll('h2,.mani .w,.ln,.hero-city,.hero-date')].filter(e=>{const cs=getComputedStyle(e);return cs.clipPath!=='none'||cs.translate!=='none'}).map(e=>e.className));
+    ok(`reduced motion ${w}px: headings, the manifesto and the hero stand in place, unmasked`,st.length===0,st.slice(0,5).join(','));
     if(w===1280){const yr2=await p.evaluate(()=>document.querySelector('.revs').getBoundingClientRect().top+scrollY);await p.evaluate(v=>window.scrollTo({top:v-150,behavior:'instant'}),yr2);await p.mouse.move(5,5);await p.waitForTimeout(200);
       const c0=await p.evaluate(()=>{const e=document.querySelectorAll('.revs .mq-t:not([aria-hidden]) .rev')[1];const r=e.getBoundingClientRect();return [getComputedStyle(e).rotate,r.left+r.width/2,r.top+r.height/2]});await p.mouse.move(c0[1],c0[2]);await p.waitForTimeout(200);
       const c1=await p.evaluate(()=>{const e=document.querySelector('.revs .rev:hover');return e?[getComputedStyle(e).rotate,getComputedStyle(e).scale]:['no hover','']});
