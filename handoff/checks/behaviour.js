@@ -55,8 +55,11 @@ const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info|
   await go(0);await p.waitForTimeout(200);await go(ym-720*0.4);await p.waitForTimeout(100);const w2=await p.evaluate(()=>document.querySelector('.mani').classList.contains('pre'));
   ok('manifesto: comes in line by line once, and stays',w0===true&&w1[0]===false&&w1[1]>=3&&w1[2]==='none'&&w2===false,JSON.stringify([w0,w1,w2]));
   // eyes
-  const yp=await Y('.pov-t');await go(yp-200);await p.mouse.move(100,100);await p.waitForTimeout(300);const e1=await p.evaluate(()=>document.querySelector('.pupil').style.transform);await p.mouse.move(1200,650);await p.waitForTimeout(300);const e2=await p.evaluate(()=>document.querySelector('.pupil').style.transform);
-  ok('pupils follow the pointer',e1&&e2&&e1!==e2,e1+' → '+e2);
+  // the eyes live on the cookie card only (owner 09.10.2026: «Точка зору» is plain letters): the card is shown again for this check
+  const yp=await Y('.pov-t');await go(yp-200);await p.evaluate(()=>{const c=document.querySelector('.cbn');c.classList.remove('yes','no');c.hidden=false;c.style.animation='none'});
+  await p.mouse.move(1200,100);await p.waitForTimeout(300);const e1=await p.evaluate(()=>document.querySelector('.cbn .pupil').style.transform);await p.mouse.move(100,700);await p.waitForTimeout(300);const e2=await p.evaluate(()=>document.querySelector('.cbn .pupil').style.transform);
+  const pe=await p.evaluate(()=>{const c=document.querySelector('.cbn');c.hidden=true;c.style.animation='';return document.querySelectorAll('.pov-t .pupil').length});
+  ok('pupils follow the pointer (cookie card); the theme heading has no eyes',e1&&e2&&e1!==e2&&pe===0,e1+' → '+e2+' heading eyes:'+pe);
   // flip
   const zc=await p.evaluate(()=>{const n=document.querySelector('.z .z-n'),bt=document.querySelector('.pov-act [data-act="flip"]');const c0=getComputedStyle(n).color;bt.click();const c1=getComputedStyle(n).color;bt.click();return [c0,c1,getComputedStyle(n).color]});
   ok('change of the point of view recolours the zone rows at once, without a fade',zc[0]==='rgb(254, 117, 190)'&&zc[1]==='rgb(109, 109, 109)'&&zc[2]===zc[0],zc.join(' → '));
@@ -66,9 +69,8 @@ const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info|
   const BG=()=>['[data-vw]','.hero','#about'].map(s=>getComputedStyle(document.querySelector(s)).backgroundColor).join(' ');const bg1=await p.evaluate(BG);await p.click('.pov-act [data-act="flip"]');await p.waitForTimeout(150);const bg2=await p.evaluate(BG);
   ok('change of the point of view swaps the colours (root, a grey section, a pink section)',bg1==='rgb(109, 109, 109) rgb(109, 109, 109) rgb(254, 117, 190)'&&bg2==='rgb(254, 117, 190) rgb(254, 117, 190) rgb(109, 109, 109)',bg1+' → '+bg2);await p.click('.pov-act [data-act="flip"]');
   // zones width
-  const ZW=()=>p.evaluate(()=>[...document.querySelectorAll('.z-t')].map(e=>getComputedStyle(e).fontVariationSettings+' '+getComputedStyle(e).fontStyle));
-  const yz=await Y('.z');await go(yz-360);await p.waitForTimeout(350);const wd1=await ZW();await go(yz-100);await p.waitForTimeout(350);const wd2=await ZW();
-  ok('zone titles: one cut for all six, the scroll does not change it',new Set(wd1.concat(wd2)).size===1,[...new Set(wd1.concat(wd2))].join(' | '));
+  const yz=await Y('.z');await go(yz-360);await p.waitForTimeout(350);const wd=await p.evaluate(()=>[...document.querySelectorAll('.z-t')].map(e=>+e.style.getPropertyValue('--wd')));
+  ok('zone titles widen near the middle of the screen',Math.max(...wd)>500&&Math.min(...wd)<300,wd.join(','));
   // stats
   const SC=()=>p.evaluate(()=>[...document.querySelectorAll('.stat')].map(e=>e.classList.contains('pre')?'pre':'in').join(','));
   const s1=await SC();const ys=await Y('.stats');await go(ys-300);await p.waitForTimeout(1200);const s2=await SC();const fv=await p.evaluate(()=>getComputedStyle(document.querySelector('.stat')).opacity);
