@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preload" href="assets/fonts/HeadingNowVar.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high">
 <link rel="preload" href="assets/fonts/HeadingNowVarItalic.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high">
-<script>/* the hero intro plays once per visit: not after a reload, «back» or an address with a section (#…) — then the hero simply stands there */
-(function(){var d=document.documentElement,n,t,seen;try{n=performance.getEntriesByType('navigation')[0];t=n&&n.type}catch(e){}try{seen=sessionStorage.getItem('vw-intro')}catch(e){}
-if(seen||t==='reload'||t==='back_forward'||location.hash)d.classList.add('ni');else{d.classList.add('iw','intro');try{sessionStorage.setItem('vw-intro','1')}catch(e){}}})()</script>
+<script>/* the hero intro plays on every load and reload, as on the reference site (owner 09.10.2026) */document.documentElement.classList.add('iw','intro')</script>
 <title>Веган Вікенд Львів — 22.11</title>
 <meta name="description" content="Веган Вікенд Львів — благодійний фестиваль 22 листопада в Jam Factory Art Center: сцена, лекторій, виставка, маркет і фудзона. 100% прибутку — на підтримку Сил оборони.">
 <meta name="theme-color" content="#6D6D6D">
@@ -156,8 +154,7 @@ h2.rv.split.pre{opacity:1;translate:none}
 /* hero intro (v2.2, owner 09.10.2026): ВЕГАН, ВІКЕНД, the date and the city slide up inside their own lines — the line is a still
    window (clip-path on the line, only while the intro runs) and only the inner part (.li) moves, by transform, on its own layer: Safari
    on a phone does not repaint the text or its halo on every frame. The halo sits on the moving parts, not on the whole title.
-   The two logos fade in; the buttons, the line under them and the countdown rise. Once per visit: not after a reload, «back» or
-   a jump to a section (html.ni, set in <head>) */
+   The two logos fade in; the buttons, the line under them and the countdown rise. On every load and reload (owner 09.10.2026) */
 .li{display:inline-block}
 .hero .li{animation:vw-up 1.2s var(--gd,0s) var(--ez) backwards;will-change:transform}
 html.intro :is(.ln,.hero-date,.hero-city){clip-path:inset(-1em -.6em -.18em -.6em)}
@@ -169,7 +166,6 @@ html.intro :is(.ln,.hero-date,.hero-city){clip-path:inset(-1em -.6em -.18em -.6e
 .hero-cta .play{--gd:.6s}.hero-cta .btn-xl{--gd:.68s}.hero-sub{--gd:.8s}.cdw{--gd:.88s}
 /* the intro waits (html.iw) until both fonts are in and the page is past its first heavy paint — at most 3 s */
 html.iw :is(.hero .li,.hero-logos .lg,.hero-cta>*,.hero-sub,.cdw){animation-play-state:paused}
-html.ni :is(.hero .li,.hero-logos .lg,.hero-cta>*,.hero-sub,.cdw){animation:none}
 .hero-sub,.cdw-l{--st:max(11px,calc(1.17*var(--u)));font-size:var(--st);line-height:1.3;letter-spacing:.012em;font-variation-settings:"wght" 700,"wdth" 520;color:var(--fg);padding-top:calc(3.36*var(--u) - 2.43*var(--st))}
 .hero-sub{max-width:30em;text-align:left}
 .cdw{display:flex;gap:calc(2.3*var(--u));align-items:flex-start;color:var(--fg)}
