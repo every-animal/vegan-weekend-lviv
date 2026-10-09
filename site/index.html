@@ -1120,16 +1120,7 @@ html{scroll-behavior:auto}
       if (mb && root.contains(mb)) { setMenu(!root.classList.contains('menu')); return; }
       var tm = t0.closest('.tm[role="button"]');
       if (tm && root.contains(tm)) { setMore(!root.classList.contains('tmore')); return; }
-      if (root.classList.contains('menu') && (t0.closest('.mnav a') || t0.closest('.nav-logo'))) {
-        /* close the menu first and scroll on the next frame: while it is open the page cannot scroll, and where the browser has a real
-           scrollbar the page changes width when it comes back — a jump started at once would land off its section */
-        var ma = t0.closest('.mnav a, .nav-logo'), id = ma.getAttribute('href'), tg = id && id.charAt(0) === '#' ? document.querySelector(id) : null;
-        setMenu(false);
-        if (tg) {
-          e.preventDefault();
-          requestAnimationFrame(function () { tg.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); if (history.replaceState) history.replaceState(null, '', id); });
-        }
-      }
+      if (root.classList.contains('menu') && (t0.closest('.mnav a') || t0.closest('.nav-logo'))) setMenu(false);
     }
     var b = e.target && e.target.closest ? e.target.closest('[data-act="flip"]') : null;
     if (b && root.contains(b)) { root.classList.add('swap'); root.classList.toggle('flip'); void root.offsetWidth; root.classList.remove('swap'); }
