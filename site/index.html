@@ -304,9 +304,8 @@ html.iw :is(.ln,.hero-date,.hero-city,.hero-logos .lg,.hero-cta>*,.hero-sub,.cdw
 .place-pin{position:absolute;left:var(--x);top:var(--y);width:11.4cqi;translate:-50% -50%;z-index:4;opacity:0;scale:.85;transition:opacity .6s var(--ez),scale .9s var(--ez)}
 .place-pin.on{opacity:1;scale:1}
 .pin-b{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:1;border-radius:50%;background:var(--btn-bg);color:var(--btn-ink);--s:11.4cqi;box-shadow:rgba(0,0,0,.17) 0 calc(var(--s)*-.07) calc(var(--s)*.08) 0 inset,rgba(0,0,0,.15) 0 calc(var(--s)*-.11) calc(var(--s)*.1) 0 inset,rgba(0,0,0,.1) 0 calc(var(--s)*-.24) calc(var(--s)*.13) 0 inset,rgba(0,0,0,.06) 0 2px 1px,rgba(0,0,0,.09) 0 4px 2px,rgba(0,0,0,.09) 0 8px 4px,rgba(0,0,0,.09) 0 16px 8px,rgba(0,0,0,.09) 0 32px 16px;transition:rotate .3s cubic-bezier(.3,1.8,.5,1),scale .3s cubic-bezier(.3,1.8,.5,1)}
-.pin-b .ring{position:absolute;inset:0;width:100%;height:100%}
-.pin-b text{font-size:21px;font-variation-settings:"wght" 820,"wdth" 560;fill:currentColor;text-transform:uppercase}
-.pin-b .lg{position:relative;width:44%;background:var(--btn-ink)}
+/* the pin is the Jam Factory logo alone, a little larger — no running words around it (owner 09.10.2026) */
+.pin-b .lg{position:relative;width:62%;background:var(--btn-ink)}
 .place-pin:hover .pin-b{rotate:-8deg;scale:1.08}
 .place-bot{display:flex;align-items:center;justify-content:space-between;gap:24px 40px;flex-wrap:wrap;margin-top:clamp(14px,1.6cqi,26px)}
 .place-lead{max-width:30em;color:var(--tx)}
@@ -891,7 +890,7 @@ html{scroll-behavior:auto}
 <div class="place-sp" data-f="0.084" data-fm="0.066" style="--x:67.03%;--y:27.71%;--xm:11.11%;--ym:10.71%;--r:-3deg"><span class="lb">Коли</span><b>22 листопада</b></div>
 <div class="place-sp" data-f="0.395" data-fm="0.529" style="--x:64.39%;--y:58.48%;--xm:17.22%;--ym:35.00%;--r:2.5deg"><span class="lb">Місто</span><b>Львів</b></div>
 <div class="place-sp up" data-f="0.765" data-fm="0.804" style="--x:27.31%;--y:82.48%;--xm:9.44%;--ym:63.57%;--r:-2deg"><span class="lb">Адреса</span><b>вул. Б. Хмельницького, 124</b></div>
-<a class="place-pin" data-f="0.985" data-fm="0.985" href="https://www.google.com/maps/search/?api=1&amp;query=Jam+Factory+Art+Center+Lviv" target="_blank" rel="noopener" aria-label="Відкрити Jam Factory Art Center на мапі" style="--x:81.72%;--y:82.39%;--xm:32.53%;--ym:89.11%"><span class="pin-b"><svg class="ring" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="vw-ring-pin" d="M100 100 m-73 0 a73 73 0 1 1 146 0 a73 73 0 1 1 -146 0"></path></defs><text><textPath href="#vw-ring-pin" startOffset="0" textLength="452" lengthAdjust="spacing">Jam Factory Art Center • на мапі ↗ • </textPath></text></svg><span class="lg lg-jf"></span></span></a>
+<a class="place-pin" data-f="0.985" data-fm="0.985" href="https://www.google.com/maps/search/?api=1&amp;query=Jam+Factory+Art+Center+Lviv" target="_blank" rel="noopener" aria-label="Відкрити Jam Factory Art Center на мапі" style="--x:81.72%;--y:82.39%;--xm:32.53%;--ym:89.11%"><span class="pin-b"><span class="lg lg-jf"></span></span></a>
 </div>
 </div>
 <div class="place-bot">
