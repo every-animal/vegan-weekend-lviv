@@ -51,11 +51,11 @@ const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info|
   await go(300);await p.waitForTimeout(200);ok('hero title condenses with the scroll (--hs)',parseFloat(await p.evaluate(()=>document.querySelector('[data-hero]').style.getPropertyValue('--hs')))>0.3);
   // manifesto scrub
   const ym=await Y('.mani');
-  await go(ym-720*0.4);await p.waitForTimeout(1800);const w1=await p.evaluate(()=>{const m=document.querySelector('.mani'),h=document.querySelector('#about .safe-t');return [m.classList.contains('pre'),getComputedStyle(m).opacity,h.querySelectorAll('.lm .li').length]});
+  await go(ym-720*0.4);await p.waitForTimeout(1800);const w1=await p.evaluate(()=>{const m=document.querySelector('.mani'),h=document.querySelector('#about .safe-t');return [m.classList.contains('pre'),getComputedStyle(m).opacity,h.querySelectorAll('.lm .li').length&&m.querySelectorAll('.lm .li').length>10?2:0]});
   const yh=await Y('#about .safe-t');await go(yh-400);await p.waitForTimeout(2600);w1.push(await p.evaluate(()=>getComputedStyle(document.querySelector('#about .safe-t .lm')).clipPath));
   await go(0);await p.waitForTimeout(200);await go(ym-720*0.4);await p.waitForTimeout(100);const w2=await p.evaluate(()=>document.querySelector('.mani').classList.contains('pre'));
-  // v2.2 (owner 09.10.2026): the manifesto comes in as one block; headings are split into words that slide up line by line, unclipped once in
-  ok('manifesto: one block, comes in once and stays; headings split into sliding words',w0===true&&w1[0]===false&&w1[1]==='1'&&w1[2]>=2&&w1[3]==='none'&&w2===false,JSON.stringify([w0,w1,w2]));
+  // owner 09.10.2026: the manifesto and the headings are split into words that slide up line by line, unclipped once in
+  ok('manifesto and headings: come in line by line once, and stay',w0===true&&w1[0]===false&&w1[1]==='1'&&w1[2]>=2&&w1[3]==='none'&&w2===false,JSON.stringify([w0,w1,w2]));
   // eyes
   // the eyes live on the cookie card only (owner 09.10.2026: «Точка зору» is plain letters): the card is shown again for this check
   const yp=await Y('.pov-t');await go(yp-200);await p.evaluate(()=>{const c=document.querySelector('.cbn');c.classList.remove('yes','no');c.hidden=false;c.style.animation='none'});
