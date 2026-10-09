@@ -75,7 +75,7 @@ h2.rv{transition-duration:1.2s}
 .split:is(.pre,.ing) .lm{clip-path:inset(-1em -.5em -.25em -.5em)}
 .split:is(.pre,.ing) .li{will-change:transform}
 .split.pre .li{translate:0 1.4em}
-h2.rv.split.pre{opacity:1;translate:none}
+.rv.split.pre{opacity:1;translate:none}
 .split.halo{filter:none!important}.split.halo .li{filter:var(--halo2)}
 .tix-h.split:is(.pre,.ing){filter:none}
 @keyframes vw-rise{from{opacity:0;translate:0 24px}}
@@ -1033,7 +1033,7 @@ html{scroll-behavior:auto}
   };
   if ('IntersectionObserver' in window && !reduce) {
     var first = window.scrollY < window.innerHeight / 2 && document.documentElement.classList.contains('intro');
-    all('h2.rv').forEach(split);
+    all('h2.rv,.mani.rv').forEach(split);   /* the manifesto comes in like the headings (owner 09.10.2026) */
     self._io = new IntersectionObserver(function (en) {
       var k = 0, d0 = first ? 0.8 : 0; first = false;
       en.forEach(function (e) {
