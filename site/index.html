@@ -1009,8 +1009,14 @@ html{scroll-behavior:auto}
      (text between plain spaces — a no-break space keeps its words together) in a still window with a moving part; lines() gives the
      words of each line the same delay. Nothing but transform and opacity moves */
   var split = function (el) {
+    /* a word made of several pieces (.hx: «з» italic + «ору» in «Точка зору») moves as one — one window, one halo; split into pieces,
+       the halo of «о» covered the edge of «з» (owner 09.10.2026) */
+    Array.prototype.forEach.call(el.querySelectorAll('.hx'), function (hx) {
+      var lm = document.createElement('span'), li = document.createElement('span');
+      lm.className = 'lm'; li.className = 'li'; hx.parentNode.insertBefore(lm, hx); lm.appendChild(li); li.appendChild(hx);
+    });
     var tn = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), n;
-    while ((n = w.nextNode())) if (!(n.parentNode.closest && n.parentNode.closest('.vh')) && /\S/.test(n.nodeValue)) tn.push(n);
+    while ((n = w.nextNode())) if (!(n.parentNode.closest && n.parentNode.closest('.vh,.hx')) && /\S/.test(n.nodeValue)) tn.push(n);
     tn.forEach(function (t) {
       var f = document.createDocumentFragment();
       t.nodeValue.split(/( +)/).forEach(function (part) {
