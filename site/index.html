@@ -99,10 +99,12 @@ h2.rv{transition-duration:1.2s}
 .nav-logo svg{display:block;height:calc(100% + 1.5px);width:auto;fill:currentColor}
 .nav-logo .nl-s{display:none}
 .nav-links{display:flex;gap:clamp(14px,2.2vw,34px)}
-.nav-links a{text-decoration:none;font-variation-settings:"wght" 720,"wdth" 620;text-transform:uppercase;font-size:13px;letter-spacing:.03em;transition:font-variation-settings .3s}
+.nav-links a{white-space:nowrap;text-decoration:none;font-variation-settings:"wght" 720,"wdth" 620;text-transform:uppercase;font-size:13px;letter-spacing:.03em;transition:font-variation-settings .3s}
 /* hover: the letters only tilt — weight and width stay (owner 09.10.2026); the same for every text link */
 .nav-links a:hover{font-style:italic}
 .nav-r{display:flex;align-items:center;gap:14px}
+/* six links since «Лайнап» (14.10.2026): on the narrowest desktop widths they get a little smaller and closer, so the eye and «Квитки» stay on screen */
+@media (min-width:821px) and (max-width:960px){.nav-links{gap:10px}.nav-links a{font-size:11.5px;letter-spacing:.02em}}
 .eyebtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;background:transparent;color:var(--fg);cursor:pointer;font-size:19px;border-radius:50%;transition:rotate .4s,scale .3s}
 .eyebtn:hover{scale:1.2;rotate:180deg}
 
@@ -485,15 +487,15 @@ html.iw :is(.hero .li,.hero-logos .lg,.hero-cta>*,.hero-sub,.cdw){animation-play
 .nav-logo .nl-s{display:block}
 .nav-bg{display:block;order:3}
 .vw.menu .mnav{display:flex}
-/* the panel is the measure: the rows take their size from its real height (not from the screen), so the five rows and the two buttons always fit into what is visible */
-.mnav{position:fixed;left:0;right:0;top:56px;bottom:0;z-index:58;flex-direction:column;padding:0 var(--pad);overflow-y:auto;overscroll-behavior:contain;container:mnav / size;--sb:max(22px,env(safe-area-inset-bottom,0px));--rf:min(14.6vw,max(20px,calc((100cqh - 196px - var(--sb))/5.5)),96px)}
+/* the panel is the measure: the rows take their size from its real height (not from the screen), so the six rows and the two buttons always fit into what is visible */
+.mnav{position:fixed;left:0;right:0;top:56px;bottom:0;z-index:58;flex-direction:column;padding:0 var(--pad);overflow-y:auto;overscroll-behavior:contain;container:mnav / size;--sb:max(22px,env(safe-area-inset-bottom,0px));--rf:min(14.6vw,max(20px,calc((100cqh - 196px - var(--sb))/6.6)),96px)}
 /* a row is a whole number of pixels high and its word is centred in it by the height of the capitals: the distance from the line above to the top of the letters equals the distance from their foot to the line below */
 .mn-l{flex:none;display:grid;grid-template-columns:var(--zc,34px) minmax(0,1fr);align-items:start;box-sizing:border-box;padding:0;border-bottom:4px solid var(--fg);color:var(--fg);text-decoration:none;overflow:hidden;--d:calc(.12s + var(--i,0)*.06s);font-size:min(14.6vw,11.4vh,96px);font-size:var(--rf);font-size:round(down,var(--rf),4px);height:calc(1.1em + 4px);height:calc(round(1.1em,2px) + 4px)}
 .mn-l .lb{padding-top:12px}
 .mn-l b{align-self:center;font-weight:normal;font-size:1em;line-height:.75;text-transform:uppercase;white-space:nowrap;font-variation-settings:"wght" 900,"wdth" 250;transform-origin:0 100%}
 @supports (text-box:trim-both cap alphabetic){.mn-l b{display:block;line-height:1;text-box:trim-both cap alphabetic}}
 /* opening: the panel drops from under the bar, each line is drawn from the left, its word rises from behind it, then the two buttons pop */
-.mn-l:nth-child(2){--i:1}.mn-l:nth-child(3){--i:2}.mn-l:nth-child(4){--i:3}.mn-l:nth-child(5){--i:4}
+.mn-l:nth-child(2){--i:1}.mn-l:nth-child(3){--i:2}.mn-l:nth-child(4){--i:3}.mn-l:nth-child(5){--i:4}.mn-l:nth-child(6){--i:5}
 .vw.menu .mnav{animation:mn-in .45s cubic-bezier(.2,.8,.2,1) backwards}
 .vw.menu .mn-l{animation:mn-row .5s cubic-bezier(.2,.8,.2,1) var(--d) backwards}
 .vw.menu .mn-l b{animation:mn-up .9s var(--ez) calc(var(--d) + .05s) backwards}
@@ -511,13 +513,13 @@ html.iw :is(.hero .li,.hero-logos .lg,.hero-cta>*,.hero-sub,.cdw){animation-play
 .mn-b .mn-flip{font-size:16px}
 /* a low panel (a split screen, a phone on its side): smaller buttons, and where there is width for it they stand side by side, so the rows get the room */
 @container mnav (max-height:470px){
-.mn-l{--rf:min(14.6vw,max(20px,calc((100cqh - 162px - var(--sb))/5.5)),96px);font-size:var(--rf);font-size:round(down,var(--rf),2px)}
+.mn-l{--rf:min(14.6vw,max(20px,calc((100cqh - 162px - var(--sb))/6.6)),96px);font-size:var(--rf);font-size:round(down,var(--rf),2px)}
 .mn-b{padding-top:16px;gap:10px 12px}
 .mn-b .btn-xl{font-size:18px}
 .mn-b .mn-flip{font-size:14px}
 }
 @container mnav (max-height:470px) and (min-width:500px){
-.mn-l{--rf:min(14.6vw,max(20px,calc((100cqh - 104px - var(--sb))/5.5)),96px)}
+.mn-l{--rf:min(14.6vw,max(20px,calc((100cqh - 104px - var(--sb))/6.6)),96px)}
 .mn-b{flex-direction:row;align-items:center}
 }
 /* «Про фестиваль»: the three photos sit together as one cluster */
@@ -746,6 +748,7 @@ html{scroll-behavior:auto}
 <a href="#about">Про Вікенд</a>
 <a href="#pov">Точка зору</a>
 <a href="#zones">Що буде</a>
+<a href="#lineup">Лайнап</a>
 <a href="#fund">Збір</a>
 <a href="#place">Локація</a>
 </div>
@@ -761,8 +764,9 @@ html{scroll-behavior:auto}
 <a class="mn-l" href="#about"><span class="lb">01</span><b>Про Вікенд</b></a>
 <a class="mn-l" href="#pov"><span class="lb">02</span><b>Точка зору</b></a>
 <a class="mn-l" href="#zones"><span class="lb">03</span><b>Що буде</b></a>
-<a class="mn-l" href="#fund"><span class="lb">04</span><b>Збір</b></a>
-<a class="mn-l" href="#place"><span class="lb">05</span><b>Локація</b></a>
+<a class="mn-l" href="#lineup"><span class="lb">04</span><b>Лайнап</b></a>
+<a class="mn-l" href="#fund"><span class="lb">05</span><b>Збір</b></a>
+<a class="mn-l" href="#place"><span class="lb">06</span><b>Локація</b></a>
 <div class="mn-b">
 <a class="btn btn-xl" href="https://secure.wayforpay.com/payment/vegan_weekend_lviv" target="_blank" rel="noopener">Купити квиток <span class="arr" aria-hidden="true">↗</span></a>
 <button class="btn cp mn-flip" type="button" data-act="flip"><svg class="ico-eye" viewBox="0 0 48 28" aria-hidden="true"><path d="M2 14C10 2 38 2 46 14C38 26 10 26 2 14Z"></path><circle cx="24" cy="14" r="7"></circle></svg>Змінити точку зору</button>
