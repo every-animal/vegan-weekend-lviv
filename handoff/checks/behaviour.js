@@ -30,7 +30,7 @@ const res=[];const ok=(name,cond,info)=>{res.push([cond?'PASS':'FAIL',name,info|
   ok('desktop: no console errors',er.length===0,er.join(' | '));ok('desktop: no failed or 4xx requests',bad.length===0,bad.join(' | '));
   ok('fonts: both Heading Now files loaded',await p.evaluate(async()=>{await document.fonts.ready;return document.fonts.check('16px "Heading Now"')&&document.fonts.check('italic 16px "Heading Now"')&&[...document.fonts].filter(f=>f.status==='loaded').length>=2}));
   ok('requests stay inside the package (no external hosts)',reqs.every(u=>u.startsWith(ORIGIN)),reqs.filter(u=>!u.startsWith(ORIGIN)).join(','));
-  ok('ticket links: 7, all to WayForPay',await p.evaluate(()=>[...document.querySelectorAll('a')].filter(a=>a.href==='https://secure.wayforpay.com/payment/vegan_weekend_lviv').length===7));
+  ok('ticket links: 8, all to WayForPay',await p.evaluate(()=>[...document.querySelectorAll('a')].filter(a=>a.href==='https://secure.wayforpay.com/payment/vegan_weekend_lviv').length===8));   // 8: + «Купити квиток» under the lineup (14.10.2026)
   ok('no template leftovers ({{, /_blob/, x-dc, support.js)',await p.evaluate(()=>!/\{\{|\/_blob\/|x-dc|support\.js/.test(document.documentElement.outerHTML)));
   const cd1=await p.evaluate(()=>['d','h','m','s'].map(k=>document.querySelector('[data-cd="'+k+'"]').textContent).join(':'));await p.waitForTimeout(1300);const cd2=await p.evaluate(()=>['d','h','m','s'].map(k=>document.querySelector('[data-cd="'+k+'"]').textContent).join(':'));
   ok('countdown runs',/^\d+:\d\d:\d\d:\d\d$/.test(cd1)&&cd1!==cd2,cd1+' → '+cd2);
