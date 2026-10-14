@@ -99,10 +99,12 @@ h2.rv{transition-duration:1.2s}
 .nav-logo svg{display:block;height:calc(100% + 1.5px);width:auto;fill:currentColor}
 .nav-logo .nl-s{display:none}
 .nav-links{display:flex;gap:clamp(14px,2.2vw,34px)}
-.nav-links a{text-decoration:none;font-variation-settings:"wght" 720,"wdth" 620;text-transform:uppercase;font-size:13px;letter-spacing:.03em;transition:font-variation-settings .3s}
+.nav-links a{white-space:nowrap;text-decoration:none;font-variation-settings:"wght" 720,"wdth" 620;text-transform:uppercase;font-size:13px;letter-spacing:.03em;transition:font-variation-settings .3s}
 /* hover: the letters only tilt — weight and width stay (owner 09.10.2026); the same for every text link */
 .nav-links a:hover{font-style:italic}
 .nav-r{display:flex;align-items:center;gap:14px}
+/* six links since «Лайнап» (14.10.2026): on the narrowest desktop widths they get a little smaller and closer, so the eye and «Квитки» stay on screen */
+@media (min-width:821px) and (max-width:960px){.nav-links{gap:10px}.nav-links a{font-size:11.5px;letter-spacing:.02em}}
 .eyebtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;background:transparent;color:var(--fg);cursor:pointer;font-size:19px;border-radius:50%;transition:rotate .4s,scale .3s}
 .eyebtn:hover{scale:1.2;rotate:180deg}
 
@@ -485,15 +487,15 @@ html.iw :is(.hero .li,.hero-logos .lg,.hero-cta>*,.hero-sub,.cdw){animation-play
 .nav-logo .nl-s{display:block}
 .nav-bg{display:block;order:3}
 .vw.menu .mnav{display:flex}
-/* the panel is the measure: the rows take their size from its real height (not from the screen), so the five rows and the two buttons always fit into what is visible */
-.mnav{position:fixed;left:0;right:0;top:56px;bottom:0;z-index:58;flex-direction:column;padding:0 var(--pad);overflow-y:auto;overscroll-behavior:contain;container:mnav / size;--sb:max(22px,env(safe-area-inset-bottom,0px));--rf:min(14.6vw,max(20px,calc((100cqh - 196px - var(--sb))/5.5)),96px)}
+/* the panel is the measure: the rows take their size from its real height (not from the screen), so the six rows and the two buttons always fit into what is visible */
+.mnav{position:fixed;left:0;right:0;top:56px;bottom:0;z-index:58;flex-direction:column;padding:0 var(--pad);overflow-y:auto;overscroll-behavior:contain;container:mnav / size;--sb:max(22px,env(safe-area-inset-bottom,0px));--rf:min(14.6vw,max(20px,calc((100cqh - 196px - var(--sb))/6.6)),96px)}
 /* a row is a whole number of pixels high and its word is centred in it by the height of the capitals: the distance from the line above to the top of the letters equals the distance from their foot to the line below */
 .mn-l{flex:none;display:grid;grid-template-columns:var(--zc,34px) minmax(0,1fr);align-items:start;box-sizing:border-box;padding:0;border-bottom:4px solid var(--fg);color:var(--fg);text-decoration:none;overflow:hidden;--d:calc(.12s + var(--i,0)*.06s);font-size:min(14.6vw,11.4vh,96px);font-size:var(--rf);font-size:round(down,var(--rf),4px);height:calc(1.1em + 4px);height:calc(round(1.1em,2px) + 4px)}
 .mn-l .lb{padding-top:12px}
 .mn-l b{align-self:center;font-weight:normal;font-size:1em;line-height:.75;text-transform:uppercase;white-space:nowrap;font-variation-settings:"wght" 900,"wdth" 250;transform-origin:0 100%}
 @supports (text-box:trim-both cap alphabetic){.mn-l b{display:block;line-height:1;text-box:trim-both cap alphabetic}}
 /* opening: the panel drops from under the bar, each line is drawn from the left, its word rises from behind it, then the two buttons pop */
-.mn-l:nth-child(2){--i:1}.mn-l:nth-child(3){--i:2}.mn-l:nth-child(4){--i:3}.mn-l:nth-child(5){--i:4}
+.mn-l:nth-child(2){--i:1}.mn-l:nth-child(3){--i:2}.mn-l:nth-child(4){--i:3}.mn-l:nth-child(5){--i:4}.mn-l:nth-child(6){--i:5}
 .vw.menu .mnav{animation:mn-in .45s cubic-bezier(.2,.8,.2,1) backwards}
 .vw.menu .mn-l{animation:mn-row .5s cubic-bezier(.2,.8,.2,1) var(--d) backwards}
 .vw.menu .mn-l b{animation:mn-up .9s var(--ez) calc(var(--d) + .05s) backwards}
@@ -511,13 +513,13 @@ html.iw :is(.hero .li,.hero-logos .lg,.hero-cta>*,.hero-sub,.cdw){animation-play
 .mn-b .mn-flip{font-size:16px}
 /* a low panel (a split screen, a phone on its side): smaller buttons, and where there is width for it they stand side by side, so the rows get the room */
 @container mnav (max-height:470px){
-.mn-l{--rf:min(14.6vw,max(20px,calc((100cqh - 162px - var(--sb))/5.5)),96px);font-size:var(--rf);font-size:round(down,var(--rf),2px)}
+.mn-l{--rf:min(14.6vw,max(20px,calc((100cqh - 162px - var(--sb))/6.6)),96px);font-size:var(--rf);font-size:round(down,var(--rf),2px)}
 .mn-b{padding-top:16px;gap:10px 12px}
 .mn-b .btn-xl{font-size:18px}
 .mn-b .mn-flip{font-size:14px}
 }
 @container mnav (max-height:470px) and (min-width:500px){
-.mn-l{--rf:min(14.6vw,max(20px,calc((100cqh - 104px - var(--sb))/5.5)),96px)}
+.mn-l{--rf:min(14.6vw,max(20px,calc((100cqh - 104px - var(--sb))/6.6)),96px)}
 .mn-b{flex-direction:row;align-items:center}
 }
 /* «Про фестиваль»: the three photos sit together as one cluster */
@@ -652,6 +654,56 @@ html.iw :is(.hero .li,.hero-logos .lg,.hero-cta>*,.hero-sub,.cdw){animation-play
 .strip .ph img{-webkit-user-drag:none}
 html{scroll-behavior:auto}
 }
+/* ---------- Лайнап, варіант 04 «По одному»
+   One name at a time fills the whole width, in the lettering of the street poster: pink letters, a gap of the section colour, a pink ring.
+   The section stands still (sticky) while the page scrolls through it; every step of the scroll brings the next name:
+   the current one squeezes into a thin column and the next one grows out of it with a spring. The list under the name jumps to a name. */
+.lu{--lu-nav:56px;--lu-step:55vh;container:lu/inline-size;padding:0;color:var(--fg)}
+.lu-track{position:relative;height:calc(100vh - var(--lu-nav) + 5*var(--lu-step))}
+.lu-pin{position:sticky;top:var(--lu-nav);height:calc(100vh - var(--lu-nav));box-sizing:border-box;display:flex;flex-direction:column;padding:clamp(30px,3vw,52px) var(--pad) clamp(20px,2.6vw,40px)}
+@supports (height:100svh){
+ .lu-track{height:calc(100svh - var(--lu-nav) + 5*var(--lu-step))}
+ .lu-pin{height:calc(100svh - var(--lu-nav))}
+}
+.lu-top{display:flex;align-items:center;justify-content:space-between;gap:12px 28px;width:100%;max-width:1560px;margin:0 auto clamp(16px,2.4cqi,36px)}
+.lu-h{margin:0;font-weight:normal;font-size:clamp(22px,2.7cqi,44px);line-height:.86;letter-spacing:-.012em;font-variation-settings:"wght" 540,"wdth" 720}
+.lu-pill{display:inline-flex;align-items:center;border:2px solid var(--fg);border-radius:999px;padding:.42em 1.05em .36em;font-style:italic;font-size:clamp(12px,1.25cqi,19px);line-height:1;letter-spacing:.02em;font-variation-settings:"wght" 640,"wdth" 620;white-space:nowrap}
+.lu-dt{font-size:clamp(12px,1.25cqi,19px);font-variation-settings:"wght" 720,"wdth" 830;letter-spacing:.05em;line-height:1.1;white-space:nowrap}
+/* the name takes all the height that is left, and keeps its proportions */
+.lu-art{position:relative;flex:1 1 auto;min-height:0;width:100%;max-width:1560px;margin:0 auto}
+.lu-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;text-transform:none}
+.lu-svg.lu-m{display:none}
+.lu-d{--R:13;--G:7}
+.lu-m{--R:6.5;--G:3.5}
+.lu-r{fill:var(--fg);stroke:var(--fg);stroke-width:calc(var(--R)*2px);stroke-linejoin:round}
+.lu-g{fill:var(--bg);stroke:var(--bg);stroke-width:calc(var(--G)*2px);stroke-linejoin:round}
+.lu-f{fill:var(--fg)}
+/* the playlist */
+.lu-pl{list-style:none;display:flex;flex-wrap:wrap;gap:8px 10px;width:100%;max-width:1560px;margin:clamp(16px,2.4cqi,32px) auto 0;padding:0}
+.lu-pl button{appearance:none;display:inline-flex;align-items:baseline;gap:.5em;margin:0;padding:.5em .95em .44em;border:2px solid var(--fg);border-radius:999px;background:none;color:var(--fg);font:inherit;font-size:clamp(12px,1.15cqi,17px);line-height:1;letter-spacing:.04em;font-variation-settings:"wght" 760,"wdth" 760;text-transform:none;cursor:pointer;transition:background-color .2s,color .2s}
+.lu-pl button span{font-size:.72em;letter-spacing:.06em}
+.lu-pl button:hover{font-style:italic}
+.lu-pl button[aria-current="true"]{background:var(--fg);color:var(--bg)}
+.lu-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px 40px;max-width:1560px;margin:0 auto;padding:clamp(28px,3vw,48px) var(--pad) clamp(64px,6vw,110px);box-sizing:content-box}
+.lu-foot .lb{color:var(--tx)}
+@container lu (max-width:600px){
+ .lu-svg.lu-d{display:none}
+ .lu-svg.lu-m{display:block}
+ .lu-top{flex-wrap:wrap;margin-bottom:18px}
+ .lu-h{font-size:30px;flex:none}
+ .lu-pill{order:3;font-size:12px}
+ .lu-dt{font-size:12px}
+ .lu-pl{gap:6px;margin-top:18px}
+ .lu-pl button{font-size:11px;padding:.5em .8em .44em}
+ .lu-foot{flex-direction:column;align-items:flex-start;gap:30px}
+ .lu-foot .btn-xl{font-size:20px}
+}
+/* a portrait screen (a tablet held upright, a narrow window) gets the phone layout of the name: it is taller and fills the height */
+@media (max-aspect-ratio:3/4){
+ .lu-svg.lu-d{display:none}
+ .lu-svg.lu-m{display:block}
+}
+@media (prefers-reduced-motion:reduce){.lu-pl button{transition:none}}
 </style>
 </head>
 <body>
@@ -696,6 +748,7 @@ html{scroll-behavior:auto}
 <a href="#about">Про Вікенд</a>
 <a href="#pov">Точка зору</a>
 <a href="#zones">Що буде</a>
+<a href="#lineup">Лайнап</a>
 <a href="#fund">Збір</a>
 <a href="#place">Локація</a>
 </div>
@@ -711,8 +764,9 @@ html{scroll-behavior:auto}
 <a class="mn-l" href="#about"><span class="lb">01</span><b>Про Вікенд</b></a>
 <a class="mn-l" href="#pov"><span class="lb">02</span><b>Точка зору</b></a>
 <a class="mn-l" href="#zones"><span class="lb">03</span><b>Що буде</b></a>
-<a class="mn-l" href="#fund"><span class="lb">04</span><b>Збір</b></a>
-<a class="mn-l" href="#place"><span class="lb">05</span><b>Локація</b></a>
+<a class="mn-l" href="#lineup"><span class="lb">04</span><b>Лайнап</b></a>
+<a class="mn-l" href="#fund"><span class="lb">05</span><b>Збір</b></a>
+<a class="mn-l" href="#place"><span class="lb">06</span><b>Локація</b></a>
 <div class="mn-b">
 <a class="btn btn-xl" href="https://secure.wayforpay.com/payment/vegan_weekend_lviv" target="_blank" rel="noopener">Купити квиток <span class="arr" aria-hidden="true">↗</span></a>
 <button class="btn cp mn-flip" type="button" data-act="flip"><svg class="ico-eye" viewBox="0 0 48 28" aria-hidden="true"><path d="M2 14C10 2 38 2 46 14C38 26 10 26 2 14Z"></path><circle cx="24" cy="14" r="7"></circle></svg>Змінити точку зору</button>
@@ -792,7 +846,7 @@ html{scroll-behavior:auto}
 </div>
 </div>
 <ul class="zl">
-<li class="z"><span class="z-n lb">01</span><span class="z-t" data-max="960">Сцена</span><span class="z-d">Лайнап оголосимо зовсім скоро</span><img class="z-ph" src="assets/photos/zone-1-stage.jpg" srcset="assets/photos/zone-1-stage-480.jpg 480w, assets/photos/zone-1-stage-600.jpg 600w, assets/photos/zone-1-stage-720.jpg 720w, assets/photos/zone-1-stage.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: 5deg"></li>
+<li class="z"><span class="z-n lb">01</span><span class="z-t" data-max="960">Сцена</span><span class="z-d">Лайнап уже є&nbsp;— він трохи нижче</span><img class="z-ph" src="assets/photos/zone-1-stage.jpg" srcset="assets/photos/zone-1-stage-480.jpg 480w, assets/photos/zone-1-stage-600.jpg 600w, assets/photos/zone-1-stage-720.jpg 720w, assets/photos/zone-1-stage.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: 5deg"></li>
 <li class="z"><span class="z-n lb">02</span><span class="z-t" data-max="730">Лекторій</span><span class="z-d">Розмови, після яких дивишся на світ інакше</span><img class="z-ph" src="assets/photos/zone-2-lecture.jpg" srcset="assets/photos/zone-2-lecture-480.jpg 480w, assets/photos/zone-2-lecture-600.jpg 600w, assets/photos/zone-2-lecture-720.jpg 720w, assets/photos/zone-2-lecture.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: -4deg"></li>
 <li class="z"><span class="z-n lb">03</span><span class="z-t" data-max="670">Виставка</span><span class="z-d">Мультимедійна. Досвід інших живих істот через мистецтво і технології</span><img class="z-ph" src="assets/photos/zone-3-expo.jpg" srcset="assets/photos/zone-3-expo-480.jpg 480w, assets/photos/zone-3-expo-600.jpg 600w, assets/photos/zone-3-expo-720.jpg 720w, assets/photos/zone-3-expo.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: 4deg"></li>
 <li class="z"><span class="z-n lb">04</span><span class="z-t" data-max="920">Маркет</span><span class="z-d">Локальні бренди, які хочеться підтримати</span><img class="z-ph" src="assets/photos/zone-4-market.jpg" srcset="assets/photos/zone-4-market-480.jpg 480w, assets/photos/zone-4-market-600.jpg 600w, assets/photos/zone-4-market-720.jpg 720w, assets/photos/zone-4-market.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: -5deg"></li>
@@ -800,9 +854,20 @@ html{scroll-behavior:auto}
 <li class="z"><span class="z-n lb">06</span><span class="z-t" data-max="410">Благодійність</span><span class="z-d">Активності, де кожна гривня <br>працює на збір</span><img class="z-ph" src="assets/photos/zone-6-charity.jpg" srcset="assets/photos/zone-6-charity-480.jpg 480w, assets/photos/zone-6-charity-600.jpg 600w, assets/photos/zone-6-charity-720.jpg 720w, assets/photos/zone-6-charity.jpg 1000w" sizes="(max-width: 820px) 47vw, clamp(140px, 15.5vw, 300px)" alt="" loading="lazy" style="object-position: 50% 50%; --r: -4deg"></li>
 </ul>
 <div class="zones-foot">
-<p class="b rv">«Точка зору» проявиться в кожній зоні&nbsp;— від лекторію та виставки до візуального оформлення. Деталі програми та лайнап&nbsp;— зовсім скоро.</p>
+<p class="b rv">«Точка зору» проявиться в кожній зоні&nbsp;— від лекторію та виставки до візуального оформлення. Деталі програми&nbsp;— зовсім скоро.</p>
 <a class="lnk" href="https://www.instagram.com/vegan_weekend/" target="_blank" rel="noopener">Стежити за анонсами <br class="mbr">в Instagram →</a>
 </div>
+</section>
+
+<section class="sec g lu" id="lineup" aria-labelledby="lu-h" data-lu>
+<div class="lu-track">
+<div class="lu-pin">
+<div class="lu-top"><h2 class="lu-h" id="lu-h">Лайнап</h2><span class="lu-pill">Live + DJ-сцена</span><span class="lu-dt">22 листопада · Львів</span></div>
+<div class="lu-art"><svg class="lu-svg lu-d" viewBox="0 -70 1200 500" aria-hidden="true" data-names="[[[&quot;ЗЛИПНІ&quot;, 388.25, 602.43, 330]], [[&quot;LIPATOVA&quot;, 310.41, 595.46, 330]], [[&quot;СЕРВАНТ&quot;, 322.44, 597.45, 330]], [[&quot;ОНІСУКА ТАЙГЕР&quot;, 163.69, 599.48, 330]], [[&quot;OLES dj&quot;, 401.05, 598.43, 330]], [[&quot;BOH dj&quot;, 453.45, 595.99, 330]]]"><defs><g id="lu-d"><text x="602.43" y="330" text-anchor="middle" style="font-size: 443.55px; font-variation-settings: 'wght' 900, 'wdth' 388.25">ЗЛИПНІ</text><text x="0" y="0" text-anchor="middle" style="font-size: 443.55px; font-variation-settings: 'wght' 900, 'wdth' 100"></text></g></defs><g class="lu-r"><use href="#lu-d"></use></g><g class="lu-g"><use href="#lu-d"></use></g><g class="lu-f"><use href="#lu-d"></use></g></svg><svg class="lu-svg lu-m" viewBox="0 -14 358 490" aria-hidden="true" data-names="[[[&quot;ЗЛИПНІ&quot;, 181.15, 179.99, 330]], [[&quot;LIPATOVA&quot;, 141.71, 177.47, 330]], [[&quot;СЕРВАНТ&quot;, 148.63, 178.47, 330]], [[&quot;ОНІСУКА&quot;, 150.28, 177.44, 200], [&quot;ТАЙГЕР&quot;, 189.17, 179.38, 460]], [[&quot;OLES dj&quot;, 189.94, 178.46, 330]], [[&quot;BOH dj&quot;, 213.73, 178.46, 330]]]"><defs><g id="lu-m"><text x="179.99" y="330" text-anchor="middle" style="font-size: 268.82px; font-variation-settings: 'wght' 900, 'wdth' 181.15">ЗЛИПНІ</text><text x="0" y="0" text-anchor="middle" style="font-size: 268.82px; font-variation-settings: 'wght' 900, 'wdth' 100"></text></g></defs><g class="lu-r"><use href="#lu-m"></use></g><g class="lu-g"><use href="#lu-m"></use></g><g class="lu-f"><use href="#lu-m"></use></g></svg></div>
+<ol class="lu-pl" aria-label="Лайнап"><li><button type="button" data-n="0" aria-current="true"><span aria-hidden="true">01</span>ЗЛИПНІ</button></li><li><button type="button" data-n="1"><span aria-hidden="true">02</span>LIPATOVA</button></li><li><button type="button" data-n="2"><span aria-hidden="true">03</span>СЕРВАНТ</button></li><li><button type="button" data-n="3"><span aria-hidden="true">04</span>ОНІСУКА ТАЙГЕР</button></li><li><button type="button" data-n="4"><span aria-hidden="true">05</span>OLES dj</button></li><li><button type="button" data-n="5"><span aria-hidden="true">06</span>BOH dj</button></li></ol>
+</div>
+</div>
+<div class="lu-foot"><p class="lb">Розклад виступів&nbsp;— зовсім&nbsp;скоро</p><a class="btn btn-xl" href="https://secure.wayforpay.com/payment/vegan_weekend_lviv" target="_blank" rel="noopener">Купити квиток <span class="arr" aria-hidden="true">↗</span></a></div>
 </section>
 
 <section class="sec p skew fund" id="fund">
@@ -1389,6 +1454,106 @@ html{scroll-behavior:auto}
     } else if (d.open && (t.closest('.vdo-x') || t === d)) d.close();
   });
   d.addEventListener('close', function () { v.pause(); document.documentElement.style.overflow = ''; });
+})();
+</script>
+<script>
+/* Лайнап, варіант 04 «По одному».
+   The section is sticky; the scroll through it chooses the name (six equal steps).
+   A change of name: the shown one squeezes to the narrowest width of the font (0.32 s), the text is swapped,
+   the new one grows to its fitted width with a spring (0.62 s). The fitted width and position of every name
+   are in data-names of each svg (one for the desktop layout, one for the phone layout, where ОНІСУКА ТАЙГЕР takes two lines).
+   Runs on its own: one passive scroll listener; requestAnimationFrame only while a name is changing.
+   prefers-reduced-motion: the name is swapped at once, the jump from the list is not animated. */
+(function () {
+  'use strict';
+  var SPN = 1 - Math.exp(-5) * Math.cos(9);
+  var spring = function (k) { return (1 - Math.exp(-5 * k) * Math.cos(9 * k)) / SPN; };
+  var clamp = function (v, a, b) { return v < a ? a : (v > b ? b : v); };
+  function mount(sec) {
+    var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var track = sec.querySelector('.lu-track'), pin = sec.querySelector('.lu-pin');
+    var btns = [].slice.call(sec.querySelectorAll('.lu-pl button'));
+    /* every layout (svg) has two text slots; a name fills one or two of them */
+    var slots = [], data = [];
+    [].slice.call(sec.querySelectorAll('.lu-svg')).forEach(function (svg) {
+      var d = JSON.parse(svg.getAttribute('data-names')), ts = svg.querySelectorAll('defs text');
+      for (var k = 0; k < ts.length; k++) { slots.push(ts[k]); data.push(d.map(function (lines) { return lines[k] || null; })); }
+    });
+    var texts = slots;
+    var N = btns.length, D = 0.32, G = 0.62;
+    var shown = 0, want = 0, lock = -1, lockT = 0, phase = 0, t0 = 0, raf = 0;
+    var target = function (i, n) { return data[i][n] ? data[i][n][1] : 100; };
+    var setW = function (i, w) {
+      w = Math.round(clamp(w, 100, 1000) * 10) / 10;
+      if (texts[i]._w !== w) { texts[i]._w = w; texts[i].style.fontVariationSettings = "'wght' 900, 'wdth' " + w; }
+    };
+    var show = function (n) {
+      shown = n;
+      for (var i = 0; i < texts.length; i++) {
+        var l = data[i][n];
+        texts[i].textContent = l ? l[0] : '';
+        if (l) { texts[i].setAttribute('x', l[2]); texts[i].setAttribute('y', l[3]); }
+      }
+      for (var j = 0; j < btns.length; j++) { if (j === n) btns[j].setAttribute('aria-current', 'true'); else btns[j].removeAttribute('aria-current'); }
+    };
+    var geo = function () {
+      var top = parseFloat(getComputedStyle(pin).top) || 0;
+      var total = track.offsetHeight - pin.offsetHeight;
+      return { top: top, total: total, doc: track.getBoundingClientRect().top + window.pageYOffset };
+    };
+    var fromScroll = function () {
+      var g = geo();
+      if (g.total <= 0) return 0;
+      var p = (window.pageYOffset + g.top - g.doc) / g.total;
+      return clamp(Math.floor(p * N), 0, N - 1);
+    };
+    var step = function (now) {
+      raf = 0;
+      var e = (now - t0) / 1000, i, k;
+      if (phase === 1) {
+        k = clamp(e / D, 0, 1);
+        for (i = 0; i < texts.length; i++) setW(i, target(i, shown) + (100 - target(i, shown)) * k * k);
+        if (k >= 1) { show(want); phase = 2; t0 = now; }
+      } else if (phase === 2) {
+        k = clamp(e / G, 0, 1);
+        for (i = 0; i < texts.length; i++) setW(i, 100 + (target(i, shown) - 100) * spring(k));
+        if (k >= 1) { phase = 0; if (want !== shown) kick(); return; }
+      }
+      if (phase) raf = requestAnimationFrame(step);
+    };
+    var kick = function () {
+      if (want === shown || phase === 1) return;
+      if (reduce) { show(want); for (var i = 0; i < texts.length; i++) setW(i, target(i, shown)); return; }
+      if (phase === 2) return;          /* the grow finishes first, then the next change starts */
+      phase = 1; t0 = performance.now();
+      if (!raf) raf = requestAnimationFrame(step);
+    };
+    var onScroll = function () {
+      var i = fromScroll();
+      if (lock >= 0) { if (i === lock || performance.now() - lockT > 1500) lock = -1; else return; }
+      if (i !== want) { want = i; kick(); }
+    };
+    /* a name in the list: scroll to its step; the name changes straight to it, not through the names in between */
+    var onClick = function (e) {
+      var b = e.target.closest ? e.target.closest('.lu-pl button') : null; if (!b) return;
+      var n = +b.getAttribute('data-n'), g = geo();
+      lock = n; lockT = performance.now(); want = n; kick();
+      window.scrollTo({ top: Math.round(g.doc - g.top + g.total * (n + 0.5) / N), behavior: reduce ? 'auto' : 'smooth' });
+    };
+    sec.addEventListener('click', onClick);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    want = fromScroll(); show(want);
+    for (var i = 0; i < texts.length; i++) setW(i, target(i, shown));
+    return function unmount() {
+      sec.removeEventListener('click', onClick);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }
+  function boot() { var s = document.querySelector('[data-lu]'); if (s) window.vwLineupUnmount = mount(s); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
 </script>
 </body>
