@@ -672,6 +672,11 @@ html{scroll-behavior:auto}
 .lu-art{position:relative;flex:1 1 auto;min-height:0;width:100%;max-width:1560px;margin:0 auto}
 .lu-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;text-transform:none;pointer-events:none}   /* decorative: the cells of the two-line name reach over the list on phones and took its taps */
 .lu-svg.lu-m{display:none}
+/* the phone layout always fills the width of the content (owner 14.10.2026): its height follows the viewBox and it stands in the middle of
+   the free height; the empty top and bottom of the viewBox may reach over the head and the list, the name itself does not */
+.lu-art{container-type:size}
+/* …unless the screen is too low for that: the tallest name (ЗЛИПНІ) is ~0.99 of the width high, so the width is at most the free height */
+.lu-svg.lu-m{inset:auto auto auto 50%;top:50%;width:min(100%,99cqh);height:auto;translate:-50% -50%}
 .lu-d{--R:13;--G:7}
 .lu-m{--R:6.5;--G:3.5}
 .lu-r{fill:var(--fg);stroke:var(--fg);stroke-width:calc(var(--R)*2px);stroke-linejoin:round}
@@ -680,7 +685,6 @@ html{scroll-behavior:auto}
 /* the playlist */
 .lu-pl{list-style:none;display:flex;flex-wrap:wrap;gap:8px 10px;width:100%;max-width:1560px;margin:clamp(16px,2.4cqi,32px) auto 0;padding:0}
 .lu-pl button{appearance:none;display:inline-flex;align-items:baseline;gap:.5em;margin:0;padding:.5em .95em .44em;border:2px solid var(--fg);border-radius:999px;background:none;color:var(--fg);font:inherit;font-size:clamp(12px,1.15cqi,17px);line-height:1;letter-spacing:.04em;font-variation-settings:"wght" 760,"wdth" 760;text-transform:none;cursor:pointer;transition:background-color .2s,color .2s}
-.lu-pl button span{font-size:.72em;letter-spacing:.06em}
 .lu-pl button:hover{font-style:italic}
 .lu-pl button[aria-current="true"]{background:var(--fg);color:var(--bg)}
 .lu-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px 40px;max-width:1560px;margin:0 auto;padding:clamp(28px,3vw,48px) var(--pad) clamp(64px,6vw,110px);box-sizing:content-box}
@@ -863,7 +867,7 @@ html{scroll-behavior:auto}
 <div class="lu-pin">
 <div class="lu-top"><h2 class="lu-h" id="lu-h">Лайнап</h2><span class="lu-pill">Live + DJ-сцена</span><span class="lu-dt">22 листопада · Львів</span></div>
 <div class="lu-art"><svg class="lu-svg lu-d" viewBox="0 -70 1200 500" aria-hidden="true" data-names="[[[&quot;ЗЛИПНІ&quot;, 388.25, 602.43, 330]], [[&quot;LIPATOVA&quot;, 310.41, 595.46, 330]], [[&quot;СЕРВАНТ&quot;, 322.44, 597.45, 330]], [[&quot;ОНІСУКА ТАЙГЕР&quot;, 163.69, 599.48, 330]], [[&quot;OLES dj&quot;, 401.05, 598.43, 330]], [[&quot;BOH dj&quot;, 453.45, 595.99, 330]]]"><defs><g id="lu-d"><text x="602.43" y="330" text-anchor="middle" style="font-size: 443.55px; font-variation-settings: 'wght' 900, 'wdth' 388.25">ЗЛИПНІ</text><text x="0" y="0" text-anchor="middle" style="font-size: 443.55px; font-variation-settings: 'wght' 900, 'wdth' 100"></text></g></defs><g class="lu-r"><use href="#lu-d"></use></g><g class="lu-g"><use href="#lu-d"></use></g><g class="lu-f"><use href="#lu-d"></use></g></svg><svg class="lu-svg lu-m" viewBox="0 -14 358 490" aria-hidden="true" data-names="[[[&quot;ЗЛИПНІ&quot;, 181.15, 179.99, 330]], [[&quot;LIPATOVA&quot;, 141.71, 177.47, 330]], [[&quot;СЕРВАНТ&quot;, 148.63, 178.47, 330]], [[&quot;ОНІСУКА ТАЙГЕР&quot;, 163.69, 178.85, 275.75, 132.33]], [[&quot;OLES dj&quot;, 189.94, 178.46, 330]], [[&quot;BOH dj&quot;, 213.73, 178.46, 330]]]"><defs><g id="lu-m"><text x="179.99" y="330" text-anchor="middle" style="font-size: 268.82px; font-variation-settings: 'wght' 900, 'wdth' 181.15">ЗЛИПНІ</text><text x="0" y="0" text-anchor="middle" style="font-size: 268.82px; font-variation-settings: 'wght' 900, 'wdth' 100"></text></g></defs><g class="lu-r"><use href="#lu-m"></use></g><g class="lu-g"><use href="#lu-m"></use></g><g class="lu-f"><use href="#lu-m"></use></g></svg></div>
-<ol class="lu-pl" aria-label="Лайнап"><li><button type="button" data-n="0" aria-current="true"><span aria-hidden="true">01</span>ЗЛИПНІ</button></li><li><button type="button" data-n="1"><span aria-hidden="true">02</span>LIPATOVA</button></li><li><button type="button" data-n="2"><span aria-hidden="true">03</span>СЕРВАНТ</button></li><li><button type="button" data-n="3"><span aria-hidden="true">04</span>ОНІСУКА ТАЙГЕР</button></li><li><button type="button" data-n="4"><span aria-hidden="true">05</span>OLES dj</button></li><li><button type="button" data-n="5"><span aria-hidden="true">06</span>BOH dj</button></li></ol>
+<ol class="lu-pl" aria-label="Лайнап"><li><button type="button" data-n="0" aria-current="true">ЗЛИПНІ</button></li><li><button type="button" data-n="1">LIPATOVA</button></li><li><button type="button" data-n="2">СЕРВАНТ</button></li><li><button type="button" data-n="3">ОНІСУКА ТАЙГЕР</button></li><li><button type="button" data-n="4">OLES dj</button></li><li><button type="button" data-n="5">BOH dj</button></li></ol>
 </div>
 </div>
 <div class="lu-foot"><p class="lb">Розклад виступів&nbsp;— зовсім&nbsp;скоро</p><a class="btn btn-xl" href="https://secure.wayforpay.com/payment/vegan_weekend_lviv" target="_blank" rel="noopener">Купити квиток <span class="arr" aria-hidden="true">↗</span></a></div>
