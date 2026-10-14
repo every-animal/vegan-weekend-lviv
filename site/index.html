@@ -1481,7 +1481,7 @@ html{scroll-behavior:auto}
     });
     var texts = slots;
     var N = btns.length, D = 0.32, G = 0.62;
-    var shown = 0, want = 0, lock = -1, lockT = 0, phase = 0, t0 = 0, raf = 0;
+    var shown = 0, want = 0, lock = -1, lockT = 0, phase = 0, t0 = 0, raf = 0, next = 0, jump = false, f = 1;
     var target = function (i, n) { return data[i][n] ? data[i][n][1] : 100; };
     var setW = function (i, w) {
       w = Math.round(clamp(w, 100, 1000) * 10) / 10;
@@ -1511,13 +1511,13 @@ html{scroll-behavior:auto}
       raf = 0;
       var e = (now - t0) / 1000, i, k;
       if (phase === 1) {
-        k = clamp(e / D, 0, 1);
+        k = clamp(e / (D * f), 0, 1);
         for (i = 0; i < texts.length; i++) setW(i, target(i, shown) + (100 - target(i, shown)) * k * k);
-        if (k >= 1) { show(want); phase = 2; t0 = now; }
+        if (k >= 1) { show(next); phase = 2; t0 = now; }
       } else if (phase === 2) {
-        k = clamp(e / G, 0, 1);
+        k = clamp(e / (G * f), 0, 1);
         for (i = 0; i < texts.length; i++) setW(i, 100 + (target(i, shown) - 100) * spring(k));
-        if (k >= 1) { phase = 0; if (want !== shown) kick(); return; }
+        if (k >= 1) { phase = 0; if (want !== shown) kick(); else f = 1; return; }
       }
       if (phase) raf = requestAnimationFrame(step);
     };
@@ -1525,19 +1525,34 @@ html{scroll-behavior:auto}
       if (want === shown || phase === 1) return;
       if (reduce) { show(want); for (var i = 0; i < texts.length; i++) setW(i, target(i, shown)); return; }
       if (phase === 2) return;          /* the grow finishes first, then the next change starts */
+      /* one name at a time, none skipped (owner 14.10.2026: a quick scroll jumped over one or two names); the further the scroll
+         has run ahead, the quicker each change. Only a name chosen in the list is reached directly */
+      var gap = Math.abs(want - shown);
+      /* a run of several names keeps one quick pace to its end, so catching up takes about as long as one ordinary change */
+      if (jump) f = 1; else if (gap > 1) f = Math.min(f, Math.max(0.3, 1 / gap));
+      next = jump ? want : shown + (want > shown ? 1 : -1); jump = false;
       phase = 1; t0 = performance.now();
       if (!raf) raf = requestAnimationFrame(step);
     };
+    var lastY = window.pageYOffset;
     var onScroll = function () {
-      var i = fromScroll();
+      var i = fromScroll(), jumped = Math.abs(window.pageYOffset - lastY) > window.innerHeight;
+      lastY = window.pageYOffset;
       if (lock >= 0) { if (i === lock || performance.now() - lockT > 1500) lock = -1; else return; }
-      if (i !== want) { want = i; kick(); }
+      if (i !== want) {
+        want = i;
+        /* off screen, or after a jump (an anchor, a reload below the section: more than a screen in one go) the name is set at once —
+           nobody would watch it catch up */
+        var r = sec.getBoundingClientRect();
+        if (jumped || r.bottom <= 0 || r.top >= window.innerHeight) { if (raf) { cancelAnimationFrame(raf); raf = 0; } phase = 0; f = 1; show(want); for (var j = 0; j < texts.length; j++) setW(j, target(j, shown)); }
+        else kick();
+      }
     };
     /* a name in the list: scroll to its step; the name changes straight to it, not through the names in between */
     var onClick = function (e) {
       var b = e.target.closest ? e.target.closest('.lu-pl button') : null; if (!b) return;
       var n = +b.getAttribute('data-n'), g = geo();
-      lock = n; lockT = performance.now(); want = n; kick();
+      lock = n; lockT = performance.now(); want = n; jump = true; kick();
       window.scrollTo({ top: Math.round(g.doc - g.top + g.total * (n + 0.5) / N), behavior: reduce ? 'auto' : 'smooth' });
     };
     sec.addEventListener('click', onClick);
