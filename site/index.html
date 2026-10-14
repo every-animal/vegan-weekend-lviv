@@ -677,6 +677,7 @@ html{scroll-behavior:auto}
 .lu-art{container-type:size}
 /* …unless the screen is too low for that: the tallest name (ЗЛИПНІ) is ~0.99 of the width high, so the width is at most the free height */
 .lu-svg.lu-m{inset:auto auto auto 50%;top:50%;width:min(100%,99cqh);height:auto;translate:-50% -50%}
+/* the viewBoxes are wider than the fitted names by the ring (R) + 1 on each side, so the outer edge of the ring — not the letters — meets the edge of the content (owner 14.10.2026) */
 .lu-d{--R:13;--G:7}
 .lu-m{--R:6.5;--G:3.5}
 .lu-r{fill:var(--fg);stroke:var(--fg);stroke-width:calc(var(--R)*2px);stroke-linejoin:round}
@@ -866,7 +867,7 @@ html{scroll-behavior:auto}
 <div class="lu-track">
 <div class="lu-pin">
 <div class="lu-top"><h2 class="lu-h" id="lu-h">Лайнап</h2><span class="lu-pill">Live + DJ-сцена</span><span class="lu-dt">22 листопада · Львів</span></div>
-<div class="lu-art"><svg class="lu-svg lu-d" viewBox="0 -70 1200 500" aria-hidden="true" data-names="[[[&quot;ЗЛИПНІ&quot;, 388.25, 602.43, 330]], [[&quot;LIPATOVA&quot;, 310.41, 595.46, 330]], [[&quot;СЕРВАНТ&quot;, 322.44, 597.45, 330]], [[&quot;ОНІСУКА ТАЙГЕР&quot;, 163.69, 599.48, 330]], [[&quot;OLES dj&quot;, 401.05, 598.43, 330]], [[&quot;BOH dj&quot;, 453.45, 595.99, 330]]]"><defs><g id="lu-d"><text x="602.43" y="330" text-anchor="middle" style="font-size: 443.55px; font-variation-settings: 'wght' 900, 'wdth' 388.25">ЗЛИПНІ</text><text x="0" y="0" text-anchor="middle" style="font-size: 443.55px; font-variation-settings: 'wght' 900, 'wdth' 100"></text></g></defs><g class="lu-r"><use href="#lu-d"></use></g><g class="lu-g"><use href="#lu-d"></use></g><g class="lu-f"><use href="#lu-d"></use></g></svg><svg class="lu-svg lu-m" viewBox="0 -14 358 490" aria-hidden="true" data-names="[[[&quot;ЗЛИПНІ&quot;, 181.15, 179.99, 330]], [[&quot;LIPATOVA&quot;, 141.71, 177.47, 330]], [[&quot;СЕРВАНТ&quot;, 148.63, 178.47, 330]], [[&quot;ОНІСУКА ТАЙГЕР&quot;, 163.69, 178.85, 275.75, 132.33]], [[&quot;OLES dj&quot;, 189.94, 178.46, 330]], [[&quot;BOH dj&quot;, 213.73, 178.46, 330]]]"><defs><g id="lu-m"><text x="179.99" y="330" text-anchor="middle" style="font-size: 268.82px; font-variation-settings: 'wght' 900, 'wdth' 181.15">ЗЛИПНІ</text><text x="0" y="0" text-anchor="middle" style="font-size: 268.82px; font-variation-settings: 'wght' 900, 'wdth' 100"></text></g></defs><g class="lu-r"><use href="#lu-m"></use></g><g class="lu-g"><use href="#lu-m"></use></g><g class="lu-f"><use href="#lu-m"></use></g></svg></div>
+<div class="lu-art"><svg class="lu-svg lu-d" viewBox="-14 -70 1228 500" aria-hidden="true" data-names="[[[&quot;ЗЛИПНІ&quot;, 388.25, 602.43, 330]], [[&quot;LIPATOVA&quot;, 310.41, 595.46, 330]], [[&quot;СЕРВАНТ&quot;, 322.44, 597.45, 330]], [[&quot;ОНІСУКА ТАЙГЕР&quot;, 163.69, 599.48, 330]], [[&quot;OLES dj&quot;, 401.05, 598.43, 330]], [[&quot;BOH dj&quot;, 453.45, 595.99, 330]]]"><defs><g id="lu-d"><text x="602.43" y="330" text-anchor="middle" style="font-size: 443.55px; font-variation-settings: 'wght' 900, 'wdth' 388.25">ЗЛИПНІ</text><text x="0" y="0" text-anchor="middle" style="font-size: 443.55px; font-variation-settings: 'wght' 900, 'wdth' 100"></text></g></defs><g class="lu-r"><use href="#lu-d"></use></g><g class="lu-g"><use href="#lu-d"></use></g><g class="lu-f"><use href="#lu-d"></use></g></svg><svg class="lu-svg lu-m" viewBox="-7.5 -14 373 490" aria-hidden="true" data-names="[[[&quot;ЗЛИПНІ&quot;, 181.15, 179.99, 330]], [[&quot;LIPATOVA&quot;, 141.71, 177.47, 330]], [[&quot;СЕРВАНТ&quot;, 148.63, 178.47, 330]], [[&quot;ОНІСУКА ТАЙГЕР&quot;, 163.69, 178.85, 275.75, 132.33]], [[&quot;OLES dj&quot;, 189.94, 178.46, 330]], [[&quot;BOH dj&quot;, 213.73, 178.46, 330]]]"><defs><g id="lu-m"><text x="179.99" y="330" text-anchor="middle" style="font-size: 268.82px; font-variation-settings: 'wght' 900, 'wdth' 181.15">ЗЛИПНІ</text><text x="0" y="0" text-anchor="middle" style="font-size: 268.82px; font-variation-settings: 'wght' 900, 'wdth' 100"></text></g></defs><g class="lu-r"><use href="#lu-m"></use></g><g class="lu-g"><use href="#lu-m"></use></g><g class="lu-f"><use href="#lu-m"></use></g></svg></div>
 <ol class="lu-pl" aria-label="Лайнап"><li><button type="button" data-n="0" aria-current="true">ЗЛИПНІ</button></li><li><button type="button" data-n="1">LIPATOVA</button></li><li><button type="button" data-n="2">СЕРВАНТ</button></li><li><button type="button" data-n="3">ОНІСУКА ТАЙГЕР</button></li><li><button type="button" data-n="4">OLES dj</button></li><li><button type="button" data-n="5">BOH dj</button></li></ol>
 </div>
 </div>
@@ -1488,14 +1489,26 @@ html{scroll-behavior:auto}
     var target = function (i, n) { return data[i][n] ? data[i][n][1] : 100; };
     var setW = function (i, w) {
       w = Math.round(clamp(w, 100, 1000) * 10) / 10;
-      if (texts[i]._w !== w) { texts[i]._w = w; texts[i].style.fontVariationSettings = "'wght' 900, 'wdth' " + w; }
+      if (texts[i]._w !== w) { texts[i]._w = w; texts[i].style.fontVariationSettings = "'wght' 900, 'wdth' " + w; centre(i); }
+    };
+    /* Safari places text-anchor="middle" by the width without kerning but draws the letters kerned, so a name with kerning pairs
+       (LIPATOVA: AV, TA, VA) stood to the left. The middle of what is drawn — from the start of the first letter to the end of the
+       last — is put on the name's x instead. In Chrome the correction is 0. Only the shown layout is measured */
+    var centre = function (i) {
+      var t = texts[i], l = data[i][shown], n;
+      if (!l || !(n = t.getNumberOfChars()) || !t.getBBox().width) return;
+      try {
+        var a = t.getStartPositionOfChar(0).x, z = t.getEndPositionOfChar(n - 1).x, x = +t.getAttribute('x');
+        var dx = l[2] - (a + z) / 2;
+        if (Math.abs(dx) > 0.05) t.setAttribute('x', (x + dx).toFixed(2));
+      } catch (e) {}
     };
     var show = function (n) {
       shown = n;
       for (var i = 0; i < texts.length; i++) {
         var l = data[i][n];
         texts[i].textContent = l ? l[0] : '';
-        if (l) { texts[i].setAttribute('x', l[2]); texts[i].setAttribute('y', l[3]); texts[i].style.fontSize = l[4] ? l[4] + 'px' : texts[i]._fs; }
+        if (l) { texts[i].setAttribute('x', l[2]); texts[i].setAttribute('y', l[3]); texts[i].style.fontSize = l[4] ? l[4] + 'px' : texts[i]._fs; centre(i); }
       }
       for (var j = 0; j < btns.length; j++) { if (j === n) btns[j].setAttribute('aria-current', 'true'); else btns[j].removeAttribute('aria-current'); }
     };
@@ -1536,13 +1549,17 @@ html{scroll-behavior:auto}
       if (onScreen) { if (!phase && !timer) schedule(); } else { clearTimeout(timer); timer = 0; }
     }, { threshold: [0, 0.5, 1] }) : null;
     var onVis = function () { if (document.hidden) { clearTimeout(timer); timer = 0; } else schedule(); };
+    /* a layout that was hidden (display:none) could not be measured: centre it when the screen changes and it shows */
+    var onResize = function () { for (var i = 0; i < texts.length; i++) centre(i); };
     sec.addEventListener('click', onClick);
     document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('resize', onResize);
     if (io) io.observe(sec.querySelector('.lu-pin'));
     show(0); full();
     return function unmount() {
       sec.removeEventListener('click', onClick);
       document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('resize', onResize);
       if (io) io.disconnect();
       clearTimeout(timer);
       if (raf) cancelAnimationFrame(raf);
