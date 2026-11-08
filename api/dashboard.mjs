@@ -16,6 +16,7 @@
    пул і провайдер — `vercel` / `vercel` (GCP_WIF_POOL, GCP_WIF_PROVIDER, якщо інші)
    або, як запасний шлях, GA4_SA_JSON — JSON ключа службового акаунта
    META_AD_ACCOUNT_ID, META_ADS_TOKEN — рекламний кабінет (act_…) і токен з правом ads_read
+                                        (з 08.11.2026 — окремий кабінет Веган Вікенду 159631582954289, рахується весь)
    DASHBOARD_EXCLUDE_ORDERS           — номери замовлень WayForPay через кому, які не рахувати (тестові, повернені до 07.10.2026)
    META_CAMPAIGN_MATCH                — слова в назвах кампаній Веган Вікенду (через кому); без нього — усі кампанії кабінету
    DASHBOARD_PASSWORD                 — необовʼязково: якщо задати, сторінка питатиме пароль (логін будь-який) */
@@ -71,13 +72,19 @@ async function ga4(propertyId, accessToken, from, stream = GA4_STREAM, exclude =
     if (r.error) throw new Error(`Google: ${r.error.message}`);
     return (r.rows || []).map(x => [...x.dimensionValues.map(v => v.value), ...x.metricValues.map(v => Number(v.value))]);
   };
-  const [visitors, clicks, bought, refundRows] = await Promise.all([
+  const iso = d => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`;
+  const [visitors, clicks, bought, refundRows, chUsers, chClicks] = await Promise.all([
     run({ metrics: [{ name: 'totalUsers' }], dimensionFilter: withStream() }),
     run(event('begin_checkout')),
-    rows({ dimensions: [{ name: 'date' }, { name: 'transactionId' }], metrics: [{ name: 'itemsPurchased' }], dimensionFilter: withStream({ filter: { fieldName: 'eventName', stringFilter: { value: 'purchase' } } }) }),
-    rows({ dimensions: [{ name: 'date' }, { name: 'transactionId' }], metrics: [{ name: 'eventCount' }], dimensionFilter: withStream({ filter: { fieldName: 'eventName', stringFilter: { value: 'refund' } } }) })
+    rows({ dimensions: [{ name: 'date' }, { name: 'transactionId' }], metrics: [{ name: 'itemsPurchased' }, { name: 'purchaseRevenue' }], dimensionFilter: withStream({ filter: { fieldName: 'eventName', stringFilter: { value: 'purchase' } } }) }),
+    rows({ dimensions: [{ name: 'date' }, { name: 'transactionId' }], metrics: [{ name: 'eventCount' }], dimensionFilter: withStream({ filter: { fieldName: 'eventName', stringFilter: { value: 'refund' } } }) }),
+    /* звідки прийшли відвідувачі й ті, хто натиснув «Купити»: групи каналів GA (реклама в соцмережах, соцмережі, пошук, прямі…) */
+    rows({ dimensions: [{ name: 'date' }, { name: 'sessionDefaultChannelGroup' }], metrics: [{ name: 'totalUsers' }], dimensionFilter: withStream() }),
+    rows({ dimensions: [{ name: 'date' }, { name: 'sessionDefaultChannelGroup' }], metrics: [{ name: 'eventCount' }], dimensionFilter: withStream({ filter: { fieldName: 'eventName', stringFilter: { value: 'begin_checkout' } } }) })
   ]);
-  const iso = d => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`;
+  const channels = {};
+  const put = (rs, key) => { for (const [d, ch, n] of rs) { const c = channels[ch] || (channels[ch] = { users: {}, clicks: {} }); c[key][iso(d)] = (c[key][iso(d)] || 0) + n; } };
+  put(chUsers, 'users'); put(chClicks, 'clicks');
   const refunded = new Set(refundRows.map(r => r[1]).concat(exclude || []));
   const purchases = {}, tickets = {}, refunds = {}, seen = new Set();
   for (const [d, id, items] of bought) {
@@ -87,35 +94,44 @@ async function ga4(propertyId, accessToken, from, stream = GA4_STREAM, exclude =
   }
   const rseen = new Set();
   for (const [d, id] of refundRows) { if (!id || rseen.has(id)) continue; rseen.add(id); const k = iso(d); refunds[k] = (refunds[k] || 0) + 1; }
-  const orders = {}; for (const [d, id, items] of bought) if (id && id !== '(not set)' && !orders[id]) orders[id] = { day: iso(d), tickets: Math.max(1, items) };
+  const orders = {}; for (const [d, id, items, value] of bought) if (id && id !== '(not set)' && !orders[id]) orders[id] = { day: iso(d), tickets: Math.max(1, items), amount: value || 0 };
   const refundedDays = {}; for (const [d, id] of refundRows) if (id && !refundedDays[id]) refundedDays[id] = iso(d);
-  return { visitors, clicks, purchases, tickets, refunds, excluded: (exclude || []).length, orders, refundedDays };
+  return { visitors, clicks, purchases, tickets, refunds, excluded: (exclude || []).length, orders, refundedDays, channels };
 }
 
-/* ---------- Meta Marketing API: витрати й покупки, які Meta приписує рекламі ---------- */
-/* У кабінеті крутяться кампанії всіх проєктів організації — рахуємо лише ті, чия назва містить одне з
-   META_CAMPAIGN_MATCH (через кому, без різниці великих літер). Без фільтра — усі, і сторінка показує список кампаній. */
+/* ---------- Meta Marketing API: що зробила реклама ----------
+   З 08.11.2026 у Веган Вікенду окремий кабінет — рахується весь. META_CAMPAIGN_MATCH (слова в назвах кампаній через кому)
+   лишився на випадок спільного кабінету: якщо заданий — рахуються лише кампанії з цими словами.
+   По днях: витрати, покази, кліки на посилання, перегляди сторінки після кліку, початки оформлення, покупки й їхня сума,
+   які Meta приписує рекламі (клік до 7 днів або перегляд до 1 дня перед покупкою — налаштування кабінету за замовчуванням). */
+const pick = (list, types) => { for (const t of types) { const a = (list || []).find(x => x.action_type === t); if (a) return Number(a.value) || 0; } return 0; };
 async function meta(account, token, from, to, match) {
   const id = String(account).startsWith('act_') ? account : `act_${account}`;
   const words = String(match || '').split(',').map(w => w.trim().toLowerCase()).filter(Boolean);
-  let u = `https://graph.facebook.com/v21.0/${id}/insights?level=campaign&fields=campaign_name,spend,actions&time_increment=1&limit=500&time_range=${encodeURIComponent(JSON.stringify({ since: from, until: to }))}&access_token=${encodeURIComponent(token)}`;
-  const spend = {}, purchases = {}, campaigns = {};
+  let u = `https://graph.facebook.com/v21.0/${id}/insights?level=campaign&fields=campaign_name,spend,impressions,inline_link_clicks,actions,action_values&time_increment=1&limit=500&time_range=${encodeURIComponent(JSON.stringify({ since: from, until: to }))}&access_token=${encodeURIComponent(token)}`;
+  const k = ['spend', 'impressions', 'clicks', 'views', 'checkouts', 'purchases', 'value'];
+  const day = Object.fromEntries(k.map(x => [x, {}])), campaigns = {};
+  const add = (key, d, n) => { if (n) day[key][d] = (day[key][d] || 0) + n; };
+  const PURCHASE = ['purchase', 'omni_purchase', 'offsite_conversion.fb_pixel_purchase'];
   for (let page = 0; u && page < 20; page++) {
     const j = await (await fetch(u)).json();
     if (j.error) throw new Error(`Meta: ${j.error.message}`);
     for (const row of j.data || []) {
-      const name = row.campaign_name || '—', sp = Number(row.spend) || 0;
-      const a = (row.actions || []).find(x => x.action_type === 'purchase' || x.action_type === 'offsite_conversion.fb_pixel_purchase');
+      const name = row.campaign_name || '—', sp = Number(row.spend) || 0, d = row.date_start;
       const used = !words.length || words.some(w => name.toLowerCase().includes(w));
-      const c = campaigns[name] || (campaigns[name] = { spend: 0, used });
-      c.spend += sp;
+      const c = campaigns[name] || (campaigns[name] = { spend: 0, purchases: 0, clicks: 0, used });
+      const pu = pick(row.actions, PURCHASE), cl = Number(row.inline_link_clicks) || 0;
+      c.spend += sp; c.purchases += pu; c.clicks += cl;
       if (!used) continue;
-      spend[row.date_start] = (spend[row.date_start] || 0) + sp;
-      purchases[row.date_start] = (purchases[row.date_start] || 0) + (a ? Number(a.value) : 0);
+      add('spend', d, sp); add('impressions', d, Number(row.impressions) || 0); add('clicks', d, cl);
+      add('views', d, pick(row.actions, ['landing_page_view', 'omni_landing_page_view']));
+      add('checkouts', d, pick(row.actions, ['initiate_checkout', 'omni_initiated_checkout', 'offsite_conversion.fb_pixel_initiate_checkout']));
+      add('purchases', d, pu); add('value', d, pick(row.action_values, PURCHASE));
     }
     u = j.paging && j.paging.next;
   }
-  return { spend, purchases, filtered: words.length > 0, match: words, campaigns: Object.entries(campaigns).map(([name, c]) => ({ name, spend: Math.round(c.spend), used: c.used })).sort((a, b) => b.spend - a.spend) };
+  return { ...day, filtered: words.length > 0, match: words, account: id.slice(4),
+    campaigns: Object.entries(campaigns).map(([name, c]) => ({ name, spend: Math.round(c.spend), purchases: c.purchases, clicks: c.clicks, used: c.used })).sort((a, b) => b.spend - a.spend) };
 }
 
 /* ---------- сторінка: темна, тонкі лінії, великі цифри шрифтом Heading Now, рожевий — акцент ---------- */
@@ -173,6 +189,21 @@ h2 i{font-style:italic;color:var(--pink);font-variation-settings:"wght" 900,"wdt
 .trio div{background:var(--bg);border-radius:14px;padding:12px}.trio .v{font-family:"HN";font-size:30px;font-variation-settings:"wght" 800,"wdth" 520;margin-top:4px}.trio small{display:block;color:var(--ink-3);font-size:11px;margin-top:4px;line-height:1.3}
 .camps{margin-top:14px;background:none;padding:0;border-radius:0}.camps summary{font-family:inherit;text-transform:none;font-size:13px;color:var(--ink-2);padding:8px 0}.camps summary:after{content:''}.camp{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--rule);font-size:13px}.camp b{font-weight:600;white-space:nowrap}.camp.off{color:var(--ink-3);text-decoration:line-through}
 .todo{background:var(--card-2);border-radius:20px;padding:18px 20px;color:var(--ink-2)}
+/* total + ads grid + sources */
+.sub{color:var(--ink-3);font-size:13px;margin:-6px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.ad .grid{grid-template-columns:repeat(3,1fr)}
+.grid>div{background:var(--card-2);border-radius:14px;padding:12px 12px 11px}.grid .v{font-family:"HN";font-size:30px;font-variation-settings:"wght" 800,"wdth" 520;margin-top:4px;white-space:nowrap}.grid small{display:block;color:var(--ink-3);font-size:11px;margin-top:4px;line-height:1.3}
+.grid>.hl,.ad .grid>.hl{background:var(--pink);color:var(--on-pink)}.grid .hl .cap,.grid .hl small{color:rgba(43,43,43,.75)}
+.ad .grid>div{background:var(--bg)}
+.mf{display:flex;flex-direction:column;gap:6px;margin-top:16px}
+.mf div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:baseline;padding:8px 12px;border-radius:10px;background:linear-gradient(90deg,rgba(254,117,190,.28) var(--w),var(--bg) var(--w));font-size:13px}
+.mf b{font-family:"HN";font-size:22px;font-variation-settings:"wght" 800,"wdth" 520}.mf span:last-child{color:var(--ink-3);font-size:12px;min-width:3.5em;text-align:right}
+.src{margin-top:14px;background:var(--card-2);border-radius:20px;padding:6px 16px}
+.src .r{display:grid;grid-template-columns:minmax(0,1fr) 64px 64px 52px;gap:8px;align-items:baseline;padding:9px 0;border-top:1px solid var(--rule);font-size:13px}
+.src .r:first-child{border-top:0;color:var(--ink-3);font-size:10px;letter-spacing:.04em;text-transform:uppercase;line-height:1.2}
+.src .r b{font-family:"HN";font-size:20px;font-variation-settings:"wght" 800,"wdth" 520;text-align:right}.src .r span:not(:first-child){text-align:right}
+.src .r.ad b:first-of-type{color:var(--pink)}
+.note{margin-top:10px;font-size:12px;color:var(--ink-3)}
 .todo b{color:var(--ink)}
 /* days */
 .chart{position:relative;background:var(--card-2);border-radius:20px;padding:18px 14px 10px}
@@ -202,7 +233,7 @@ summary::-webkit-details-marker{display:none}summary:after{content:" +";color:va
 .anim .bars .b{animation:grow .6s cubic-bezier(.3,1.4,.5,1) backwards;animation-delay:calc(var(--i) * 12ms)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 .trio .v{white-space:nowrap}
-@media (max-width:520px){.stage .n{font-size:38px}.trio .v{font-size:24px}.trio .cap{font-size:10px}.trio{grid-template-columns:1fr 1fr}.trio div:last-child{grid-column:span 2}h2{font-size:26px}}
+@media (max-width:520px){.grid,.ad .grid{grid-template-columns:1fr 1fr}.grid .v{font-size:24px}.src .r{grid-template-columns:minmax(0,1fr) 50px 50px 44px}.stage .n{font-size:38px}.trio .v{font-size:24px}.trio .cap{font-size:10px}.trio{grid-template-columns:1fr 1fr}.trio div:last-child{grid-column:span 2}h2{font-size:26px}}
 </style></head><body><main>
 <div class="top"><span class="live"><i></i>live</span><span class="count">до фестивалю <b id="cd"></b> днів</span></div>
 <div class="per" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7" aria-pressed="true">7 днів</button><button data-p="30">30 днів</button><button data-p="all">Весь час</button></div>
@@ -215,7 +246,10 @@ summary::-webkit-details-marker{display:none}summary:after{content:" +";color:va
 <dt>Чому оплат більше, ніж кліків «Купити»?</dt><dd>Бо їх рахують різні джерела. Кліки — лише на сайті і лише в тих, хто дав згоду на cookies і не має блокувальника реклами. Оплати — усі: їх повідомляє WayForPay. До того ж частина покупців узагалі не натискає «Купити» на сайті: відкриває оплату з біо Instagram, з реклами, що веде одразу на WayForPay, з пересланого в чаті посилання чи закладки. Тому «оплатили з кліків» може бути понад 100% — це не помилка, а знак, що люди купують і повз сайт. Справжню конверсію краще дивитися як «від відвідувача до оплати».</dd>
 <dt>% між кроками</dt><dd>Скільки дійшло до кроку від попереднього. Оплати рахуються за всіма покупцями, а кліки — лише за тими, хто дав згоду, тож «оплатили з кліків» буває завищеним, а іноді й понад 100%. Ширина блоків воронки — наочна, не в масштабі; точні числа — на блоках.</dd>
 <dt>Порівняння з попереднім періодом</dt><dd>«Сьогодні» — з учора; «7 днів» — з попередніми 7 днями; «30 днів» — з попередніми 30. «Весь час» — від 6 жовтня 2026, коли почалося відстеження оплат; порівняння немає.</dd>
-<dt>Що показує блок «Реклама Meta»?</dt><dd>Лише кампанії, у назві яких є мітка <code>VWL26</code> або <code>vw12lviv</code> — решта кампаній кабінету показані закресленими й не рахуються. <b>Квиток з реклами</b> — витрачено / покупки, які Meta зарахувала рекламі (людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою — стандартне налаштування кабінету). <b>На будь-який квиток</b> — витрачено / усі оплати: скільки реклама коштує в перерахунку на кожен проданий квиток, звідки б покупець не прийшов.</dd>
+<dt>«Разом»</dt><dd><b>Виручка</b> — сума всіх оплачених замовлень (з нашої бази, без повернених). <b>Витрачено на рекламу</b> — увесь рекламний кабінет Meta за період. <b>Реклама на 1 квиток</b> — витрачено / усі продані квитки, звідки б покупець не прийшов. <b>Окупність</b> — виручка / витрачено: скільки гривень виручки припадає на гривню реклами. Це загальна картина — частина покупців прийшла б і без реклами.</dd>
+<dt>Що показує блок «Реклама Meta»?</dt><dd>Увесь окремий рекламний кабінет фестивалю (з 08.11.2026). <b>Квиток з реклами</b> — витрачено / покупки, які Meta зарахувала рекламі: людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою (стандартне налаштування кабінету). Покупки Meta дізнається з нашого сервера (Conversions API) — для цього кабінет має бути підключений до набору даних (пікселя) <code>1647718446547735</code>. <b>Клікнули → Відкрили сайт</b>: частина людей закриває сторінку, не дочекавшись завантаження; «Відкрили сайт» Meta рахує лише в тих, хто дав згоду на cookies. Покупки, які Meta приписує рекламі, і всі оплати з «Разом» рахуються по-різному — Meta може приписати рекламі й покупку, яка сталася б і без неї.</dd>
+<dt>«Звідки прийшли» і UTM-мітки</dt><dd>Таблиця під воронкою сайту — групи каналів Google Analytics: скільки відвідувачів і кліків «Купити» дав кожен канал. Щоб Google відрізняв рекламу Meta від звичайних переходів з Instagram і Facebook, у кожному оголошенні в полі «Параметри URL» має стояти: <code>utm_source={{site_source_name}}&amp;utm_medium=paid_social&amp;utm_campaign={{campaign.name}}&amp;utm_content={{ad.name}}</code>. Без міток такі відвідувачі потрапляють у «Соцмережі (не реклама)».</dd>
+<dt>Як дати дашборду доступ до кабінету Meta</dt><dd>Токенові <code>META_ADS_TOKEN</code> потрібне право <code>ads_read</code> саме на цей кабінет. Найнадійніше — системний користувач бізнес-менеджера: «Налаштування компанії» → «Системні користувачі» → користувач → «Призначити ресурси» → рекламний кабінет → «Переглядати ефективність»; потім «Згенерувати токен» з правом <code>ads_read</code> і вставити його у Vercel (<code>META_ADS_TOKEN</code>).</dd>
 <dt>Дні й оновлення</dt><dd>Дні — за київським часом. Сторінка оновлюється сама кожні 5 хв. Квитки й оплати — миттєво (з нашої бази). Відвідувачі й кліки «Купити» — з Google, який домальовує дані від кількох хвилин до 24–48 год, тож за сьогодні вони ще можуть зрости, і «оплатили з кліків» сьогодні буває завищеним.</dd>
 </dl></details>
 <p class="foot">Оновлено ${esc(data.updated)} (Київ)</p>
@@ -251,8 +285,37 @@ function render(p){
   else row.append(el('span',null,D.ga?'Google: '+D.ga.error:'Google Analytics ще не підключено'));
   h.append(row);app.append(h);count(big,tk);
 
-  /* funnel */
-  const t=el('h2');t.append(document.createTextNode('Шлях до '),el('i',null,'квитка'));app.append(t);
+  /* the money side, all of it: every ticket, every hryvnia of ads */
+  const rv=S?sum(ds,S.revenue):0, spAll=M?sum(ds,M.spend):0;
+  const card=(l,val,n,hl)=>{const d=el('div',hl?'hl':null);d.append(el('div','cap',l),el('div','v',val));if(n)d.append(el('small',null,n));return d};
+  const tt=el('h2');tt.append(document.createTextNode('Разом '),el('i',null,label));app.append(tt);
+  const tg=el('div','grid');
+  tg.append(card('Виручка',S?fmt(rv)+' грн':'—',S?fmt(tk)+' '+plural(tk,'квиток','квитки','квитків')+' · '+fmt(b)+' '+plural(b,'замовлення','замовлення','замовлень'):''),
+    card('Витрачено на рекламу',M?fmt(spAll)+' грн':'—',M?'весь кабінет Meta':'Meta не підключено'),
+    card('Реклама на 1 квиток',M&&tk?fmt(spAll/tk)+' грн':'—','витрачено / усі квитки'),
+    card('Окупність реклами',M&&spAll?(rv/spAll).toFixed(1).replace('.',',')+'×':'—',M&&spAll?'кожна гривня реклами → '+fmt(rv/spAll)+' грн виручки':'виручка / витрачено',true));
+  app.append(tg);
+
+  /* ads: what the ads did, by Meta's own count */
+  const a=el('h2');a.append(document.createTextNode('Реклама '),el('i',null,'Meta'));app.append(a);
+  if(M){const sp=spAll,im=sum(ds,M.impressions),cl=sum(ds,M.clicks),vw=sum(ds,M.views),co=sum(ds,M.checkouts),mb=sum(ds,M.purchases),mv=sum(ds,M.value);
+    app.append(el('p','sub','Кабінет '+M.account+(M.filtered?' · лише кампанії з «'+M.match.join('», «')+'»':' · усі кампанії')+'. Покупки й виручка — ті, що Meta приписує рекламі.'));
+    const box=el('section','ad');const say=el('div','say');say.append(document.createTextNode('Квиток з реклами коштує'),el('b',null,mb?fmt(sp/mb)+' грн':'—'),document.createTextNode(mb?'':' — реклама ще не принесла покупок за цей період'));box.append(say);
+    const g=el('div','grid');g.style.marginTop='16px';
+    g.append(card('Витрачено',fmt(sp)+' грн',''),card('Кліки на посилання',fmt(cl),im?'CTR '+pct(cl,im)+' з '+fmt(im)+' показів':''),card('Ціна кліку',cl?(sp/cl).toFixed(1).replace('.',',')+' грн':'—',''),
+      card('Покупок з реклами',fmt(mb),'за даними Meta'),card('Виручка з реклами',fmt(mv)+' грн',''),card('Окупність реклами',sp&&mv?(mv/sp).toFixed(1).replace('.',',')+'×':'—','виручка з реклами / витрачено',true));
+    box.append(g);
+    /* the ad's own funnel: shown → clicked → opened the site → began paying → bought */
+    const mf=el('div','mf'),steps=[['Побачили рекламу (покази)',im],['Клікнули на посилання',cl],['Відкрили сайт',vw],['Почали оплату',co],['Купили',mb]];
+    steps.forEach(([l,n],i)=>{const r=el('div');r.style.setProperty('--w',(im?Math.max(n?3:0,Math.sqrt(n/im)*100):0)+'%');r.append(el('span',null,l),el('b',null,fmt(n)),el('span',null,i?pct(n,steps[i-1][1]):''));mf.append(r)});
+    box.append(mf);
+    const cl2=el('details','camps');cl2.append(el('summary',null,'Кампанії ('+M.campaigns.filter(c=>c.used).length+')'));
+    M.campaigns.forEach(c=>{const r=el('div','camp'+(c.used?'':' off'));r.append(el('span',null,c.name),el('b',null,fmt(c.spend)+' грн · '+fmt(c.purchases)+' '+plural(c.purchases,'покупка','покупки','покупок')));cl2.append(r)});
+    box.append(cl2);app.append(box)}
+  else{const td=el('div','todo');td.append(el('b',null,D.meta?'Meta: '+D.meta.error:'Ще не підключено.'),document.createTextNode(D.meta?' Токенові потрібен доступ «ads_read» до кабінету — див. «Питання й відповіді».':' Тут зʼявиться, скільки коштує квиток з реклами.'));app.append(td)}
+
+  /* site: the funnel, and where the visitors came from */
+  const t=el('h2');t.append(document.createTextNode('Сайт: шлях до '),el('i',null,'квитка'));app.append(t);
   const f=el('div','fun');const top=Math.max(1,v);
   const st=[['s1','Прийшли на сайт',v],['s2','Натиснули «Купити квиток»',c],['s3','Оплатили (замовлень)',b]];
   let w=100;
@@ -263,17 +326,13 @@ function render(p){
     w=Math.min(w,34+66*Math.sqrt(n/top));const g=el('div','stage '+cls);g.style.setProperty('--w',w+'%');
     const nn=el('div','hn n');g.append(el('div','l',l),nn);f.append(g);count(nn,n)});
   app.append(f);
-
-  /* ads */
-  const a=el('h2');a.append(document.createTextNode('Реклама '),el('i',null,'Meta'));app.append(a);
-  if(M){const sp=sum(ds,M.spend),mb=sum(ds,M.purchases);
-    const box=el('section','ad');const say=el('div','say');say.append(document.createTextNode('Квиток з реклами коштує'),el('b',null,mb?fmt(sp/mb)+' грн':'—'),document.createTextNode(mb?'':' — реклама ще не принесла покупок за цей період'));box.append(say);
-    const tr=el('div','trio');[['Витрачено',fmt(sp)+' грн',''],['Покупок з реклами',fmt(mb),'за даними Meta'],['На будь-який квиток',b?fmt(sp/b)+' грн':'—','витрачено / усі оплати']].forEach(([l,val,n])=>{const d=el('div');d.append(el('div','cap',l),el('div','v',val));if(n)d.append(el('small',null,n));tr.append(d)});
-    box.append(tr);
-    const cl=el('details','camps');const cs=el('summary',null,M.filtered?'Кампанії: враховано ті, де в назві «'+M.match.join('», «')+'» ('+M.campaigns.filter(c=>c.used).length+' з '+M.campaigns.length+')':'⚠ Фільтр кампаній не задано — враховано всі кампанії кабінету');cl.append(cs);
-    M.campaigns.forEach(c=>{const r=el('div','camp'+(c.used?'':' off'));r.append(el('span',null,c.name),el('b',null,fmt(c.spend)+' грн'));cl.append(r)});
-    if(!M.filtered)cl.open=true;box.append(cl);app.append(box)}
-  else{const td=el('div','todo');td.append(el('b',null,D.meta?'Meta: '+D.meta.error:'Ще не підключено.'),document.createTextNode(D.meta?'':' Тут зʼявиться, скільки коштує квиток з реклами.'));app.append(td)}
+  if(G&&G.channels){
+    const NAME={'Paid Social':'Реклама в соцмережах','Organic Social':'Соцмережі (не реклама)','Direct':'Прямі заходи','Organic Search':'Пошук','Referral':'Інші сайти','Paid Search':'Реклама в пошуку','Paid Other':'Інша реклама','Email':'Email','Organic Video':'Відео','Display':'Банери','Unassigned':'Невідомо','Cross-network':'Реклама (кілька мереж)'};
+    const rows=Object.entries(G.channels).map(([k,x])=>({k,name:NAME[k]||k,u:sum(ds,x.users),c:sum(ds,x.clicks)})).filter(r=>r.u||r.c).sort((x,y)=>y.u-x.u);
+    if(rows.length){const box=el('div','src');const hd=el('div','r');['Звідки','Люди','«Купити»','%'].forEach(x=>hd.append(el('span',null,x)));box.append(hd);
+      rows.forEach(r=>{const x=el('div','r'+(/^Paid|Cross/.test(r.k)?' ad':''));x.append(el('span',null,r.name),el('b',null,fmt(r.u)),el('b',null,fmt(r.c)),el('span',null,pct(r.c,r.u)));box.append(x)});
+      app.append(box);app.append(el('p','note','За групами каналів Google Analytics. Перехід із реклами Meta Google бачить як «Реклама в соцмережах» лише тоді, коли в посиланні реклами є UTM-мітки (див. «Питання й відповіді»); без них такі відвідувачі потрапляють у «Соцмережі (не реклама)».'))}
+  }
 
   /* days */
   if(S){
@@ -284,7 +343,7 @@ function render(p){
     const read=el('div','read');
     const show=d=>{read.replaceChildren();const dd=el('span','d');dd.append(el('b',null,d.slice(8)+'.'+d.slice(5,7)));read.append(dd);
       const W=(n,a,b,c)=>plural(n||0,a,b,c);
-      [[S.tickets[d],W(S.tickets[d],'квиток','квитки','квитків')],[S.purchases[d],W(S.purchases[d],'замовлення','замовлення','замовлень')]].concat(G?[[G.clicks[d],W(G.clicks[d],'клік','кліки','кліків')+' «Купити»'],[G.visitors[d],W(G.visitors[d],'відвідувач','відвідувачі','відвідувачів')]]:[]).concat(M?[[M.spend[d],'грн на рекламу']]:[]).forEach(([x,l])=>{const s=el('span');s.append(el('b',null,fmt(x||0)),document.createTextNode(' '+l));read.append(s)});
+      [[S.tickets[d],W(S.tickets[d],'квиток','квитки','квитків')],[S.purchases[d],W(S.purchases[d],'замовлення','замовлення','замовлень')],[(S.revenue||{})[d],'грн виручки']].concat(G?[[G.clicks[d],W(G.clicks[d],'клік','кліки','кліків')+' «Купити»'],[G.visitors[d],W(G.visitors[d],'відвідувач','відвідувачі','відвідувачів')]]:[]).concat(M?[[M.spend[d],'грн на рекламу']]:[]).forEach(([x,l])=>{const s=el('span');s.append(el('b',null,fmt(x||0)),document.createTextNode(' '+l));read.append(s)});
       bars.querySelectorAll('button').forEach(x=>x.setAttribute('aria-current',x.dataset.d===d?'true':'false'))};
     days.forEach((d,i)=>{const x=S.tickets[d]||0;const btn=el('button');btn.dataset.d=d;btn.setAttribute('aria-label',d+': '+x+' квитків');
       const bar=el('div','b'+(x?'':' zero'));bar.style.height=(x/max*100)+'%';bar.style.setProperty('--i',i);btn.append(bar);
@@ -338,14 +397,15 @@ export async function handle(request, env = process.env) {
     const exclude = new Set(String(env.DASHBOARD_EXCLUDE_ORDERS || '').split(',').map(x => x.trim()).filter(Boolean));
     const g = data.ga && !data.ga.error ? data.ga : { orders: {}, refundedDays: {} };
     const all = {};
-    for (const [id, o] of Object.entries(g.orders || {})) all[id] = { day: o.day, tickets: o.tickets, refunded: id in (g.refundedDays || {}), rday: (g.refundedDays || {})[id] };
-    for (const [id, o] of Object.entries(db || {})) all[id] = { day: kyivDate(o.t), tickets: o.tickets, refunded: o.status === 'refunded', rday: o.rt ? kyivDate(o.rt) : kyivDate(o.t) };
+    for (const [id, o] of Object.entries(g.orders || {})) all[id] = { day: o.day, tickets: o.tickets, amount: o.amount || 0, refunded: id in (g.refundedDays || {}), rday: (g.refundedDays || {})[id] };
+    for (const [id, o] of Object.entries(db || {})) all[id] = { day: kyivDate(o.t), tickets: o.tickets, amount: Number(o.amount) || 0, refunded: o.status === 'refunded', rday: o.rt ? kyivDate(o.rt) : kyivDate(o.t) };
     for (const id of Object.keys(g.refundedDays || {})) if (all[id]) { all[id].refunded = true; all[id].rday = all[id].rday || g.refundedDays[id]; }
-    const sales = { purchases: {}, tickets: {}, refunds: {}, source: db ? (data.ga && !data.ga.error ? 'db+ga' : 'db') : 'ga' };
+    const sales = { purchases: {}, tickets: {}, revenue: {}, refunds: {}, source: db ? (data.ga && !data.ga.error ? 'db+ga' : 'db') : 'ga' };
     for (const [id, o] of Object.entries(all)) {
       if (exclude.has(id)) continue;
       if (o.refunded) { sales.refunds[o.rday] = (sales.refunds[o.rday] || 0) + 1; continue; }
       sales.purchases[o.day] = (sales.purchases[o.day] || 0) + 1; sales.tickets[o.day] = (sales.tickets[o.day] || 0) + o.tickets;
+      sales.revenue[o.day] = (sales.revenue[o.day] || 0) + o.amount;
     }
     data.sales = sales;
   }
