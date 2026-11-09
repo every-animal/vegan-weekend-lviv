@@ -83,3 +83,17 @@ test('Meta: without a filter the whole account counts', async () => {
   assert.equal(d.meta.spend[today], 150); assert.equal(d.meta.views[today], 40); assert.equal(d.meta.filtered, false);
   assert.ok(d.meta.campaigns.every(c => c.used));
 });
+
+test('Meta: an account in dollars — spend and purchase value turn into hryvnias at the NBU rate', async () => {
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Kyiv' });
+  globalThis.fetch = async url => {
+    url = String(url);
+    if (url.includes('bank.gov.ua')) { assert.match(url, /valcode=USD/); return { json: async () => ([{ cc: 'USD', rate: 41.5 }]) }; }
+    if (url.includes('fields=currency')) return { json: async () => ({ currency: 'USD', id: 'act_1' }) };
+    return { json: async () => ({ data: [{ campaign_name: 'A', date_start: today, spend: '10', actions: [{ action_type: 'purchase', value: '1' }], action_values: [{ action_type: 'purchase', value: '14.5' }] }] }) };
+  };
+  const d = await dataOf(await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?fresh'), { META_AD_ACCOUNT_ID: '1', META_ADS_TOKEN: 't' }));
+  assert.equal(d.meta.currency, 'USD'); assert.equal(d.meta.rate, 41.5);
+  assert.equal(d.meta.spend[today], 415); assert.equal(Math.round(d.meta.value[today] * 100) / 100, 601.75);
+  assert.equal(d.meta.campaigns[0].spend, 415);
+});

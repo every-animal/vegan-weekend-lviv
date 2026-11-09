@@ -103,7 +103,9 @@ async function ga4(propertyId, accessToken, from, stream = GA4_STREAM, exclude =
    З 08.11.2026 у Веган Вікенду окремий кабінет — рахується весь. META_CAMPAIGN_MATCH (слова в назвах кампаній через кому)
    лишився на випадок спільного кабінету: якщо заданий — рахуються лише кампанії з цими словами.
    По днях: витрати, покази, кліки на посилання, перегляди сторінки після кліку, початки оформлення, покупки й їхня сума,
-   які Meta приписує рекламі (клік до 7 днів або перегляд до 1 дня перед покупкою — налаштування кабінету за замовчуванням). */
+   які Meta приписує рекламі (клік до 7 днів або перегляд до 1 дня перед покупкою — налаштування кабінету за замовчуванням).
+   Гроші: кабінет може рахувати не в гривнях (кабінет ВВ — у доларах). Тоді витрати й суму покупок переводимо в гривні
+   за сьогоднішнім курсом НБУ, щоб їх можна було порівняти з виручкою; суму у валюті кабінету теж віддаємо. */
 const pick = (list, types) => { for (const t of types) { const a = (list || []).find(x => x.action_type === t); if (a) return Number(a.value) || 0; } return 0; };
 async function meta(account, token, from, to, match) {
   const id = String(account).startsWith('act_') ? account : `act_${account}`;
@@ -113,11 +115,21 @@ async function meta(account, token, from, to, match) {
   const day = Object.fromEntries(k.map(x => [x, {}])), campaigns = {};
   const add = (key, d, n) => { if (n) day[key][d] = (day[key][d] || 0) + n; };
   const PURCHASE = ['purchase', 'omni_purchase', 'offsite_conversion.fb_pixel_purchase'];
+  const acc = await (await fetch(`https://graph.facebook.com/v21.0/${id}?fields=currency&access_token=${encodeURIComponent(token)}`)).json();
+  if (acc.error) throw new Error(`Meta: ${acc.error.message}`);
+  const currency = String(acc.currency || 'UAH').toUpperCase();
+  let rate = 1;
+  if (currency !== 'UAH') {
+    const r = await (await fetch(`https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=${encodeURIComponent(currency)}&json`)).json();
+    rate = Number(r && r[0] && r[0].rate);
+    if (!(rate > 0)) throw new Error(`Meta: кабінет рахує в ${currency}, а курс НБУ зараз недоступний`);
+  }
+  const raw = { spend: 0, value: 0 };
   for (let page = 0; u && page < 20; page++) {
     const j = await (await fetch(u)).json();
     if (j.error) throw new Error(`Meta: ${j.error.message}`);
     for (const row of j.data || []) {
-      const name = row.campaign_name || '—', sp = Number(row.spend) || 0, d = row.date_start;
+      const name = row.campaign_name || '—', sp0 = Number(row.spend) || 0, sp = sp0 * rate, d = row.date_start;
       const used = !words.length || words.some(w => name.toLowerCase().includes(w));
       const c = campaigns[name] || (campaigns[name] = { spend: 0, purchases: 0, clicks: 0, used });
       const pu = pick(row.actions, PURCHASE), cl = Number(row.inline_link_clicks) || 0;
@@ -126,11 +138,13 @@ async function meta(account, token, from, to, match) {
       add('spend', d, sp); add('impressions', d, Number(row.impressions) || 0); add('clicks', d, cl);
       add('views', d, pick(row.actions, ['landing_page_view', 'omni_landing_page_view']));
       add('checkouts', d, pick(row.actions, ['initiate_checkout', 'omni_initiated_checkout', 'offsite_conversion.fb_pixel_initiate_checkout']));
-      add('purchases', d, pu); add('value', d, pick(row.action_values, PURCHASE));
+      const val0 = pick(row.action_values, PURCHASE);
+      raw.spend += sp0; raw.value += val0;
+      add('purchases', d, pu); add('value', d, val0 * rate);
     }
     u = j.paging && j.paging.next;
   }
-  return { ...day, filtered: words.length > 0, match: words, account: id.slice(4),
+  return { ...day, filtered: words.length > 0, match: words, account: id.slice(4), currency, rate,
     campaigns: Object.entries(campaigns).map(([name, c]) => ({ name, spend: Math.round(c.spend), purchases: c.purchases, clicks: c.clicks, used: c.used })).sort((a, b) => b.spend - a.spend) };
 }
 
@@ -247,7 +261,7 @@ summary::-webkit-details-marker{display:none}summary:after{content:" +";color:va
 <dt>% між кроками</dt><dd>Скільки дійшло до кроку від попереднього. Оплати рахуються за всіма покупцями, а кліки — лише за тими, хто дав згоду, тож «оплатили з кліків» буває завищеним, а іноді й понад 100%. Ширина блоків воронки — наочна, не в масштабі; точні числа — на блоках.</dd>
 <dt>Порівняння з попереднім періодом</dt><dd>«Сьогодні» — з учора; «7 днів» — з попередніми 7 днями; «30 днів» — з попередніми 30. «Весь час» — від 6 жовтня 2026, коли почалося відстеження оплат; порівняння немає.</dd>
 <dt>«Разом»</dt><dd><b>Виручка</b> — сума всіх оплачених замовлень (з нашої бази, без повернених). <b>Витрачено на рекламу</b> — увесь рекламний кабінет Meta за період. <b>Реклама на 1 квиток</b> — витрачено / усі продані квитки, звідки б покупець не прийшов. <b>Окупність</b> — виручка / витрачено: скільки гривень виручки припадає на гривню реклами. Це загальна картина — частина покупців прийшла б і без реклами.</dd>
-<dt>Що показує блок «Реклама Meta»?</dt><dd>Увесь окремий рекламний кабінет фестивалю (з 08.11.2026). <b>Квиток з реклами</b> — витрачено / покупки, які Meta зарахувала рекламі: людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою (стандартне налаштування кабінету). Покупки Meta дізнається з нашого сервера (Conversions API) — для цього кабінет має бути підключений до набору даних (пікселя) <code>1647718446547735</code>. <b>Клікнули → Відкрили сайт</b>: частина людей закриває сторінку, не дочекавшись завантаження; «Відкрили сайт» Meta рахує лише в тих, хто дав згоду на cookies. Покупки, які Meta приписує рекламі, і всі оплати з «Разом» рахуються по-різному — Meta може приписати рекламі й покупку, яка сталася б і без неї.</dd>
+<dt>Що показує блок «Реклама Meta»?</dt><dd>Увесь окремий рекламний кабінет фестивалю (з 08.11.2026). <b>Квиток з реклами</b> — витрачено / покупки, які Meta зарахувала рекламі: людина клікнула рекламу до 7 днів або побачила її до 1 дня перед покупкою (стандартне налаштування кабінету). Покупки Meta дізнається з нашого сервера (Conversions API) — для цього кабінет має бути підключений до набору даних (пікселя) <code>1647718446547735</code>. Кабінет фестивалю рахує в доларах: витрати й суми покупок переведено в гривні за сьогоднішнім курсом НБУ (курс видно над блоком), тому за минулі дні суми в гривнях можуть трохи відрізнятися від тих, що були насправді. <b>Клікнули → Відкрили сайт</b>: частина людей закриває сторінку, не дочекавшись завантаження; «Відкрили сайт» Meta рахує лише в тих, хто дав згоду на cookies. Покупки, які Meta приписує рекламі, і всі оплати з «Разом» рахуються по-різному — Meta може приписати рекламі й покупку, яка сталася б і без неї.</dd>
 <dt>«Звідки прийшли» і UTM-мітки</dt><dd>Таблиця під воронкою сайту — групи каналів Google Analytics: скільки відвідувачів і кліків «Купити» дав кожен канал. Щоб Google відрізняв рекламу Meta від звичайних переходів з Instagram і Facebook, у кожному оголошенні в полі «Параметри URL» має стояти: <code>utm_source={{site_source_name}}&amp;utm_medium=paid_social&amp;utm_campaign={{campaign.name}}&amp;utm_content={{ad.name}}</code>. Без міток такі відвідувачі потрапляють у «Соцмережі (не реклама)».</dd>
 <dt>Як дати дашборду доступ до кабінету Meta</dt><dd>Токенові <code>META_ADS_TOKEN</code> потрібне право <code>ads_read</code> саме на цей кабінет. Найнадійніше — системний користувач бізнес-менеджера: «Налаштування компанії» → «Системні користувачі» → користувач → «Призначити ресурси» → рекламний кабінет → «Переглядати ефективність»; потім «Згенерувати токен» з правом <code>ads_read</code> і вставити його у Vercel (<code>META_ADS_TOKEN</code>).</dd>
 <dt>Дні й оновлення</dt><dd>Дні — за київським часом. Сторінка оновлюється сама кожні 5 хв. Квитки й оплати — миттєво (з нашої бази). Відвідувачі й кліки «Купити» — з Google, який домальовує дані від кількох хвилин до 24–48 год, тож за сьогодні вони ще можуть зрости, і «оплатили з кліків» сьогодні буває завищеним.</dd>
@@ -291,7 +305,7 @@ function render(p){
   const tt=el('h2');tt.append(document.createTextNode('Разом '),el('i',null,label));app.append(tt);
   const tg=el('div','grid');
   tg.append(card('Виручка',S?fmt(rv)+' грн':'—',S?fmt(tk)+' '+plural(tk,'квиток','квитки','квитків')+' · '+fmt(b)+' '+plural(b,'замовлення','замовлення','замовлень'):''),
-    card('Витрачено на рекламу',M?fmt(spAll)+' грн':'—',M?'весь кабінет Meta':'Meta не підключено'),
+    card('Витрачено на рекламу',M?fmt(spAll)+' грн':'—',M?'весь кабінет Meta'+(M.currency&&M.currency!=='UAH'?' · ≈ '+fmt(spAll/M.rate)+' '+M.currency:''):'Meta не підключено'),
     card('Реклама на 1 квиток',M&&tk?fmt(spAll/tk)+' грн':'—','витрачено / усі квитки'),
     card('Окупність реклами',M&&spAll?(rv/spAll).toFixed(1).replace('.',',')+'×':'—',M&&spAll?'кожна гривня реклами → '+fmt(rv/spAll)+' грн виручки':'виручка / витрачено',true));
   app.append(tg);
@@ -299,10 +313,11 @@ function render(p){
   /* ads: what the ads did, by Meta's own count */
   const a=el('h2');a.append(document.createTextNode('Реклама '),el('i',null,'Meta'));app.append(a);
   if(M){const sp=spAll,im=sum(ds,M.impressions),cl=sum(ds,M.clicks),vw=sum(ds,M.views),co=sum(ds,M.checkouts),mb=sum(ds,M.purchases),mv=sum(ds,M.value);
-    app.append(el('p','sub','Кабінет '+M.account+(M.filtered?' · лише кампанії з «'+M.match.join('», «')+'»':' · усі кампанії')+'. Покупки й виручка — ті, що Meta приписує рекламі.'));
+    const fx=M.currency&&M.currency!=='UAH';
+    app.append(el('p','sub','Кабінет '+M.account+(M.filtered?' · лише кампанії з «'+M.match.join('», «')+'»':' · усі кампанії')+'. Покупки й виручка — ті, що Meta приписує рекламі.'+(fx?' Кабінет рахує в '+M.currency+' — суми переведено в гривні за курсом НБУ на сьогодні: 1 '+M.currency+' = '+M.rate.toFixed(2).replace('.',',')+' грн.':'')));
     const box=el('section','ad');const say=el('div','say');say.append(document.createTextNode('Квиток з реклами коштує'),el('b',null,mb?fmt(sp/mb)+' грн':'—'),document.createTextNode(mb?'':' — реклама ще не принесла покупок за цей період'));box.append(say);
     const g=el('div','grid');g.style.marginTop='16px';
-    g.append(card('Витрачено',fmt(sp)+' грн',''),card('Кліки на посилання',fmt(cl),im?'CTR '+pct(cl,im)+' з '+fmt(im)+' показів':''),card('Ціна кліку',cl?(sp/cl).toFixed(1).replace('.',',')+' грн':'—',''),
+    g.append(card('Витрачено',fmt(sp)+' грн',fx?'≈ '+fmt(sp/M.rate)+' '+M.currency+' у кабінеті':''),card('Кліки на посилання',fmt(cl),im?'CTR '+pct(cl,im)+' з '+fmt(im)+' показів':''),card('Ціна кліку',cl?(sp/cl).toFixed(1).replace('.',',')+' грн':'—',''),
       card('Покупок з реклами',fmt(mb),'за даними Meta'),card('Виручка з реклами',fmt(mv)+' грн',''),card('Окупність реклами',sp&&mv?(mv/sp).toFixed(1).replace('.',',')+'×':'—','виручка з реклами / витрачено',true));
     box.append(g);
     /* the ad's own funnel: shown → clicked → opened the site → began paying → bought */
