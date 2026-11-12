@@ -123,3 +123,23 @@ test('jars tab: collectors from the Notion table, sums from Monobank; JSON for t
   assert.match(page, /aria-current="page">Банки/);
   assert.ok(!page.includes('Веган'), 'no project name on the page');
 });
+
+test('jars: the first sums of the hour are kept, so money that came in within the hour still shows as today\'s', async () => {
+  const { _reset, jars } = await import('../api/_jars.mjs'); _reset();
+  let amount = 460000; const writes = [];
+  globalThis.fetch = async (url, init) => {
+    url = String(url);
+    if (url.startsWith('https://r.test')) { const a = JSON.parse(init.body); if (a[0] !== 'GET' && a[0] !== 'HGETALL') writes.push(a.slice(0, 3)); return { json: async () => ({ result: a[0] === 'HGETALL' ? [] : null }) }; }
+    if (url.endsWith('/loadCachedPageChunkV2')) return { json: async () => ({ recordMap: { block: { '413ec4da-ad6d-808f-85c8-e694f87ae7c4': { spaceId: 's', value: { value: { collection_id: 'c', view_ids: ['v'] } } } }, collection: { c: { value: { value: { schema: { 'wVy~': { name: 'Банка' } } } } } } } }) };
+    if (url.endsWith('/queryCollection')) return { json: async () => ({ result: { reducerResults: { collection_group_results: { blockIds: ['a'] } } }, recordMap: { block: { a: { value: { value: { properties: { title: [['Данило']], 'wVy~': [['https://send.monobank.ua/jar/AWNbTfBDn4']] } } } } } } }) };
+    return { status: 200, json: async () => ({ jarAmount: amount, jarGoal: 3000000, jarStatus: 'ACTIVE' }) };
+  };
+  const env = { UPSTASH_REDIS_REST_URL: 'https://r.test', UPSTASH_REDIS_REST_TOKEN: 't' };
+  const a = await jars(env);
+  amount = 790000;
+  const b = await jars(env, fetch, { force: true });
+  assert.equal(b.hist[b.hour + 'f'].AWNbTfBDn4, 4600, 'the first sums of the hour stay');
+  assert.equal(b.hist[b.hour].AWNbTfBDn4, 7900, 'the last ones follow the jar');
+  assert.equal(writes.filter(w => w[0] === 'HSETNX').length, 1);
+  assert.ok(a);
+});
