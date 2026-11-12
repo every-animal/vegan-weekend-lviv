@@ -5,7 +5,8 @@
      тож якщо Notion недоступний, дашборд працює зі збереженим;
    - суми й цілі — публічна сторінка банки Monobank (той самий запит, що робить send.monobank.ua у браузері), без ключів;
      опитуються не частіше ніж раз на 30 с, хоч скільки людей дивиться дашборд;
-   - історія — щогодинні знімки сум (`vw:jars:hist`: година за Києвом → {банка: копійки}) — з них «сьогодні», «за годину» і графік по днях.
+   - історія — щогодинні знімки сум (`vw:jars:hist`: година за Києвом `YYYY-MM-DDTHH` → {банка: гривні} — остання сума години;
+     `YYYY-MM-DDTHHf` — перша сума години, щоб приріст усередині години не губився) — з них «сьогодні», «за годину» і графік по днях.
      Знімок пишеться, коли хтось дивиться дашборд, тож за години, коли його ніхто не відкривав, знімка немає (сума все одно точна).
    Змінні: JARS_NOTION_PAGE (адреса таблиці; є типова), Upstash — як у _orders.mjs. Жодних секретів. */
 import { randomBytes } from 'node:crypto';
@@ -97,6 +98,7 @@ export async function jars(env = process.env, fetchImpl = fetch, { force = false
   const hour = kyivHour(), now = Object.fromEntries(Object.entries(mem.jars).filter(([, x]) => typeof x.amount === 'number').map(([id, x]) => [id, x.amount]));
   const sig = hour + JSON.stringify(now);
   if (sig !== mem.lastSaved && Object.keys(now).length) {
+    if (!mem.hist[hour + 'f']) { mem.hist[hour + 'f'] = mem.hist[hour] || now; await redis(env, ['HSETNX', HIST_KEY, hour + 'f', JSON.stringify(mem.hist[hour + 'f'])], fetchImpl).catch(() => {}); }
     mem.hist[hour] = now; mem.lastSaved = sig;
     await redis(env, ['HSET', HIST_KEY, hour, JSON.stringify(now)], fetchImpl).catch(() => {});
   }

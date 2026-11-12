@@ -431,12 +431,13 @@ function render(){
   const P=J.people.filter(p=>p.jar&&typeof p.amount==='number'), ids=[...new Set(P.map(p=>p.jar))];
   const byJar=Object.fromEntries(P.map(p=>[p.jar,p]));
   const sum=ids.reduce((a,id)=>a+byJar[id].amount,0), goal=ids.reduce((a,id)=>a+(byJar[id].goal||0),0);
-  const keys=Object.keys(J.hist).sort(), today=J.hour.slice(0,10);
+  /* hist: 'YYYY-MM-DDTHH' — the last sums of the hour, 'YYYY-MM-DDTHHf' — the first ones */
+  const keys=Object.keys(J.hist).filter(k=>k.length===13).sort(), today=J.hour.slice(0,10), F=k=>J.hist[k+'f']?k+'f':k;
   const before=keys.filter(k=>k<today+'T00'), todayKeys=keys.filter(k=>k.startsWith(today));
-  const baseKey=before.length?before[before.length-1]:todayKeys[0], hourKey=keys.filter(k=>k<J.hour).pop();
+  const baseKey=before.length?before[before.length-1]:todayKeys[0]&&F(todayKeys[0]), hourKey=keys.filter(k=>k<J.hour).pop()||(J.hist[J.hour+'f']?J.hour+'f':undefined);
   const base=baseKey?J.hist[baseKey]:null, hb=hourKey?J.hist[hourKey]:null;
   const dToday=base?sum-total(base,ids.filter(id=>id in base)):0, dHour=hb?sum-total(hb,ids.filter(id=>id in hb)):0;
-  const todayNote=before.length?'з кінця вчорашнього дня':baseKey?'від '+baseKey.slice(11)+':00 — раніше знімків немає':'';
+  const todayNote=before.length?'з кінця вчорашнього дня':baseKey?'від '+baseKey.slice(11,13)+':00 — раніше знімків немає':'';
   app.replaceChildren();
   const h=el('section','hero');h.append(el('div','cap','Зібрано в банках'));
   const big=el('div','hn big jb');h.append(big);
@@ -449,7 +450,7 @@ function render(){
   g.append(card('Банок',fmt(ids.length),closed?'з них закрито '+closed:'усі відкриті'),
     card('Досягли цілі',fmt(done)+' з '+fmt(ids.length),''),
     card('Сьогодні','+'+fmt(dToday)+' грн',todayNote,true),
-    card('За цю годину','+'+fmt(dHour)+' грн',hourKey?'від останнього знімка о '+hourKey.slice(11)+':00':'ще немає знімка'));
+    card('За цю годину','+'+fmt(dHour)+' грн',hourKey?(hourKey.endsWith('f')?'від '+hourKey.slice(11,13)+':00':'від кінця '+hourKey.slice(11,13)+'-ї години'):'ще немає знімка'));
   app.append(g);
   /* days: how much came in each day (by the last snapshot of the day) */
   const dayKeys=[...new Set(keys.map(k=>k.slice(0,10)))];
