@@ -22,6 +22,7 @@
    DASHBOARD_PASSWORD                 — необовʼязково: якщо задати, сторінка питатиме пароль (логін будь-який) */
 import { createSign, timingSafeEqual } from 'node:crypto';
 import { allOrders } from './_orders.mjs';
+import { jars } from './_jars.mjs';
 
 const DAY = 86400;
 const kyivDate = ts => new Date(Number(ts) * 1000).toLocaleDateString('sv-SE', { timeZone: 'Europe/Kyiv' }); // YYYY-MM-DD за Києвом
@@ -151,9 +152,8 @@ async function meta(account, token, from, to, match) {
 /* ---------- сторінка: темна, тонкі лінії, великі цифри шрифтом Heading Now, рожевий — акцент ---------- */
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-function page(data) {
-  return `<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
-<meta http-equiv="refresh" content="300"><meta name="theme-color" content="#1c1b1b"><title>Воронка</title>
+const head = (title, refresh) => `<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+${refresh}<meta name="theme-color" content="#1c1b1b"><title>${title}</title>
 <link rel="preload" href="/assets/fonts/HeadingNowVar.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/HeadingNowVarItalic.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -248,7 +248,34 @@ summary::-webkit-details-marker{display:none}summary:after{content:" +";color:va
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 .trio .v{white-space:nowrap}
 @media (max-width:520px){.grid,.ad .grid{grid-template-columns:1fr 1fr}.grid .v{font-size:24px}.src .r{grid-template-columns:minmax(0,1fr) 50px 50px 44px}.stage .n{font-size:38px}.trio .v{font-size:24px}.trio .cap{font-size:10px}.trio{grid-template-columns:1fr 1fr}.trio div:last-child{grid-column:span 2}h2{font-size:26px}}
-</style></head><body><main>
+
+/* tabs */
+.tabs{display:flex;gap:6px;margin:0 0 16px;background:var(--card-2);padding:4px;border-radius:999px;width:max-content}
+.tabs a{padding:8px 16px;border-radius:999px;font-size:13px;color:var(--ink-2);text-decoration:none}
+.tabs a[aria-current=page]{background:var(--ink);color:var(--bg);font-weight:600}
+.tabs a:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
+/* jars */
+.jl{background:var(--card-2);border-radius:20px;padding:4px 16px}
+.jr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 0;border-top:1px solid var(--rule)}
+.jr:first-child{border-top:0}
+.jr .nm{font-size:14px;color:var(--ink);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jr a.nm:hover{color:var(--pink)}
+.jr .am{font-family:"HN";font-size:22px;font-variation-settings:"wght" 800,"wdth" 520;text-align:right;white-space:nowrap}
+.jr .am small{font-family:system-ui,sans-serif;font-size:11px;color:var(--ink-3);font-variation-settings:normal;text-transform:none;margin-left:4px}
+.jr .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--rule);overflow:hidden}
+.jr .bar i{display:block;height:100%;width:var(--w);background:var(--pink);border-radius:3px;transition:width .6s}
+.jr.done .bar i{background:#fff}
+.jr .meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--ink-3)}
+.jr .meta .up{color:var(--pink);font-weight:600}
+.jr.flash{animation:flash 1.6s}
+@keyframes flash{0%{background:rgba(254,117,190,.25)}100%{background:none}}
+.nojar{margin-top:10px;font-size:13px;color:var(--ink-3)}
+.hero .big.jb{font-size:clamp(64px,19vw,170px)}
+</style></head><body><main>`;
+
+function page(data) {
+  return head('Воронка', '<meta http-equiv="refresh" content="300">') + `
+<nav class="tabs"><a href="/api/dashboard" aria-current="page">Квитки</a><a href="/api/dashboard?tab=jars">Банки</a></nav>
 <div class="top"><span class="live"><i></i>live</span><span class="count">до фестивалю <b id="cd"></b> днів</span></div>
 <div class="per" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7" aria-pressed="true">7 днів</button><button data-p="30">30 днів</button><button data-p="all">Весь час</button></div>
 <div id="app"></div>
@@ -375,6 +402,99 @@ render(7);
 </script></body></html>`;
 }
 
+/* ---------- вкладка «Банки» ---------- */
+function jarsPage(J) {
+  return head('Банки', '') + `
+<nav class="tabs"><a href="/api/dashboard">Квитки</a><a href="/api/dashboard?tab=jars" aria-current="page">Банки</a></nav>
+<div class="top"><span class="live"><i></i>live</span><span class="count" id="upd"></span></div>
+<div id="app"></div>
+<details><summary>Питання й відповіді</summary><dl class="how">
+<dt>Звідки суми</dt><dd>Просто з Monobank: дашборд дивиться кожну банку так само, як її сторінку send.monobank.ua, — без ключів і без доступу до рахунків. Суми оновлюються самі кожні 30 секунд, перезавантажувати сторінку не треба. Закриті банки теж рахуються — з тією сумою, з якою їх закрили.</dd>
+<dt>Звідки список збирачів</dt><dd>З таблиці Notion «Збирачі та банкіри». Дашборд перечитує її раз на 6 годин: нова людина з банкою зʼявиться тут протягом 6 годин після того, як її внесли в таблицю. Хто в таблиці без посилання на банку — показані внизу, у «Ще без банки». Одна людина з кількома банками — кілька рядків.</dd>
+<dt>«Сьогодні» і «за годину»</dt><dd>Скільки додалося з кінця вчорашнього дня і з минулої години. Дашборд щогодини, коли його відкривають, запамʼятовує суми всіх банок; якщо його довго ніхто не відкривав, «сьогодні» рахується від першого знімка сьогодні (це видно в підписі). Сама сума «Зібрано» завжди точна.</dd>
+<dt>Ціль</dt><dd>Сума цілей усіх банок, як їх поставили збирачі в Monobank. Банка «досягла цілі», якщо зібрано не менше, ніж її ціль.</dd>
+</dl></details>
+<p class="foot" id="foot"></p>
+</main>
+<script>
+let J=${JSON.stringify(J).replace(/</g, '\\u003c')};
+const fmt=n=>Math.round(n).toLocaleString('uk-UA');
+const el=(t,c,txt)=>{const e=document.createElement(t);if(c)e.className=c;if(txt!=null)e.textContent=txt;return e};
+const app=document.getElementById('app'), reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const plural=(n,a,b,c)=>{n=Math.abs(n)%100;const m=n%10;return n>10&&n<20?c:m===1?a:m>=2&&m<=4?b:c};
+const card=(l,val,n,hl)=>{const d=el('div',hl?'hl':null);d.append(el('div','cap',l),el('div','v',val));if(n)d.append(el('small',null,n));return d};
+let shown=0,last={};
+function count(node,from,to){if(reduce||from===to){node.textContent=fmt(to);return}const t0=performance.now(),dur=900;const f=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);node.textContent=fmt(from+(to-from)*e);if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
+/* snapshot sums for the jars on the list now */
+const total=(snap,ids)=>ids.reduce((a,id)=>a+((snap||{})[id]||0),0);
+function render(){
+  const P=J.people.filter(p=>p.jar&&typeof p.amount==='number'), ids=[...new Set(P.map(p=>p.jar))];
+  const byJar=Object.fromEntries(P.map(p=>[p.jar,p]));
+  const sum=ids.reduce((a,id)=>a+byJar[id].amount,0), goal=ids.reduce((a,id)=>a+(byJar[id].goal||0),0);
+  const keys=Object.keys(J.hist).sort(), today=J.hour.slice(0,10);
+  const before=keys.filter(k=>k<today+'T00'), todayKeys=keys.filter(k=>k.startsWith(today));
+  const baseKey=before.length?before[before.length-1]:todayKeys[0], hourKey=keys.filter(k=>k<J.hour).pop();
+  const base=baseKey?J.hist[baseKey]:null, hb=hourKey?J.hist[hourKey]:null;
+  const dToday=base?sum-total(base,ids.filter(id=>id in base)):0, dHour=hb?sum-total(hb,ids.filter(id=>id in hb)):0;
+  const todayNote=before.length?'з кінця вчорашнього дня':baseKey?'від '+baseKey.slice(11)+':00 — раніше знімків немає':'';
+  app.replaceChildren();
+  const h=el('section','hero');h.append(el('div','cap','Зібрано в банках'));
+  const big=el('div','hn big jb');h.append(big);
+  const row=el('div','row');
+  if(dToday>0)row.append(el('span','chip up','+'+fmt(dToday)+' грн сьогодні'));
+  row.append(el('span',null,'гривень · ціль '+fmt(goal)+' грн · '+(goal?Math.round(sum/goal*100):0)+'%'));
+  h.append(row);app.append(h);count(big,shown,sum);shown=sum;
+  const closed=ids.filter(id=>byJar[id].closed).length, done=ids.filter(id=>byJar[id].goal&&byJar[id].amount>=byJar[id].goal).length;
+  const g=el('div','grid');g.style.marginTop='22px';
+  g.append(card('Банок',fmt(ids.length),closed?'з них закрито '+closed:'усі відкриті'),
+    card('Досягли цілі',fmt(done)+' з '+fmt(ids.length),''),
+    card('Сьогодні','+'+fmt(dToday)+' грн',todayNote,true),
+    card('За цю годину','+'+fmt(dHour)+' грн',hourKey?'від останнього знімка о '+hourKey.slice(11)+':00':'ще немає знімка'));
+  app.append(g);
+  /* days: how much came in each day (by the last snapshot of the day) */
+  const dayKeys=[...new Set(keys.map(k=>k.slice(0,10)))];
+  if(dayKeys.length>1){
+    const t=el('h2');t.append(document.createTextNode('По '),el('i',null,'днях'));app.append(t);
+    const end=d=>{const k=keys.filter(x=>x.startsWith(d)).pop();const s=J.hist[k];return total(s,ids.filter(id=>id in s))};
+    const vals=dayKeys.map((d,i)=>i?Math.max(0,end(d)-end(dayKeys[i-1])):null).slice(1), ds=dayKeys.slice(1), mx=Math.max(1,...vals);
+    const c=el('div','chart'),bars=el('div','bars'),read=el('div','read');
+    const show=i=>{read.replaceChildren();const a=el('span','d',new Date(ds[i]+'T12:00').toLocaleDateString('uk-UA',{day:'numeric',month:'long'}));const b=el('span');b.append(el('b',null,'+'+fmt(vals[i])),document.createTextNode(' грн'));read.append(a,b);[...bars.children].forEach((x,j)=>x.setAttribute('aria-current',j===i?'true':'false'))};
+    vals.forEach((v,i)=>{const b=el('button');b.setAttribute('aria-label',ds[i]+': '+fmt(v)+' грн');const s=el('div','b'+(v?'':' zero'));s.style.height=(v/mx*100)+'%';s.style.setProperty('--i',i);b.append(s);b.addEventListener('click',()=>show(i));b.addEventListener('mouseenter',()=>show(i));bars.append(b)});
+    const ax=el('div','axis');ax.append(el('span',null,ds[0].slice(8)+'.'+ds[0].slice(5,7)),el('span',null,ds[ds.length-1].slice(8)+'.'+ds[ds.length-1].slice(5,7)));
+    c.append(bars,ax,read);app.append(c);show(vals.length-1);
+  }
+  /* collectors, most collected first */
+  const t2=el('h2');t2.append(document.createTextNode('Збирачі '),el('i',null,fmt(P.length)));app.append(t2);
+  const L=el('div','jl');
+  [...J.people.filter(p=>p.jar)].sort((a,b)=>(b.amount||0)-(a.amount||0)).forEach(p=>{
+    const ok=typeof p.amount==='number', fin=ok&&p.goal&&p.amount>=p.goal;
+    const r=el('div','jr'+(fin?' done':''));
+    const nm=el('a','nm',p.name);nm.href='https://send.monobank.ua/jar/'+p.jar;nm.target='_blank';nm.rel='noopener';
+    const am=el('div','am',ok?fmt(p.amount):'—');if(ok&&p.goal)am.append(el('small',null,'/ '+fmt(p.goal)));
+    const bar=el('div','bar'),bi=el('i');bi.style.setProperty('--w',(ok&&p.goal?Math.min(100,p.amount/p.goal*100):0)+'%');bar.append(bi);
+    const meta=el('div','meta');
+    if(ok&&p.goal)meta.append(el('span',null,Math.round(p.amount/p.goal*100)+'%'));
+    if(fin)meta.append(el('span',null,'ціль досягнута'));
+    if(p.closed)meta.append(el('span',null,'банка закрита'));
+    const d=ok&&base&&(p.jar in base)?p.amount-base[p.jar]:0;if(d>0)meta.append(el('span','up','+'+fmt(d)+' сьогодні'));
+    if(!ok)meta.append(el('span',null,'Monobank не відповів: '+(p.error||'')));
+    if(p.stale)meta.append(el('span',null,'сума з попереднього оновлення'));
+    r.append(nm,am,bar,meta);
+    if(ok&&last[p.jar]!=null&&p.amount>last[p.jar])r.classList.add('flash');
+    if(ok)last[p.jar]=p.amount;
+    L.append(r)});
+  app.append(L);
+  const no=J.people.filter(p=>!p.jar);
+  if(no.length)app.append(el('p','nojar','Ще без банки ('+no.length+'): '+no.map(p=>p.name).join(', ')));
+  document.getElementById('upd').textContent='оновлено '+J.updated.slice(11,16);
+  document.getElementById('foot').textContent='Суми — Monobank, оновлено '+J.updated.slice(0,16).replace('T',' ')+' (Київ), щопівхвилини. Список збирачів — з Notion, '+J.listUpdated+(J.listError?' (зараз Notion не відповідає — список зі збереженого)':'')+'.';
+}
+render();
+setInterval(async()=>{if(document.hidden)return;try{const r=await fetch('/api/dashboard?jars',{cache:'no-store'});if(r.ok){J=await r.json();render()}}catch(e){}},30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)fetch('/api/dashboard?jars',{cache:'no-store'}).then(r=>r.ok&&r.json()).then(x=>{if(x){J=x;render()}}).catch(()=>{})});
+</script></body></html>`;
+}
+
 /* ---------- обробник ---------- */
 let cache = { at: 0, html: '' };
 const html = s => new Response(s, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex' } });
@@ -392,7 +512,19 @@ export async function handle(request, env = process.env) {
     if (!(given.length === pass.length && timingSafeEqual(Buffer.from(given), Buffer.from(pass)))) return new Response('Потрібен пароль', { status: 401, headers: { 'www-authenticate': 'Basic realm="dashboard", charset="UTF-8"', 'x-robots-tag': 'noindex' } });
   }
 
-  const fresh = new URL(request.url).searchParams.has('fresh');
+  const qs = new URL(request.url).searchParams;
+  /* вкладка «Банки»: сторінка і JSON для оновлення щопівхвилини */
+  if (qs.has('jars') || qs.get('tab') === 'jars') {
+    try {
+      const J = await jars(env, fetch, { force: qs.has('fresh') });
+      if (qs.has('jars')) return new Response(JSON.stringify(J), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
+      return html(jarsPage(J));
+    } catch (e) {
+      if (qs.has('jars')) return new Response(JSON.stringify({ error: e.message }), { status: 502, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+      return html(head('Банки', '<meta http-equiv="refresh" content="60">') + `<nav class="tabs"><a href="/api/dashboard">Квитки</a><a href="/api/dashboard?tab=jars" aria-current="page">Банки</a></nav><div class="todo"><b>Не вдалося отримати банки.</b> ${esc(e.message)}. Сторінка спробує ще раз за хвилину.</div></main></body></html>`);
+    }
+  }
+  const fresh = qs.has('fresh');
   if (!fresh && cache.html && Date.now() - cache.at < 5 * 60 * 1000) return html(cache.html);
 
   const now = Math.floor(Date.now() / 1000), today = kyivDate(now), from = kyivDate(now - 59 * DAY);  // 60 днів: період + попередній такий самий для порівняння

@@ -97,3 +97,29 @@ test('Meta: an account in dollars — spend and purchase value turn into hryvnia
   assert.equal(d.meta.spend[today], 415); assert.equal(Math.round(d.meta.value[today] * 100) / 100, 601.75);
   assert.equal(d.meta.campaigns[0].spend, 415);
 });
+
+test('jars tab: collectors from the Notion table, sums from Monobank; JSON for the live refresh; no project name', async () => {
+  const { _reset } = await import('../api/_jars.mjs'); _reset();
+  const P = '413ec4da-ad6d-808f-85c8-e694f87ae7c4', C = 'coll', V = 'view';
+  let mono = 0;
+  globalThis.fetch = async (url, init) => {
+    url = String(url);
+    if (url.endsWith('/loadCachedPageChunkV2')) return { json: async () => ({ recordMap: {
+      block: { [P]: { spaceId: 's', value: { value: { id: P, collection_id: C, view_ids: [V] } } } },
+      collection: { [C]: { value: { value: { schema: { title: { name: 'Збирач', type: 'title' }, 'wVy~': { name: 'Банка', type: 'url' } } } } } } } }) };
+    if (url.endsWith('/queryCollection')) return { json: async () => ({ result: { reducerResults: { collection_group_results: { blockIds: ['a', 'b', 'c'] } } }, recordMap: { block: {
+      a: { value: { value: { properties: { title: [['Анчка']], 'wVy~': [['https://send.monobank.ua/jar/7Psdfu4Thz?fbclid=x']] } } } },
+      b: { value: { value: { properties: { title: [['Ярик']], 'wVy~': [['https://send.monobank.ua/jar/A6qq284JRW']] } } } },
+      c: { value: { value: { properties: { title: [['Ілля']] } } } } } } }) };
+    if (url.includes('send.monobank.ua/api/handler')) { mono++; const id = JSON.parse(init.body).clientId; return { status: 200, json: async () => (id === '7Psdfu4Thz' ? { jarAmount: 344713, jarGoal: 321000, jarStatus: 'CLOSED' } : { jarAmount: 195400, jarGoal: 300000, jarStatus: 'ACTIVE' }) }; }
+    throw new Error('unexpected ' + url);
+  };
+  const r = await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?jars'), {});
+  const J = await r.json();
+  assert.deepEqual(J.people.map(p => [p.name, p.jar, p.amount, p.goal, !!p.closed]), [['Анчка', '7Psdfu4Thz', 3447.13, 3210, true], ['Ярик', 'A6qq284JRW', 1954, 3000, false], ['Ілля', null, undefined, undefined, false]]);
+  await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?jars'), {});
+  assert.equal(mono, 2, 'Monobank at most once per 30 s, however many viewers');
+  const page = await (await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?tab=jars'), {})).text();
+  assert.match(page, /aria-current="page">Банки/);
+  assert.ok(!page.includes('Веган'), 'no project name on the page');
+});
