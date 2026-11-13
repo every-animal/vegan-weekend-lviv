@@ -412,7 +412,7 @@ function jarsPage(J) {
 <dt>Звідки суми</dt><dd>Просто з Monobank: дашборд дивиться кожну банку так само, як її сторінку send.monobank.ua, — без ключів і без доступу до рахунків. Суми оновлюються самі кожні 30 секунд, перезавантажувати сторінку не треба. Закриті банки теж рахуються — з тією сумою, з якою їх закрили.</dd>
 <dt>Звідки список збирачів</dt><dd>З таблиці Notion «Збирачі та банкіри». Дашборд перечитує її раз на 6 годин: нова людина з банкою зʼявиться тут протягом 6 годин після того, як її внесли в таблицю. Хто в таблиці без посилання на банку — показані внизу, у «Ще без банки». Одна людина з кількома банками — кілька рядків.</dd>
 <dt>«Сьогодні» і «за годину»</dt><dd>Скільки додалося з кінця вчорашнього дня і з минулої години. Дашборд щогодини, коли його відкривають, запамʼятовує суми всіх банок; якщо його довго ніхто не відкривав, «сьогодні» рахується від першого знімка сьогодні (це видно в підписі). Сама сума «Зібрано» завжди точна.</dd>
-<dt>Ціль</dt><dd>Сума цілей усіх банок, як їх поставили збирачі в Monobank. Банка «досягла цілі», якщо зібрано не менше, ніж її ціль.</dd>
+<dt>Головне число і допоміжні банки</dt><dd>Головне число — основна банка збору (<code>send.monobank.ua/jar/3SqHL6Y5Hh</code>): у неї стікаються всі допоміжні банки збирачів, тож це і є загальна сума збору, разом з донатами прямо в основну банку. Ціль — ціль основної банки. «Допоміжні банки» — сума банок збирачів з таблиці. Банка збирача «досягла цілі», якщо в ній не менше, ніж її ціль.</dd>
 </dl></details>
 <p class="foot" id="foot"></p>
 </main>
@@ -430,24 +430,30 @@ const total=(snap,ids)=>ids.reduce((a,id)=>a+((snap||{})[id]||0),0);
 function render(){
   const P=J.people.filter(p=>p.jar&&typeof p.amount==='number'), ids=[...new Set(P.map(p=>p.jar))];
   const byJar=Object.fromEntries(P.map(p=>[p.jar,p]));
-  const sum=ids.reduce((a,id)=>a+byJar[id].amount,0), goal=ids.reduce((a,id)=>a+(byJar[id].goal||0),0);
-  /* hist: 'YYYY-MM-DDTHH' — the last sums of the hour, 'YYYY-MM-DDTHHf' — the first ones */
-  const keys=Object.keys(J.hist).filter(k=>k.length===13).sort(), today=J.hour.slice(0,10), F=k=>J.hist[k+'f']?k+'f':k;
+  const aux=ids.reduce((a,id)=>a+byJar[id].amount,0), auxGoal=ids.reduce((a,id)=>a+(byJar[id].goal||0),0);
+  /* the headline is the main jar — every helper jar flows into it; if Monobank does not answer for it, the helper jars' sum */
+  const MJ=J.main&&typeof J.main.amount==='number'?J.main:null, tid=MJ?[MJ.jar]:ids;
+  const sum=MJ?MJ.amount:aux, goal=MJ?MJ.goal:auxGoal;
+  /* hist: 'YYYY-MM-DDTHH' — the last sums of the hour, 'YYYY-MM-DDTHHf' — the first ones; only snapshots that have the headline jar(s) */
+  const has=k=>J.hist[k]&&tid.every(id=>id in J.hist[k]);
+  const keys=Object.keys(J.hist).filter(k=>k.length===13&&has(k)).sort(), today=J.hour.slice(0,10), F=k=>has(k+'f')?k+'f':k;
   const before=keys.filter(k=>k<today+'T00'), todayKeys=keys.filter(k=>k.startsWith(today));
-  const baseKey=before.length?before[before.length-1]:todayKeys[0]&&F(todayKeys[0]), hourKey=keys.filter(k=>k<J.hour).pop()||(J.hist[J.hour+'f']?J.hour+'f':undefined);
+  const baseKey=before.length?before[before.length-1]:todayKeys[0]&&F(todayKeys[0]), hourKey=keys.filter(k=>k<J.hour).pop()||(has(J.hour+'f')?J.hour+'f':undefined);
   const base=baseKey?J.hist[baseKey]:null, hb=hourKey?J.hist[hourKey]:null;
-  const dToday=base?sum-total(base,ids.filter(id=>id in base)):0, dHour=hb?sum-total(hb,ids.filter(id=>id in hb)):0;
+  const dToday=base?sum-total(base,tid):0, dHour=hb?sum-total(hb,tid):0;
   const todayNote=before.length?'з кінця вчорашнього дня':baseKey?'від '+baseKey.slice(11,13)+':00 — раніше знімків немає':'';
   app.replaceChildren();
-  const h=el('section','hero');h.append(el('div','cap','Зібрано в банках'));
+  const h=el('section','hero');h.append(el('div','cap',MJ?'Зібрано на основній банці':'Зібрано в допоміжних банках'));
   const big=el('div','hn big jb');h.append(big);
   const row=el('div','row');
   if(dToday>0)row.append(el('span','chip up','+'+fmt(dToday)+' грн сьогодні'));
   row.append(el('span',null,'гривень · ціль '+fmt(goal)+' грн · '+(goal?Math.round(sum/goal*100):0)+'%'));
+  if(MJ){const a=el('a',null,'відкрити банку');a.href='https://send.monobank.ua/jar/'+MJ.jar;a.target='_blank';a.rel='noopener';a.style.color='inherit';row.append(a)}
+  else if(J.main)row.append(el('span',null,'основна банка не відповіла — показано суму допоміжних'));
   h.append(row);app.append(h);count(big,shown,sum);shown=sum;
   const closed=ids.filter(id=>byJar[id].closed).length, done=ids.filter(id=>byJar[id].goal&&byJar[id].amount>=byJar[id].goal).length;
   const g=el('div','grid');g.style.marginTop='22px';
-  g.append(card('Банок',fmt(ids.length),closed?'з них закрито '+closed:'усі відкриті'),
+  g.append(card('Допоміжні банки',fmt(aux)+' грн',fmt(ids.length)+' '+plural(ids.length,'банка','банки','банок')+(closed?', з них закрито '+closed:', усі відкриті')),
     card('Досягли цілі',fmt(done)+' з '+fmt(ids.length),''),
     card('Сьогодні','+'+fmt(dToday)+' грн',todayNote,true),
     card('За цю годину','+'+fmt(dHour)+' грн',hourKey?(hourKey.endsWith('f')?'від '+hourKey.slice(11,13)+':00':'від кінця '+hourKey.slice(11,13)+'-ї години'):'ще немає знімка'));
@@ -456,7 +462,7 @@ function render(){
   const dayKeys=[...new Set(keys.map(k=>k.slice(0,10)))];
   if(dayKeys.length>1){
     const t=el('h2');t.append(document.createTextNode('По '),el('i',null,'днях'));app.append(t);
-    const end=d=>{const k=keys.filter(x=>x.startsWith(d)).pop();const s=J.hist[k];return total(s,ids.filter(id=>id in s))};
+    const end=d=>{const k=keys.filter(x=>x.startsWith(d)).pop();return total(J.hist[k],tid)};
     const vals=dayKeys.map((d,i)=>i?Math.max(0,end(d)-end(dayKeys[i-1])):null).slice(1), ds=dayKeys.slice(1), mx=Math.max(1,...vals);
     const c=el('div','chart'),bars=el('div','bars'),read=el('div','read');
     const show=i=>{read.replaceChildren();const a=el('span','d',new Date(ds[i]+'T12:00').toLocaleDateString('uk-UA',{day:'numeric',month:'long'}));const b=el('span');b.append(el('b',null,'+'+fmt(vals[i])),document.createTextNode(' грн'));read.append(a,b);[...bars.children].forEach((x,j)=>x.setAttribute('aria-current',j===i?'true':'false'))};

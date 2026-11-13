@@ -13,6 +13,8 @@ import { randomBytes } from 'node:crypto';
 import { store } from './_orders.mjs';
 
 export const NOTION_PAGE = 'https://kozhnatvaryna.notion.site/413ec4daad6d808f85c8e694f87ae7c4';
+/* основна банка збору (спільний збір Monobank) — у неї стікаються всі допоміжні; її сума — головне число (рішення власника 13.11.2026) */
+export const MAIN_JAR = '3SqHL6Y5Hh';
 const LIST_KEY = 'vw:jars:list', HIST_KEY = 'vw:jars:hist';
 const kyivHour = (ms = Date.now()) => new Date(ms).toLocaleString('sv-SE', { timeZone: 'Europe/Kyiv' }).slice(0, 13).replace(' ', 'T'); // YYYY-MM-DDTHH
 
@@ -84,7 +86,7 @@ export async function jars(env = process.env, fetchImpl = fetch, { force = false
   const L = await list(env, fetchImpl, force);
   const fresh = Date.now() - mem.jarsAt < 30e3 && mem.jars && !force;
   if (!fresh) {
-    const ids = [...new Set(L.rows.map(r => r.jar).filter(Boolean))];
+    const ids = [...new Set([env.JARS_MAIN || MAIN_JAR, ...L.rows.map(r => r.jar)].filter(Boolean))];
     const prev = mem.jars || {};
     const got = await Promise.all(ids.map(id => monoJar(id, fetchImpl).then(x => [id, x], e => [id, prev[id] ? { ...prev[id], stale: true } : { error: e.message }])));
     mem.jars = Object.fromEntries(got); mem.jarsAt = Date.now();
@@ -107,6 +109,7 @@ export async function jars(env = process.env, fetchImpl = fetch, { force = false
     listUpdated: new Date(L.at).toLocaleString('sv-SE', { timeZone: 'Europe/Kyiv' }).slice(0, 16),
     listError: L.error || null,
     hour,
+    main: { jar: env.JARS_MAIN || MAIN_JAR, ...(mem.jars[env.JARS_MAIN || MAIN_JAR] || {}) },
     people: L.rows.map(r => ({ name: r.name, jar: r.jar, ...(r.jar ? mem.jars[r.jar] || {} : {}) })),
     hist: mem.hist
   };

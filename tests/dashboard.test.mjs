@@ -111,14 +111,15 @@ test('jars tab: collectors from the Notion table, sums from Monobank; JSON for t
       a: { value: { value: { properties: { title: [['Анчка']], 'wVy~': [['https://send.monobank.ua/jar/7Psdfu4Thz?fbclid=x']] } } } },
       b: { value: { value: { properties: { title: [['Ярик']], 'wVy~': [['https://send.monobank.ua/jar/A6qq284JRW']] } } } },
       c: { value: { value: { properties: { title: [['Ілля']] } } } } } } }) };
-    if (url.includes('send.monobank.ua/api/handler')) { mono++; const id = JSON.parse(init.body).clientId; return { status: 200, json: async () => (id === '7Psdfu4Thz' ? { jarAmount: 344713, jarGoal: 321000, jarStatus: 'CLOSED' } : { jarAmount: 195400, jarGoal: 300000, jarStatus: 'ACTIVE' }) }; }
+    if (url.includes('send.monobank.ua/api/handler')) { mono++; const id = JSON.parse(init.body).clientId; if (id === '3SqHL6Y5Hh') return { status: 200, json: async () => ({ jarAmount: 8853453, jarGoal: 30000000, jarStatus: 'ACTIVE', jarType: 'gather' }) }; return { status: 200, json: async () => (id === '7Psdfu4Thz' ? { jarAmount: 344713, jarGoal: 321000, jarStatus: 'CLOSED' } : { jarAmount: 195400, jarGoal: 300000, jarStatus: 'ACTIVE' }) }; }
     throw new Error('unexpected ' + url);
   };
   const r = await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?jars'), {});
   const J = await r.json();
   assert.deepEqual(J.people.map(p => [p.name, p.jar, p.amount, p.goal, !!p.closed]), [['Анчка', '7Psdfu4Thz', 3447.13, 3210, true], ['Ярик', 'A6qq284JRW', 1954, 3000, false], ['Ілля', null, undefined, undefined, false]]);
   await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?jars'), {});
-  assert.equal(mono, 2, 'Monobank at most once per 30 s, however many viewers');
+  assert.deepEqual([J.main.jar, J.main.amount, J.main.goal], ['3SqHL6Y5Hh', 88534.53, 300000], 'the main jar — the headline');
+  assert.equal(mono, 3, 'Monobank at most once per 30 s, however many viewers (main jar + 2)');
   const page = await (await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?tab=jars'), {})).text();
   assert.match(page, /aria-current="page">Банки/);
   assert.ok(!page.includes('Веган'), 'no project name on the page');
