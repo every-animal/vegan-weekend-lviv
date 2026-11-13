@@ -275,7 +275,7 @@ summary::-webkit-details-marker{display:none}summary:after{content:" +";color:va
 
 function page(data) {
   return head('Воронка', '<meta http-equiv="refresh" content="300">') + `
-<nav class="tabs"><a href="/api/dashboard" aria-current="page">Квитки</a><a href="/api/dashboard?tab=jars">Банки</a></nav>
+<nav class="tabs"><a href="/api/dashboard" aria-current="page">Квитки</a><a href="/api/jars">Банки</a></nav>
 <div class="top"><span class="live"><i></i>live</span><span class="count">до фестивалю <b id="cd"></b> днів</span></div>
 <div class="per" role="group" aria-label="Період"><button data-p="1">Сьогодні</button><button data-p="7" aria-pressed="true">7 днів</button><button data-p="30">30 днів</button><button data-p="all">Весь час</button></div>
 <div id="app"></div>
@@ -405,7 +405,6 @@ render(7);
 /* ---------- вкладка «Банки» ---------- */
 function jarsPage(J) {
   return head('Банки', '') + `
-<nav class="tabs"><a href="/api/dashboard">Квитки</a><a href="/api/dashboard?tab=jars" aria-current="page">Банки</a></nav>
 <div class="top"><span class="live"><i></i>live</span><span class="count" id="upd"></span></div>
 <div id="app"></div>
 <details><summary>Питання й відповіді</summary><dl class="how">
@@ -497,8 +496,8 @@ function render(){
   document.getElementById('foot').textContent='Суми — Monobank, оновлено '+J.updated.slice(0,16).replace('T',' ')+' (Київ), щопівхвилини. Список збирачів — з Notion, '+J.listUpdated+(J.listError?' (зараз Notion не відповідає — список зі збереженого)':'')+'.';
 }
 render();
-setInterval(async()=>{if(document.hidden)return;try{const r=await fetch('/api/dashboard?jars',{cache:'no-store'});if(r.ok){J=await r.json();render()}}catch(e){}},30000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)fetch('/api/dashboard?jars',{cache:'no-store'}).then(r=>r.ok&&r.json()).then(x=>{if(x){J=x;render()}}).catch(()=>{})});
+setInterval(async()=>{if(document.hidden)return;try{const r=await fetch('/api/jars?json',{cache:'no-store'});if(r.ok){J=await r.json();render()}}catch(e){}},30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)fetch('/api/jars?json',{cache:'no-store'}).then(r=>r.ok&&r.json()).then(x=>{if(x){J=x;render()}}).catch(()=>{})});
 </script></body></html>`;
 }
 
@@ -520,17 +519,8 @@ export async function handle(request, env = process.env) {
   }
 
   const qs = new URL(request.url).searchParams;
-  /* вкладка «Банки»: сторінка і JSON для оновлення щопівхвилини */
-  if (qs.has('jars') || qs.get('tab') === 'jars') {
-    try {
-      const J = await jars(env, fetch, { force: qs.has('fresh') });
-      if (qs.has('jars')) return new Response(JSON.stringify(J), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
-      return html(jarsPage(J));
-    } catch (e) {
-      if (qs.has('jars')) return new Response(JSON.stringify({ error: e.message }), { status: 502, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
-      return html(head('Банки', '<meta http-equiv="refresh" content="60">') + `<nav class="tabs"><a href="/api/dashboard">Квитки</a><a href="/api/dashboard?tab=jars" aria-current="page">Банки</a></nav><div class="todo"><b>Не вдалося отримати банки.</b> ${esc(e.message)}. Сторінка спробує ще раз за хвилину.</div></main></body></html>`);
-    }
-  }
+  /* банки переїхали на окрему адресу (13.11.2026) — старі посилання ведуть туди */
+  if (qs.has('jars') || qs.get('tab') === 'jars') return new Response(null, { status: 301, headers: { location: '/api/jars', 'x-robots-tag': 'noindex' } });
   const fresh = qs.has('fresh');
   if (!fresh && cache.html && Date.now() - cache.at < 5 * 60 * 1000) return html(cache.html);
 
@@ -569,3 +559,20 @@ export async function handle(request, env = process.env) {
 }
 
 export function GET(request) { return handle(request); }
+
+/* ---------- «Банки» — окрема сторінка /api/jars (рішення власника 13.11.2026) ----------
+   Окремо від аналітики квитків, щоб посиланням можна було поділитися: на сторінці лише банки — жодних продажів,
+   реклами чи посилань на дашборд квитків. Без пароля навіть якщо він заданий для квитків. Лише на *.vercel.app. */
+export async function jarsHandle(request, env = process.env) {
+  const host = new URL(request.url).hostname;
+  if (!(host.endsWith('.vercel.app') || host === 'localhost' || host === '127.0.0.1')) return new Response('Not found', { status: 404, headers: { 'x-robots-tag': 'noindex' } });
+  const qs = new URL(request.url).searchParams;
+  try {
+    const J = await jars(env, fetch, { force: qs.has('fresh') });
+    if (qs.has('json')) return new Response(JSON.stringify(J), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
+    return html(jarsPage(J));
+  } catch (e) {
+    if (qs.has('json')) return new Response(JSON.stringify({ error: e.message }), { status: 502, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+    return html(head('Банки', '<meta http-equiv="refresh" content="60">') + `<div class="todo"><b>Не вдалося отримати банки.</b> ${esc(e.message)}. Сторінка спробує ще раз за хвилину.</div></main></body></html>`);
+  }
+}

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
-import { handle } from '../api/dashboard.mjs';
+import { handle, jarsHandle } from '../api/dashboard.mjs';
 
 const auth = p => ({ authorization: 'Basic ' + Buffer.from('x:' + p).toString('base64') });
 const dataOf = async r => JSON.parse((await r.text()).match(/const D=(\{.*?\});\n/s)[1]);
@@ -114,14 +114,18 @@ test('jars tab: collectors from the Notion table, sums from Monobank; JSON for t
     if (url.includes('send.monobank.ua/api/handler')) { mono++; const id = JSON.parse(init.body).clientId; if (id === '3SqHL6Y5Hh') return { status: 200, json: async () => ({ jarAmount: 8853453, jarGoal: 30000000, jarStatus: 'ACTIVE', jarType: 'gather' }) }; return { status: 200, json: async () => (id === '7Psdfu4Thz' ? { jarAmount: 344713, jarGoal: 321000, jarStatus: 'CLOSED' } : { jarAmount: 195400, jarGoal: 300000, jarStatus: 'ACTIVE' }) }; }
     throw new Error('unexpected ' + url);
   };
-  const r = await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?jars'), {});
+  const r = await jarsHandle(new Request('https://vegan-weekend-lviv.vercel.app/api/jars?json'), {});
   const J = await r.json();
   assert.deepEqual(J.people.map(p => [p.name, p.jar, p.amount, p.goal, !!p.closed]), [['Анчка', '7Psdfu4Thz', 3447.13, 3210, true], ['Ярик', 'A6qq284JRW', 1954, 3000, false], ['Ілля', null, undefined, undefined, false]]);
-  await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?jars'), {});
+  await jarsHandle(new Request('https://vegan-weekend-lviv.vercel.app/api/jars?json'), {});
   assert.deepEqual([J.main.jar, J.main.amount, J.main.goal], ['3SqHL6Y5Hh', 88534.53, 300000], 'the main jar — the headline');
   assert.equal(mono, 3, 'Monobank at most once per 30 s, however many viewers (main jar + 2)');
-  const page = await (await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?tab=jars'), {})).text();
-  assert.match(page, /aria-current="page">Банки/);
+  const page = await (await jarsHandle(new Request('https://vegan-weekend-lviv.vercel.app/api/jars'), { DASHBOARD_PASSWORD: 'secret' })).text();
+  assert.match(page, /Зібрано/);
+  assert.ok(!/dashboard|Квитки|квитк|реклам|Meta|WayForPay/.test(page.replace(/2 квитки на фестиваль/g, '')), 'nothing about tickets, ads or the tickets dashboard');
+  const old = await handle(new Request('https://vegan-weekend-lviv.vercel.app/api/dashboard?tab=jars'), {});
+  assert.deepEqual([old.status, old.headers.get('location')], [301, '/api/jars']);
+  assert.equal((await jarsHandle(new Request('https://www.veganweekend.org/api/jars'), {})).status, 404);
   assert.ok(!page.includes('Веган'), 'no project name on the page');
 });
 
