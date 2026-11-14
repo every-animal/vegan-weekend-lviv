@@ -270,6 +270,7 @@ summary::-webkit-details-marker{display:none}summary:after{content:" +";color:va
 .jr.flash{animation:flash 1.6s}
 @keyframes flash{0%{background:rgba(254,117,190,.25)}100%{background:none}}
 .nojar{margin-top:10px;font-size:13px;color:var(--ink-3)}
+.jc .bars{justify-content:center}.jc .bars button{max-width:56px}.jc .bars .b{background:var(--pink)}.jc .bars button[aria-current=true] .b,.jc .bars button:hover .b{background:#fff}
 .hero .big.jb{font-size:clamp(64px,19vw,170px)}
 </style></head><body><main>`;
 
@@ -459,15 +460,17 @@ function render(){
   app.append(g);
   /* days: how much came in each day (by the last snapshot of the day) */
   const dayKeys=[...new Set(keys.map(k=>k.slice(0,10)))];
+  /* each day: the end of the day minus the end of the day before; the first day — from its first snapshot (a part of the day) */
   if(dayKeys.length>1){
     const t=el('h2');t.append(document.createTextNode('По '),el('i',null,'днях'));app.append(t);
     const end=d=>{const k=keys.filter(x=>x.startsWith(d)).pop();return total(J.hist[k],tid)};
-    const vals=dayKeys.map((d,i)=>i?Math.max(0,end(d)-end(dayKeys[i-1])):null).slice(1), ds=dayKeys.slice(1), mx=Math.max(1,...vals);
-    const c=el('div','chart'),bars=el('div','bars'),read=el('div','read');
-    const show=i=>{read.replaceChildren();const a=el('span','d',new Date(ds[i]+'T12:00').toLocaleDateString('uk-UA',{day:'numeric',month:'long'}));const b=el('span');b.append(el('b',null,'+'+fmt(vals[i])),document.createTextNode(' грн'));read.append(a,b);[...bars.children].forEach((x,j)=>x.setAttribute('aria-current',j===i?'true':'false'))};
+    const k0=keys.find(x=>x.startsWith(dayKeys[0])), from0=k0.slice(11,13);
+    const vals=dayKeys.map((d,i)=>Math.max(0,end(d)-(i?end(dayKeys[i-1]):total(J.hist[F(k0)],tid)))), ds=dayKeys, mx=Math.max(1,...vals);
+    const c=el('div','chart jc'),bars=el('div','bars'),read=el('div','read');
+    const show=i=>{read.replaceChildren();const a=el('span','d',new Date(ds[i]+'T12:00').toLocaleDateString('uk-UA',{day:'numeric',month:'long'})+(i===0&&from0!=='00'?' (з '+from0+':00)':''));const b=el('span');b.append(el('b',null,'+'+fmt(vals[i])),document.createTextNode(' грн'));read.append(a,b);[...bars.children].forEach((x,j)=>x.setAttribute('aria-current',j===i?'true':'false'))};
     vals.forEach((v,i)=>{const b=el('button');b.setAttribute('aria-label',ds[i]+': '+fmt(v)+' грн');const s=el('div','b'+(v?'':' zero'));s.style.height=(v/mx*100)+'%';s.style.setProperty('--i',i);b.append(s);b.addEventListener('click',()=>show(i));b.addEventListener('mouseenter',()=>show(i));bars.append(b)});
     const ax=el('div','axis');ax.append(el('span',null,ds[0].slice(8)+'.'+ds[0].slice(5,7)),el('span',null,ds[ds.length-1].slice(8)+'.'+ds[ds.length-1].slice(5,7)));
-    c.append(bars,ax,read);app.append(c);show(vals.length-1);
+    c.append(bars);if(vals.length>7)c.append(ax);c.append(read);app.append(c);show(vals.length-1);
   }
   /* collectors, most collected first */
   const t2=el('h2');t2.append(document.createTextNode('Збирачі '),el('i',null,fmt(P.length)));app.append(t2);
